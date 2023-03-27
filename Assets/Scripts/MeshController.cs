@@ -1,17 +1,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class MeshController : MonoBehaviour
 {
     public GameObject vertexHighlight;
+    public InputActionProperty closeAction, openAction;
 
     Mesh mesh;
     MeshFilter meshFilter;
     List<Vector3> vertices = new List<Vector3>();
+    List<GameObject> vertexObjects = new List<GameObject>();
+    bool isSelected;
 
     public List<Vector3> Vertices { get => vertices; set => vertices = value; }
     public Mesh Mesh { get => mesh; set => mesh = value; }
+    public bool IsSelected { get => isSelected; set => isSelected = value; }
 
     private void Start()
     {
@@ -42,10 +47,37 @@ public class MeshController : MonoBehaviour
                 }
                 GameObject vertex = Instantiate(vertexHighlight, gameObject.transform);
                 vertex.transform.localPosition = vertices[i];
-                vertex.transform.localScale = transform.lossyScale / (Mathf.Pow(transform.lossyScale.x, 2) * 10);
+                vertex.transform.localScale = transform.lossyScale / (Mathf.Pow(transform.lossyScale.x, 2) * 20);
                 vertex.GetComponent<VertexController>().AssignedVertices = vertexIndexes.ToArray();
+                vertexObjects.Add(vertex);
+                vertex.SetActive(false);
             }
         }
 
     }
+
+    private void Update()
+    {
+        if (isSelected)
+        {
+            bool isPrimaryPressed = closeAction.action.IsPressed();
+            bool isSecondaryPressed = openAction.action.IsPressed();
+
+            if (isPrimaryPressed)
+            {
+                foreach (var item in vertexObjects)
+                {
+                    item.SetActive(false);
+                }
+            }
+            else if (isSecondaryPressed)
+            {
+                foreach (var item in vertexObjects)
+                {
+                    item.SetActive(true);
+                }
+            }
+        }
+    }
+
 }
