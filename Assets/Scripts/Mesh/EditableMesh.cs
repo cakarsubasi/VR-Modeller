@@ -15,12 +15,15 @@ public class EditableMesh : MonoBehaviour
     EditableMeshImpl meshInternal;
     private void OnEnable()
     {
+        /*
         var mesh = new Mesh
         {
             name = "Editable Mesh"
         };
+        */
+        var mesh = GetComponent<MeshFilter>().mesh;
         meshInternal = default;
-        meshInternal.Setup(mesh);
+        meshInternal.CopySetup(mesh);
 
 
         GetComponent<MeshFilter>().mesh = mesh;
@@ -114,6 +117,22 @@ namespace Meshes
             }
             
             Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, mesh);
+        }
+
+        public void CopySetup(Mesh mesh)
+        {
+            var vertices = mesh.vertices;
+            var triangles = mesh.triangles;
+            Setup(mesh);
+            for (int i = 0; i < vertices.Length; ++i)
+            {
+                AddVertex(vertices[i]);
+            }
+            for (int i = 0; i < triangles.Length; i += 3)
+            {
+                AddTriangle(int3(triangles[i], triangles[i + 1], triangles[i + 2]));
+            }
+
         }
 
         public Vector3[] GetVertices()
@@ -216,6 +235,16 @@ namespace Meshes
             buffer[1] = int3(vertices[2], vertices[3], vertices[0]);
             Mesh.SetIndexBufferData<int3>(buffer, 0, TriangleCount, 2);
             buffer.Dispose();
+            TriangleCount += 2;
+        }
+
+        public void AddTriangle(int3 vertices)
+        {
+            NativeArray<int3> buffer = new NativeArray<int3>(1, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            buffer[0] = vertices;
+            Mesh.SetIndexBufferData<int3>(buffer, 0, TriangleCount, 1);
+            buffer.Dispose();
+            TriangleCount += 1;
         }
 
         public void Extrude()
