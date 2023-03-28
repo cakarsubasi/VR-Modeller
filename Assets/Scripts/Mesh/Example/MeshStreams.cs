@@ -24,7 +24,7 @@ namespace Meshes
     public struct MeshStream : IMeshStreams
     {
         [StructLayout(LayoutKind.Sequential)]
-        private struct Stream0
+        public struct Stream0
         {
             public float3 position; // 12 bytes
             public float3 normal; // 12 bytes
@@ -84,14 +84,58 @@ namespace Meshes
             triangles = meshData.GetIndexData<int>().Reinterpret<int3>(4);
         }
 
-        public void AddVertex()
+        public void Resize(Mesh.MeshData meshData, int vertexCount, int indexCount)
         {
+            var vertexAttributes = new NativeArray<VertexAttributeDescriptor>(
+    vertexAttributeCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
 
-        }
+            // positions
+            vertexAttributes[0] = new VertexAttributeDescriptor(
+                attribute: VertexAttribute.Position,
+                dimension: 3,
+                stream: 0);
+            // normals
+            vertexAttributes[1] = new VertexAttributeDescriptor(
+                attribute: VertexAttribute.Normal,
+                dimension: 3,
+                stream: 0);
+            // tangents
+            vertexAttributes[2] = new VertexAttributeDescriptor(
+                attribute: VertexAttribute.Tangent,
+                format: VertexAttributeFormat.Float32,
+                dimension: 4,
+                stream: 0);
+            // uv coordinates
+            vertexAttributes[3] = new VertexAttributeDescriptor(
+                attribute: VertexAttribute.TexCoord0,
+                format: VertexAttributeFormat.Float32,
+                dimension: 2,
+                stream: 0);
 
-        public void DeleteVertex()
-        {
+            meshData.SetVertexBufferParams(vertexCount, vertexAttributes);
+            vertexAttributes.Dispose();
 
+            meshData.SetIndexBufferParams(indexCount, IndexFormat.UInt32);
+
+            meshData.subMeshCount = 1;
+            meshData.SetSubMesh(0, new SubMeshDescriptor(0, indexCount),
+                MeshUpdateFlags.DontRecalculateBounds | MeshUpdateFlags.DontValidateIndices);
+
+            var new_stream0 = meshData.GetVertexData<Stream0>();
+            var new_triangles = meshData.GetIndexData<int>().Reinterpret<int3>(4);
+
+            for (int i = 0; i < VertexCount; ++i)
+            {
+                new_stream0[i] = stream0[i];
+            }
+            for (int i = 0; i < IndexCount; ++i)
+            {
+                new_triangles[i] = triangles[i];
+            }
+            stream0.Dispose();
+            triangles.Dispose();
+            stream0 = new_stream0;
+            triangles = new_triangles;
         }
 
         public void MoveVertex(int index, float3 position)
