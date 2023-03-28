@@ -16,6 +16,7 @@ public class MeshController : MonoBehaviour
 
     public List<Vector3> Vertices { get => vertices; set => vertices = value; }
     public Mesh Mesh { get => mesh; set => mesh = value; }
+    public bool IsSelected { get => isSelected; set => isSelected = value; }
 
     private void Start()
     {
@@ -57,7 +58,7 @@ public class MeshController : MonoBehaviour
 
     private void Update()
     {
-        if (isSelected)
+        if (IsSelected)
         {
             bool isPrimaryPressed = closeAction.action.IsPressed();
             bool isSecondaryPressed = openAction.action.IsPressed();
@@ -81,15 +82,15 @@ public class MeshController : MonoBehaviour
 
     public void OnSelect()
     {
-        if (isSelected)
+        if (IsSelected)
         {
-            isSelected = false;
+            IsSelected = false;
             ObjectController.Instance.SelectedGameobject.Remove(gameObject);
             GetComponent<MeshRenderer>().material.color = Color.white;
         }
         else
         {
-            isSelected = true;
+            IsSelected = true;
             ObjectController.Instance.SelectedGameobject.Add(gameObject);
             GetComponent<MeshRenderer>().material.color = Color.cyan;
         }
@@ -97,7 +98,7 @@ public class MeshController : MonoBehaviour
 
     public void OnDiselect()
     {
-        isSelected = false;
+        IsSelected = false;
         ObjectController.Instance.SelectedGameobject.Remove(gameObject);
     }
 
