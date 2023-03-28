@@ -6,6 +6,7 @@ using UnityEngine.Rendering;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using Meshes;
+#nullable enable
 
 using static Unity.Mathematics.math;
 
@@ -13,26 +14,32 @@ using static Unity.Mathematics.math;
 public class EditableMesh : MonoBehaviour
 {
     EditableMeshImpl meshInternal;
+
+    [SerializeField]
+    Mesh? CopyFromMesh;
+
     private void OnEnable()
     {
-        /*
-        var mesh = new Mesh
-        {
-            name = "Editable Mesh"
-        };
-        */
-        var mesh = GetComponent<MeshFilter>().mesh;
         meshInternal = default;
-        meshInternal.CopySetup(mesh);
-
-
-        GetComponent<MeshFilter>().mesh = mesh;
-
-        var vert1 = float3(0f, 0f, 0f);
-        var vert2 = float3(1f, 0f, 0f);
-        var vert3 = float3(1f, 1f, 0f);
-        var vert4 = float3(0f, 1f, 0f);
-        meshInternal.AddFace(vert1, vert2, vert3, vert4);
+        if (CopyFromMesh != null)
+        {
+            meshInternal = default;
+            meshInternal.CopySetup(CopyFromMesh);
+            GetComponent<MeshFilter>().mesh = CopyFromMesh;
+        } else
+        {
+            var mesh = new Mesh
+            {
+                name = "Flat quad"
+            };
+            meshInternal.Setup(mesh);
+            var vert1 = float3(0f, 0f, 0f);
+            var vert2 = float3(1f, 0f, 0f);
+            var vert3 = float3(1f, 1f, 0f);
+            var vert4 = float3(0f, 1f, 0f);
+            meshInternal.AddFace(vert1, vert2, vert3, vert4);
+            GetComponent<MeshFilter>().mesh = mesh;
+        }
     }
 
 }
@@ -64,6 +71,10 @@ namespace Meshes
         public int VertexCount { get; private set; }
         public int TriangleCount { get; private set; }
 
+        /// <summary>
+        /// Create a new EditableMesh from scratch
+        /// </summary>
+        /// <param name="mesh">Container mesh to write to</param>
         public void Setup(Mesh mesh)
         {
             Mesh = mesh;
@@ -119,14 +130,21 @@ namespace Meshes
             Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, mesh);
         }
 
+        /// <summary>
+        /// Create an editable mesh by copying an existing mesh
+        /// </summary>
+        /// <param name="mesh">Mesh to copy from</param>
         public void CopySetup(Mesh mesh)
         {
             var vertices = mesh.vertices;
             var triangles = mesh.triangles;
+            var normals = mesh.normals;
+            var tangents = mesh.tangents;
+            var uvs = mesh.uv;
             Setup(mesh);
             for (int i = 0; i < vertices.Length; ++i)
             {
-                AddVertex(vertices[i]);
+                AddVertex(vertices[i], normals[i], tangents[i], uvs[i]);
             }
             for (int i = 0; i < triangles.Length; i += 3)
             {
@@ -135,6 +153,10 @@ namespace Meshes
 
         }
 
+        /// <summary>
+        /// Get the position of vertices within the mesh, use the indexes to reference the vertices
+        /// </summary>
+        /// <returns>List of indexes of vertices</returns>
         public Vector3[] GetVertices()
         {
             var positions = new Vector3[_vertices.Length];
@@ -151,6 +173,11 @@ namespace Meshes
             return new Vector3[0];
         }
 
+        /// <summary>
+        /// Move a vertex of the given index to the specified position
+        /// </summary>
+        /// <param name="index">index of the vertex to move</param>
+        /// <param name="position">position to move to</param>
         public void MoveVertex(int index, float3 position)
         {
             // need to abstract real index
@@ -168,11 +195,33 @@ namespace Meshes
             buffer.Dispose();
         }
 
+        /// <summary>
+        /// Add Vertex to the given position
+        /// </summary>
+        /// <param name="position">position of the vertex</param>
+        /// <returns>index of the vertex</returns>
         public int AddVertex(float3 position)
+        {
+            return AddVertex(position, normal: back(), tangent: float4(1f, 0f, 0f, -1f), float2(0f, 0f));
+        }
+
+
+        /// <summary>
+        /// Add Vertex to the given position with the given normal and tangent
+        /// </summary>
+        /// <param name="position">position to add to</param>
+        /// <param name="normal">normal of the vertex</param>
+        /// <param name="tangent">tangent of the vertex</param>
+        /// <param name="texCoord0">UV coordinate of the vertex</param>
+        /// <returns>index of the vertex</returns>
+        public int AddVertex(float3 position, float3 normal, float4 tangent, float2 texCoord0)
         {
             var vert = new Vertex
             {
                 position = position,
+                normal = normal,
+                tangent = tangent,
+                texCoord0 = texCoord0
             };
             var vert_int = new Stream0
             {
@@ -218,17 +267,30 @@ namespace Meshes
 
         }
 
+        /// <summary>
+        /// Add a quad by creating four vertices
+        /// </summary>
+        /// <param name="pos1"></param>
+        /// <param name="pos2"></param>
+        /// <param name="pos3"></param>
+        /// <param name="pos4"></param>
         public void AddFace(float3 pos1, float3 pos2, float3 pos3, float3 pos4)
         {
-            var indices = new int[4];
-            indices[0] = AddVertex(pos1);
-            indices[1] = AddVertex(pos2);
-            indices[2] = AddVertex(pos3);
-            indices[3] = AddVertex(pos4);
+            var indices = new int4
+            {
+                x = AddVertex(pos1),
+                y = AddVertex(pos2),
+                z = AddVertex(pos3),
+                w = AddVertex(pos4),
+            };
             AddFace(indices);
         }
 
-        public void AddFace(int[] vertices)
+        /// <summary>
+        /// Add a quad between the given four vertices
+        /// </summary>
+        /// <param name="vertices"></param>
+        public void AddFace(int4 vertices)
         {
             NativeArray<int3> buffer = new NativeArray<int3>(2, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             buffer[0] = int3(vertices[0], vertices[1], vertices[2]);
