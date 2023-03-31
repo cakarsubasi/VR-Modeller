@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 
 public class LeftHandUIController : MonoBehaviour
 {
-    public GameObject UIParent;
+    public GameObject UICanvas;
     public InputActionProperty pincAction;
 
     private void Update()
@@ -12,11 +12,11 @@ public class LeftHandUIController : MonoBehaviour
 
         if (pressed)
         {
-            UIParent.SetActive(true);
+            UICanvas.SetActive(true);
         }
         else
         {
-            UIParent.SetActive(false);
+            UICanvas.SetActive(false);
         }
     }
 }
