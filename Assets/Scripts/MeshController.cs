@@ -58,7 +58,7 @@ public class MeshController : MonoBehaviour
 
     private void Update()
     {
-        if (isSelected)
+        if (IsSelected)
         {
             bool isPrimaryPressed = closeAction.action.IsPressed();
             bool isSecondaryPressed = openAction.action.IsPressed();
@@ -78,6 +78,28 @@ public class MeshController : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void OnSelect()
+    {
+        if (IsSelected)
+        {
+            IsSelected = false;
+            ObjectController.Instance.SelectedGameobject.Remove(gameObject);
+            GetComponent<MeshRenderer>().material.color = Color.white;
+        }
+        else
+        {
+            IsSelected = true;
+            ObjectController.Instance.SelectedGameobject.Add(gameObject);
+            GetComponent<MeshRenderer>().material.color = Color.cyan;
+        }
+    }
+
+    public void OnDiselect()
+    {
+        IsSelected = false;
+        ObjectController.Instance.SelectedGameobject.Remove(gameObject);
     }
 
 }
