@@ -68,6 +68,8 @@ namespace Meshes
         private static readonly int defaultMaxVerts = ushort.MaxValue;
         private static readonly int defaultMaxTris = ushort.MaxValue / 3;
 
+        public Vector3[] Vertices => GetVertices();
+
         public int VertexCount { get; private set; }
         public int TriangleCount { get; private set; }
 
