@@ -929,7 +929,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a41f82ee641157646b0b8a47819e88c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  UIParent: {fileID: 2075756873}
+  UICanvas: {fileID: 2075756873}
   pincAction:
     m_UseReference: 1
     m_Action:
@@ -4015,6 +4015,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: ImportedCube
       objectReference: {fileID: 0}
+    - target: {fileID: 4092130501227634600, guid: 71541b125154e2c4fa2e42d445ae696c,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 71541b125154e2c4fa2e42d445ae696c, type: 3}
 --- !u!1001 &980475633
@@ -4028,6 +4033,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Sphere
+      objectReference: {fileID: 0}
+    - target: {fileID: 5262893691843572231, guid: 5722a1e500377c84fbf4e5c492388f0e,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5262893691843572236, guid: 5722a1e500377c84fbf4e5c492388f0e,
         type: 3}
@@ -6475,6 +6485,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Capsule
       objectReference: {fileID: 0}
+    - target: {fileID: 6029265292443060219, guid: e19adabb3600cbb468c07983af427f02,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e19adabb3600cbb468c07983af427f02, type: 3}
 --- !u!1 &1468002019
@@ -8094,6 +8109,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Cylinder
+      objectReference: {fileID: 0}
+    - target: {fileID: 5760285086351593202, guid: 58454d1124738c141973cbfa9b584f58,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7026245653909556333, guid: 58454d1124738c141973cbfa9b584f58,
         type: 3}
