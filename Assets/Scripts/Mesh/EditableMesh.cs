@@ -1,13 +1,8 @@
 ﻿using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
-using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
 using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
-
-using System.Collections.Generic;
 using System.Linq;
 using Meshes;
 #nullable enable
@@ -22,18 +17,21 @@ public class EditableMesh : MonoBehaviour
     [SerializeField]
     Mesh? CopyFromMesh;
 
+    public EditableMeshImpl MeshInternal { get => meshInternal; private set => meshInternal = value; }
+
     private void OnEnable()
     {
 
         //meshInternal = default;
-      
+
         if (CopyFromMesh != null)
         {
             meshInternal = default;
             Debug.Log($"Vertex count: {CopyFromMesh.vertexCount}");
             GetComponent<MeshFilter>().mesh = meshInternal.CopySetup(CopyFromMesh);
-            
-        } else
+
+        }
+        else
         {
             var mesh = new Mesh
             {
@@ -47,7 +45,7 @@ public class EditableMesh : MonoBehaviour
             meshInternal.AddFace(vert1, vert2, vert3, vert4);
             GetComponent<MeshFilter>().mesh = mesh;
         }
-        
+
     }
 
 }
@@ -80,9 +78,9 @@ namespace Meshes
         public int VertexCount { get; private set; }
         public int TriangleCount { get; private set; }
 
-        public float3[] Vertices
+        public Vector3[] Vertices
         {
-            get => _vertices.Select(vertex => vertex.position).ToArray();
+            get => _vertices.Take(VertexCount).Select(vertex => (Vector3)vertex.position).ToArray();
         }
 
         /// <summary>
