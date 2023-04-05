@@ -1,10 +1,14 @@
 ﻿using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
+
+using System.Collections.Generic;
+using System.Linq;
 using Meshes;
 #nullable enable
 
@@ -20,12 +24,15 @@ public class EditableMesh : MonoBehaviour
 
     private void OnEnable()
     {
-        meshInternal = default;
+
+        //meshInternal = default;
+      
         if (CopyFromMesh != null)
         {
             meshInternal = default;
-            meshInternal.CopySetup(CopyFromMesh);
-            GetComponent<MeshFilter>().mesh = CopyFromMesh;
+            Debug.Log($"Vertex count: {CopyFromMesh.vertexCount}");
+            GetComponent<MeshFilter>().mesh = meshInternal.CopySetup(CopyFromMesh);
+            
         } else
         {
             var mesh = new Mesh
@@ -40,13 +47,15 @@ public class EditableMesh : MonoBehaviour
             meshInternal.AddFace(vert1, vert2, vert3, vert4);
             GetComponent<MeshFilter>().mesh = mesh;
         }
+        
     }
 
 }
 
+
+
 namespace Meshes
 {
-
     [StructLayout(LayoutKind.Sequential)]
     struct Stream0
     {
@@ -71,6 +80,11 @@ namespace Meshes
         public int VertexCount { get; private set; }
         public int TriangleCount { get; private set; }
 
+        public float3[] Vertices
+        {
+            get => _vertices.Select(vertex => vertex.position).ToArray();
+        }
+
         /// <summary>
         /// Create a new EditableMesh from scratch
         /// </summary>
@@ -81,9 +95,14 @@ namespace Meshes
 
             Mesh.MeshDataArray meshDataArray = Mesh.AllocateWritableMeshData(1);
             Mesh.MeshData meshData = meshDataArray[0];
+            Setup(meshData);
+            Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, mesh);
+        }
 
+        public void Setup(Mesh.MeshData meshData)
+        {
             var vertexAttributes = new NativeArray<VertexAttributeDescriptor>(
-                4, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+    4, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
 
             // positions
             vertexAttributes[0] = new VertexAttributeDescriptor(
@@ -126,31 +145,37 @@ namespace Meshes
             {
                 triangles[i] = int3(0, 0, 0);
             }
-            
-            Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, mesh);
         }
 
         /// <summary>
         /// Create an editable mesh by copying an existing mesh
+        /// The original instance is not touched and a new instance is returned
         /// </summary>
         /// <param name="mesh">Mesh to copy from</param>
-        public void CopySetup(Mesh mesh)
+        /// <returns>A reference to the new mesh instance</returns>
+        public Mesh CopySetup(Mesh mesh)
         {
+            Mesh = new Mesh
+            {
+                name = mesh.name,
+            };
             var vertices = mesh.vertices;
             var triangles = mesh.triangles;
             var normals = mesh.normals;
             var tangents = mesh.tangents;
             var uvs = mesh.uv;
-            Setup(mesh);
+            Setup(Mesh);
             for (int i = 0; i < vertices.Length; ++i)
             {
+                //Debug.Log($"idx: {i}\n\tpos: {vertices[i]}\n\tnorm: {normals[i]}\n");
                 AddVertex(vertices[i], normals[i], tangents[i], uvs[i]);
             }
             for (int i = 0; i < triangles.Length; i += 3)
             {
+                //Debug.Log($"idx: {i}\n\tindices: {triangles[i]}, {triangles[i+1]}, {triangles[i+2]}\n");
                 AddTriangle(int3(triangles[i], triangles[i + 1], triangles[i + 2]));
             }
-
+            return Mesh;
         }
 
         /// <summary>
