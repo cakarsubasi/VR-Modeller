@@ -24,7 +24,7 @@ public class EditableMeshOld : MonoBehaviour
         GenerateMesh();
         GetComponent<MeshFilter>().mesh = mesh;
 
-        var vertex = new Vertex
+        var vertex = new VertexLegacy
         {
             position = float3(-1f, 0f, 0f)
         };
@@ -52,7 +52,7 @@ public class EditableMeshOld : MonoBehaviour
         streams = default;
         streams.Setup(meshData, 4, 6);
 
-        var vertex = new Vertex();
+        var vertex = new VertexLegacy();
         vertex.normal.z = -1f;
         vertex.tangent.xw = float2(1f, -1f);
         streams.SetVertex(0, vertex);
