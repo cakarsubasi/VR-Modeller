@@ -28,7 +28,7 @@ public class MeshController : MonoBehaviour
         mesh = meshFilter.mesh;
         //Vertices = mesh.vertices.ToList();
         Vertices = editableMesh.Vertices.ToList();
-        Debug.Log("Vertices: " + Vertices.Count);
+        //Debug.Log("Vertices: " + Vertices.Count);
 
         List<Vector3> updatedVertices = new List<Vector3>();
 
@@ -66,13 +66,13 @@ public class MeshController : MonoBehaviour
     {
         List<Vector3> updatedVertices = new List<Vector3>();
 
-        Debug.Log("Strarted: " + vertices.Count);
+        //Debug.Log("Strarted: " + vertices.Count);
 
         int i = 0;
         while (i < vertices.Count)
         {
             List<Vector3> sameVertices = vertices.FindAll(x => x == vertices[i]);
-            Debug.Log("i: " + i);
+            //Debug.Log("i: " + i);
             if (!updatedVertices.Contains(sameVertices[0]))
             {
                 updatedVertices.Add(sameVertices[0]);
@@ -82,7 +82,7 @@ public class MeshController : MonoBehaviour
                 int k = 0;
                 while (k < vertices.Count)
                 {
-                    Debug.Log("k: " + k);
+                    //Debug.Log("k: " + k);
                     if (vertices[k] == sameVertices[0])
                     {
                         vertexIndexes.Add(k);
