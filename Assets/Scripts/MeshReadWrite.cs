@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class mesh_read_write : MonoBehaviour
+public class MeshReadWrite : MonoBehaviour
 {
 
     [SerializeField]

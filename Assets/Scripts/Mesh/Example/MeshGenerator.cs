@@ -40,7 +40,7 @@ namespace Meshes
 
         public void Execute<S>(int i, S streams) where S : struct, IMeshStreams
         {
-            var vertex = new Vertex();
+            var vertex = new VertexLegacy();
             vertex.normal.z = -1f;
             vertex.tangent.xw = float2(1f, -1f);
             streams.SetVertex(0, vertex);

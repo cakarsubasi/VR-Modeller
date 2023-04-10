@@ -15,7 +15,7 @@ namespace Meshes
     {
         // TODO: need to make vertexcount and indexcount configurable
         void Setup(Mesh.MeshData data, int vertexCount, int indexCount);
-        void SetVertex(int index, Vertex data);
+        void SetVertex(int index, VertexLegacy data);
         void SetTriangle(int index, int3 triangle);
 
 
@@ -147,7 +147,7 @@ namespace Meshes
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetVertex(int index, Vertex vertex) => stream0[index] = new Stream0
+        public void SetVertex(int index, VertexLegacy vertex) => stream0[index] = new Stream0
         {
             position = vertex.position,
             normal = vertex.normal,
