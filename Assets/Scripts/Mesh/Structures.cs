@@ -1,6 +1,6 @@
 ﻿using Unity.Collections;
 using Unity.Mathematics;
-
+using System.Runtime.InteropServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,27 +11,50 @@ using UnityEngine;
 #nullable enable
 namespace Meshes
 {
+    static class Triangle
+    {
+        public static readonly int3 degenerate = int3(ushort.MaxValue - 1, ushort.MaxValue - 1, ushort.MaxValue - 1);
+    }
+
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Stream0
+    {
+        public float3 position; // 12 bytes
+        public float3 normal; // 12 bytes
+        public float4 tangent; // 16 bytes
+        public float2 texCoord0; // 8 bytes
+
+        public static readonly Stream0 degenerate = new Stream0
+        {
+            position = float3(0f, 0f, 0f),
+            normal = float3(0f, 0f, 0f),
+            tangent = float4(0f, 0f, 0f, 0f),
+
+        };
+    }
+
+    /// <summary>
+    /// Use this maybe to do cleanup afterwards?
+    /// </summary>
+    interface IMeshStruct
+    {
+        bool Alive { get; set; }
+    }
 
     public class Vertex
     {
-        public float3 Position; // 12 bytes
+        public float3 Position;
+        public float3 Normal;
+        public float4 Tangent;
 
-        private struct VertexProps
+        private struct FaceIndex
         {
+            public Face face;
             public int index;
-            public float3 normal;
-            public float4 tangent;
-            public float2 uv0;
-
-            public override string ToString()
-            {
-                return base.ToString();
-            }
         }
 
-        private List<VertexProps> properties = new List<VertexProps>(1);
-        //// maybe add bookkeeping fields?
-        private List<Face> faces = new List<Face>();
+        private List<FaceIndex> faces = new List<FaceIndex>();
         // public List<Edge> edges = new List<Edge>();
 
         public static Vertex Create(float3 position, float3 normal, float4 tangent, float2 texCoord0, int index = 0)
@@ -39,43 +62,22 @@ namespace Meshes
             return new Vertex
             {
                 Position = position,
-                properties = new List<VertexProps>()
-                {
-                    new VertexProps
-                    {
-                        index = index,
-                        normal = normal,
-                        tangent = tangent,
-                        uv0 = texCoord0,
-                    }
-
-                }
+                Normal = normal,
+                Tangent = tangent,
             };
-        }
-
-        public void AddProps(float3 normal, float4 tangent, float2 texCoord0, int index = 0)
-        {
-            properties.Add(
-                new VertexProps
-                {
-                    normal = normal,
-                    tangent = tangent,
-                    uv0 = texCoord0,
-                    index = index,
-                });
         }
 
         public Stream0[] ToStream()
         {
-            var stream = new Stream0[properties.Count];
-            for (int i = 0; i < properties.Count; ++i)
+            var stream = new Stream0[faces.Count];
+            for (int i = 0; i < faces.Count; ++i)
             {
                 stream[i] = new Stream0
                 {
                     position = Position,
-                    normal = properties[i].normal,
-                    tangent = properties[i].tangent,
-                    texCoord0 = properties[i].uv0,
+                    normal = Normal,
+                    tangent = Tangent,
+                    texCoord0 = faces[i].face.GetUVof(this),
                 };
             }
             return stream;
@@ -83,38 +85,40 @@ namespace Meshes
 
         public int[] Indices()
         {
-            return properties.Select(props => props.index).ToArray();
+            return faces.Select(props => props.index).ToArray();
         }
 
+        public int OptimizeIndices(int beginning)
+        {
+            for (int i = 0; i < faces.Count; ++i)
+            {
+                var prop = faces[i];
+                prop.index = beginning + i;
+                faces[i] = prop;
+            }
+            return beginning + faces.Count;
+        }
 
         public int GetIndex(Face face)
         {
-            return properties[0].index;
-            /*
-            float3 faceNorm = face.Normal;
-            int bestIndex = 0;
-            float bestAngle = float.NegativeInfinity;
-            foreach (var prop in properties) {
-                float angle = dot(faceNorm, prop.normal);
-                if (angle > bestAngle)
-                {
-                    bestAngle = angle;
-                    bestIndex = prop.index;
-                }
-            }
-            return bestIndex;
-            */
+            return faces.Find(structure => structure.face == face).index;
         }
 
         public override string ToString()
         {
-            var str =  $"{base.ToString()}: position: {Position}\nSubprops: {properties.Count}";
-
-            return str;
+            return $"{base.ToString()}: position: {Position}, Faces: {faces.Count}";
         }
 
-
-
+        internal void AddFaceChecked(Face face)
+        {
+            if (!faces.Select(structure => structure.face).Contains(face))
+            {
+                faces.Add(new FaceIndex { face = face });
+            } else
+            {
+                Debug.Log($"Tried adding existing face: {face}");
+            }
+        }
     }
 
     public class Edge
@@ -123,13 +127,28 @@ namespace Meshes
         public Vertex two;
 
         public List<Face> faces = new List<Face>(2);
+
+        public Edge(Vertex one, Vertex two)
+        {
+            this.one = one;
+            this.two = two;
+        }
     }
 
     public class Face
     {
         // Assume that the list of vertices is clockwise on the face
-        public List<Vertex> vertices = new List<Vertex>(4);
+        struct VertexCoordinate
+        {
+            public Vertex vertex;
+            public float2 uv0;
+            public float3 Position => vertex.Position;
+        }
+
+        private List<VertexCoordinate> vertices = new List<VertexCoordinate>(4);
+        public List<Vertex> Vertices => vertices.Select(verts => verts.vertex).ToList();
         // public List<Edge> edges = new List<Edge>(4);
+
         private float3 position;
         private float3 normal;
 
@@ -145,11 +164,17 @@ namespace Meshes
             normal = position = Unity.Mathematics.float3.zero;
         }
 
-        public Face(List<Vertex> vertices)
+        public Face(List<Vertex> vertices, List<float2> uv0s)
         {
             normal = position = Unity.Mathematics.float3.zero;
-            this.vertices = vertices;
+            //this.vertices = vertices.Select(vertex => new VertexCoordinate { vertex = vertex }).ToList();
+            this.vertices = vertices.Zip(uv0s, (vertex, uv0) => new VertexCoordinate { vertex = vertex, uv0 = uv0 }).ToList();
+            foreach (var vert in vertices)
+            {
+                vert.AddFaceChecked(this);
+            }
             RecalculateNormal();
+            RecalculatePosition();
         }
 
         public void RecalculateNormal()
@@ -162,18 +187,29 @@ namespace Meshes
             {
                 var vec1 = vertices[1].Position - vertices[0].Position;
                 var vec2 = vertices[2].Position - vertices[0].Position;
-                normal = normalize(cross(vec2, vec1));
+                normal = normalize(cross(vec1, vec2));
             }
         }
 
         public void RecalculatePosition()
         {
-            throw new NotImplementedException { };
+            position = 0;
+            foreach (var vert in vertices)
+            {
+                position += vert.Position;
+            }
+            position /= vertices.Count;
         }
 
         public void AddVertex()
         {
             throw new NotImplementedException { };
+        }
+
+        public float2 GetUVof(Vertex vertex)
+        {
+            return vertices[Vertices.IndexOf(vertex)].uv0;
+            //throw new NotImplementedException { };
         }
 
 
@@ -191,13 +227,23 @@ namespace Meshes
             else
             {
                 var indices = new int3[vertices.Count - 2];
-                var ind0 = vertices[0].GetIndex(this);
+                var ind0 = vertices[0].vertex.GetIndex(this);
                 for (int i = 0; i < vertices.Count - 2; i++)
                 {
-                    indices[i] = int3(ind0, vertices[i + 1].GetIndex(this), vertices[i + 2].GetIndex(this));
+                    indices[i] = int3(ind0, vertices[i + 1].vertex.GetIndex(this), vertices[i + 2].vertex.GetIndex(this));
                 }
                 return indices;
             }
+        }
+
+        public override string ToString()
+        {
+            var str = $"{base.ToString()}: verts: {vertices.Count}, position: {position}, normal: {normal}\n\tindices:";
+            foreach (var vertex in vertices)
+            {
+                str = $"{str} {vertex.vertex.GetIndex(this)}";
+            }
+            return str;
         }
     }
 }

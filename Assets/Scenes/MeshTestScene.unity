@@ -130,10 +130,35 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1004069361648936173, guid: be8493c5e60dc2a4fbc4b622e18d159e,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1164052755351881311, guid: be8493c5e60dc2a4fbc4b622e18d159e,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3275130379114238711, guid: be8493c5e60dc2a4fbc4b622e18d159e,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5321175926444657411, guid: be8493c5e60dc2a4fbc4b622e18d159e,
         type: 3}
       propertyPath: m_Name
       value: EditableMeshCopyCube
+      objectReference: {fileID: 0}
+    - target: {fileID: 5648666680593894752, guid: be8493c5e60dc2a4fbc4b622e18d159e,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7220687960281016500, guid: be8493c5e60dc2a4fbc4b622e18d159e,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7928200612312172364, guid: be8493c5e60dc2a4fbc4b622e18d159e,
         type: 3}
@@ -188,7 +213,7 @@ PrefabInstance:
     - target: {fileID: 7928200612645383956, guid: be8493c5e60dc2a4fbc4b622e18d159e,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7928200612645383959, guid: be8493c5e60dc2a4fbc4b622e18d159e,
         type: 3}
@@ -199,6 +224,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: EditableMeshOld
+      objectReference: {fileID: 0}
+    - target: {fileID: 8787912022207043963, guid: be8493c5e60dc2a4fbc4b622e18d159e,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: be8493c5e60dc2a4fbc4b622e18d159e, type: 3}

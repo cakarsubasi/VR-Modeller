@@ -40,7 +40,14 @@ public class EditableMesh : MonoBehaviour
             meshInternal.AddFace(vert1, vert2, vert3, vert4);
             GetComponent<MeshFilter>().mesh = mesh;
         }
+        meshInternal.WriteAllToMesh();
         Debug.Log($"{meshInternal}");
+        
+    }
+
+    private void Update()
+    {
+        meshInternal.WriteAllToMesh();
     }
 
 }
