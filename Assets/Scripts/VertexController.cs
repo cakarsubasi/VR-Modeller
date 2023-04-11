@@ -55,7 +55,7 @@ public class VertexController : MonoBehaviour
         {
             for (int i = 0; i < AssignedVertices.Length; i++)
             {
-                meshController.Vertices[AssignedVertices[i]] = transform.localPosition;
+                meshController.Vertices[AssignedVertices[i]] = parent.transform.InverseTransformPoint(transform.position);
             }
 
             meshController.Mesh.vertices = meshController.Vertices.ToArray();
@@ -65,11 +65,6 @@ public class VertexController : MonoBehaviour
                 parentCollider.sharedMesh = meshController.Mesh;
             }
         }
-        transform.localScale = parent.transform.lossyScale / (Mathf.Pow(parent.transform.lossyScale.x, 2) * 20);
-    }
-
-    public void SetParent()
-    {
-        transform.SetParent(parent.transform);
+        //transform.localScale = parent.transform.lossyScale / (Mathf.Pow(parent.transform.lossyScale.x, 2) * 20);
     }
 }
