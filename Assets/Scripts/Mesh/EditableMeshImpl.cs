@@ -27,6 +27,7 @@ namespace Meshes
         public List<Face> Faces;
 
         private int _vertexCountInternal;
+        private int _indexCountInternal;
 
         private static readonly int defaultMaxVerts = ushort.MaxValue;
         private static readonly int defaultMaxTris = ushort.MaxValue / 3;
@@ -305,6 +306,13 @@ namespace Meshes
                 i = vertex.OptimizeIndices(i);
             }
             _vertexCountInternal = i;
+
+            i = 0;
+            foreach (Face face in Faces)
+            {
+                i += face.TriangleCount;
+            }
+            _indexCountInternal =  i;
         }
 
         /// <summary>
@@ -313,11 +321,25 @@ namespace Meshes
         public void WriteAllToMesh()
         {
             OptimizeIndices();
-            Stream0[] vertexStream = Vertices.SelectMany(vertex => vertex.ToStream()).ToArray();
-            mesh.SetVertexBufferData<Stream0>(vertexStream, 0, 0, vertexStream.Length,
+            //Stream0[] vertexStream = new Stream0[_vertexCountInternal];
+            NativeArray<Stream0> vertexStream = new NativeArray<Stream0>(_vertexCountInternal, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            foreach (Vertex vertex in Vertices)
+            {
+                vertex.WriteToStream(ref vertexStream);
+            }
+            //Stream0[] vertexStream = Vertices.SelectMany(vertex => vertex.ToStream()).ToArray();
+            mesh.SetVertexBufferData<Stream0>(vertexStream, 0, 0, _vertexCountInternal,
                 flags: MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds);
-            int3[] triangleStream = Faces.SelectMany(face => face.ToStream()).ToArray();
-            mesh.SetIndexBufferData<int3>(triangleStream, 0, 0, triangleStream.Length,
+            vertexStream.Dispose();
+
+            NativeArray<int3> indexStream = new NativeArray<int3>(_indexCountInternal, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            int i = 0;
+            foreach(Face face in Faces)
+            {
+                i = face.WriteToStream(ref indexStream, i);
+            }
+            //int3[] triangleStream = Faces.SelectMany(face => face.ToStream()).ToArray();
+            mesh.SetIndexBufferData<int3>(indexStream, 0, 0, _indexCountInternal,
                 flags: MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds);
         }
 

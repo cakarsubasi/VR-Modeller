@@ -72,15 +72,29 @@ namespace Meshes
             var stream = new Stream0[faces.Count];
             for (int i = 0; i < faces.Count; ++i)
             {
-                stream[i] = new Stream0
-                {
-                    position = Position,
-                    normal = Normal,
-                    tangent = Tangent,
-                    texCoord0 = faces[i].face.GetUVof(this),
-                };
+                stream[i].position = Position;
+                stream[i].normal = Normal;
+                stream[i].tangent = Tangent;
+                stream[i].texCoord0 = faces[i].face.GetUVof(this);
             }
             return stream;
+        }
+
+        /// <summary>
+        /// Write the vertex to a vertex buffer without allocations
+        /// </summary>
+        /// <param name="stream"></param>
+        public void WriteToStream(ref NativeArray<Stream0> stream)
+        {
+            Stream0 temp = default;
+            temp.position = Position;
+            temp.normal = Normal;
+            temp.tangent = Tangent;
+            for (int i = 0; i < faces.Count; ++i)
+            {
+                temp.texCoord0 = faces[i].face.GetUVof(this);
+                stream[faces[i].index] = temp;
+            }
         }
 
         public int[] Indices()
@@ -101,7 +115,14 @@ namespace Meshes
 
         public int GetIndex(Face face)
         {
-            return faces.Find(structure => structure.face == face).index;
+            foreach (FaceIndex faceIndex in faces)
+            {
+                if (faceIndex.face == face)
+                {
+                    return faceIndex.index;
+                }
+            }
+            return -1;
         }
 
         public override string ToString()
@@ -146,7 +167,8 @@ namespace Meshes
         }
 
         private List<VertexCoordinate> vertices = new List<VertexCoordinate>(4);
-        public List<Vertex> Vertices => vertices.Select(verts => verts.vertex).ToList();
+        public int TriangleCount => GetTriangleCount();
+        
         // public List<Edge> edges = new List<Edge>(4);
 
         private float3 position;
@@ -175,6 +197,17 @@ namespace Meshes
             }
             RecalculateNormal();
             RecalculatePosition();
+        }
+
+        public int GetTriangleCount()
+        {
+            if (vertices.Count < 3)
+            {
+                return 0;
+            } else
+            {
+                return vertices.Count - 2;
+            }
         }
 
         public void RecalculateNormal()
@@ -206,35 +239,39 @@ namespace Meshes
             throw new NotImplementedException { };
         }
 
+        /// <summary>
+        /// Get uv0 associated with a certain vertex
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <returns></returns>
         public float2 GetUVof(Vertex vertex)
         {
-            return vertices[Vertices.IndexOf(vertex)].uv0;
-            //throw new NotImplementedException { };
+            foreach (var vert in vertices)
+            {
+                if (vert.vertex == vertex)
+                {
+                    return vert.uv0;
+                }
+            }
+            return float2(0f, 0f);
         }
-
-
 
         /// <summary>
-        /// Triangulate the face and return the triangle indices
+        /// Write the triangle indices to a native array without allocations
         /// </summary>
-        /// <returns>Triangle indices</returns>
-        public int3[] ToStream()
+        /// <param name="array"></param>
+        /// <param name="startIndex"></param>
+        /// <returns></returns>
+        public int WriteToStream(ref NativeArray<int3> array, int startIndex)
         {
-            if (vertices.Count < 3)
+            int triangles = TriangleCount;
+            var ind0 = vertices[0].vertex.GetIndex(this);
+            for (int i = 0; i < triangles; i++)
             {
-                return empty;
+                array[startIndex + i] = int3(ind0, vertices[i + 1].vertex.GetIndex(this), vertices[i + 2].vertex.GetIndex(this));
             }
-            else
-            {
-                var indices = new int3[vertices.Count - 2];
-                var ind0 = vertices[0].vertex.GetIndex(this);
-                for (int i = 0; i < vertices.Count - 2; i++)
-                {
-                    indices[i] = int3(ind0, vertices[i + 1].vertex.GetIndex(this), vertices[i + 2].vertex.GetIndex(this));
-                }
-                return indices;
-            }
-        }
+            return startIndex + triangles;
+        } 
 
         public override string ToString()
         {
