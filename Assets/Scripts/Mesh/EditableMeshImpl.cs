@@ -1,5 +1,6 @@
 ﻿using Unity.Collections;
 using Unity.Mathematics;
+using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Rendering;
 using System;
@@ -27,7 +28,9 @@ namespace Meshes
         public List<Face> Faces;
 
         private int _vertexCountInternal;
+        private int vertexCountMaximum;
         private int _indexCountInternal;
+        private int indexCountMaximum;
 
         private static readonly int defaultMaxVerts = ushort.MaxValue;
         private static readonly int defaultMaxTris = ushort.MaxValue / 3;
@@ -95,6 +98,9 @@ namespace Meshes
             Vertices = new List<Vertex>(defaultMaxVerts);
             Faces = new List<Face>(defaultMaxTris / 3);
 
+            vertexCountMaximum = defaultMaxVerts;
+            indexCountMaximum = defaultMaxTris * 3;
+
             _vertexCountInternal = 0;
             TriangleCount = 0;
 
@@ -109,6 +115,14 @@ namespace Meshes
             {
                 triangles[i] = Triangle.degenerate;
             }
+        }
+
+        private void ResizeInternalBuffers(int currentVertexCount, int currentIndexCount)
+        {
+            // set up mesh again
+
+            // if the required vertices are too large, give up
+            throw new NotImplementedException { };
         }
 
         /// <summary>
@@ -142,150 +156,11 @@ namespace Meshes
                 int ind0 = vertexmap[triangles[i]];
                 int ind1 = vertexmap[triangles[i + 1]];
                 int ind2 = vertexmap[triangles[i + 2]];
-                float2[] uv0s = { uvs[triangles[i]], uvs[triangles[i + 1]], uvs[triangles[i + 2]]};
+                TriangleUVs uv0s = new TriangleUVs(uvs[triangles[i]], uvs[triangles[i + 1]], uvs[triangles[i + 2]]);
                 AddTriangle(int3(ind0, ind1, ind2), uv0s);
             }
             WriteAllToMesh();
             return this.mesh;
-        }
-
-        /// <summary>
-        /// Move a vertex of the given index to the specified position
-        /// </summary>
-        /// <param name="index">index of the vertex to move</param>
-        /// <param name="position">position to move to</param>
-        public void MoveVertex(int index, float3 position)
-        {
-            // need to abstract real index
-            Vertices[index].Position = position;
-            //_vertices[index].position = position;
-            Stream0[] stream = Vertices[index].ToStream();
-            int[] indices = Vertices[index].Indices();
-            NativeArray<Stream0> buffer = new(1, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
-            for (int i = 0; i < indices.Length; ++i)
-            {
-                buffer[0] = stream[i];
-                mesh.SetVertexBufferData<Stream0>(buffer, 0, indices[i], 1);
-            }
-            buffer.Dispose();
-        }
-
-        /// <summary>
-        /// Add Vertex to the given position
-        /// </summary>
-        /// <param name="position">position of the vertex</param>
-        /// <returns>index of the vertex</returns>
-        public int AddVertex(float3 position)
-        {
-            return AddVertex(position, normal: back(), tangent: float4(1f, 0f, 0f, -1f), float2(0f, 0f));
-        }
-
-        public int AddVertexPossiblyOverlapping(float3 position, float3 normal, float4 tangent, float2 texCoord0)
-        {
-            IndexedVertex vertMaybe = FindByPosition(position);
-            if (vertMaybe.vertex == null)
-            {
-                return AddVertex(position, normal, tangent, texCoord0);
-            }
-            else
-            {
-                return vertMaybe.index;
-            }
-        }
-
-
-        /// <summary>
-        /// Add Vertex to the given position with the given normal and tangent
-        /// </summary>
-        /// <param name="position">position to add to</param>
-        /// <param name="normal">normal of the vertex</param>
-        /// <param name="tangent">tangent of the vertex</param>
-        /// <param name="texCoord0">UV coordinate of the vertex</param>
-        /// <returns>index of the vertex</returns>
-        public int AddVertex(float3 position, float3 normal, float4 tangent, float2 texCoord0)
-        {
-            var vert = Vertex.Create(position, normal, tangent, texCoord0, _vertexCountInternal);
-            Vertices.Add(vert);
-            return VertexCount - 1;
-        }
-
-        public int AddVertexOn(int index)
-        {
-            return AddVertex(Vertices[index].Position);
-        }
-
-        public enum TransformType
-        {
-            BoundingBoxCenter,
-            IndividualCenter,
-            // ...
-        }
-
-        public void TransformVertices(List<int> vertices, Matrix4x4 transform, TransformType type)
-        {
-            throw new NotImplementedException { };
-        }
-
-
-        public void SetFace()
-        {
-            throw new NotImplementedException { };
-        }
-
-        /// <summary>
-        /// Add a quad by creating four vertices
-        /// </summary>
-        /// <param name="pos1"></param>
-        /// <param name="pos2"></param>
-        /// <param name="pos3"></param>
-        /// <param name="pos4"></param>
-        public void AddFace(float3 pos1, float3 pos2, float3 pos3, float3 pos4)
-        {
-            var indices = new int4
-            {
-                x = AddVertex(pos1),
-                y = AddVertex(pos2),
-                z = AddVertex(pos3),
-                w = AddVertex(pos4),
-            };
-            AddFace(indices);
-        }
-
-        /// <summary>
-        /// Add a quad between the given four vertices
-        /// </summary>
-        /// <param name="vertices"></param>
-        public void AddFace(int4 vertices, float2[]? uv0s = null)
-        {
-            List<Vertex> face_verts = new()
-            {
-                this.Vertices[vertices.x],
-                this.Vertices[vertices.y],
-                this.Vertices[vertices.z],
-                this.Vertices[vertices.w]
-            };
-            if (uv0s == null)
-            {
-                uv0s = new float2[4];
-            }
-            var face = new Face(face_verts, uv0s.ToList());
-            Faces.Add(face);
-        }
-
-        public void AddTriangle(int3 vertices, float2[]? uv0s = null)
-        {
-            List<Vertex> face_verts = new()
-            {
-                this.Vertices[vertices.x],
-                this.Vertices[vertices.y],
-                this.Vertices[vertices.z]
-            };
-            if (uv0s == null)
-            {
-                uv0s = new float2[3];
-            }
-            var face = new Face(face_verts, uv0s.ToList());
-            Faces.Add(face);
         }
 
         public void Extrude()
@@ -320,25 +195,28 @@ namespace Meshes
         /// </summary>
         public void WriteAllToMesh()
         {
+            // figure out the indices
             OptimizeIndices();
-            //Stream0[] vertexStream = new Stream0[_vertexCountInternal];
+            // resize the vertex and index buffers if needed
+            if (_vertexCountInternal > vertexCountMaximum || _indexCountInternal > indexCountMaximum)
+            {
+                ResizeInternalBuffers(_vertexCountInternal, _indexCountInternal);
+            }
+            // write vertices 
             NativeArray<Stream0> vertexStream = new NativeArray<Stream0>(_vertexCountInternal, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             foreach (Vertex vertex in Vertices)
             {
                 vertex.WriteToStream(ref vertexStream);
             }
-            //Stream0[] vertexStream = Vertices.SelectMany(vertex => vertex.ToStream()).ToArray();
             mesh.SetVertexBufferData<Stream0>(vertexStream, 0, 0, _vertexCountInternal,
                 flags: MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds);
             vertexStream.Dispose();
-
             NativeArray<int3> indexStream = new NativeArray<int3>(_indexCountInternal, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             int i = 0;
             foreach(Face face in Faces)
             {
                 i = face.WriteToStream(ref indexStream, i);
             }
-            //int3[] triangleStream = Faces.SelectMany(face => face.ToStream()).ToArray();
             mesh.SetIndexBufferData<int3>(indexStream, 0, 0, _indexCountInternal,
                 flags: MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds);
         }
@@ -399,24 +277,6 @@ namespace Meshes
         public void RecalculateBounds()
         {
             throw new NotImplementedException { };
-        }
-
-        private IndexedVertex FindByPosition(float3 position)
-        {
-            var idx = Vertices.FindIndex(vertex => vertex.Position.Equals(position));
-            Vertex? vertex = null;
-            if (idx != -1)
-                vertex = Vertices[idx];
-            return new IndexedVertex
-            {
-                index = idx,
-                vertex = vertex
-            };
-        }
-
-        private List<Vertex> FindAllByPosition(float3 position)
-        {
-            return Vertices.FindAll(vert => vert.Position.Equals(position)).ToList();
         }
 
         public override string ToString()

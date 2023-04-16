@@ -30,7 +30,6 @@ namespace Meshes
             position = float3(0f, 0f, 0f),
             normal = float3(0f, 0f, 0f),
             tangent = float4(0f, 0f, 0f, 0f),
-
         };
     }
 
@@ -57,7 +56,7 @@ namespace Meshes
         private List<FaceIndex> faces = new List<FaceIndex>();
         // public List<Edge> edges = new List<Edge>();
 
-        public static Vertex Create(float3 position, float3 normal, float4 tangent, float2 texCoord0, int index = 0)
+        public static Vertex Create(float3 position, float3 normal, float4 tangent)
         {
             return new Vertex
             {
@@ -186,14 +185,90 @@ namespace Meshes
             normal = position = Unity.Mathematics.float3.zero;
         }
 
+        /// <summary>
+        /// Arbitrary vertex count constructor
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <param name="uv0s"></param>
         public Face(List<Vertex> vertices, List<float2> uv0s)
         {
-            normal = position = Unity.Mathematics.float3.zero;
-            //this.vertices = vertices.Select(vertex => new VertexCoordinate { vertex = vertex }).ToList();
+            if (vertices.Count != uv0s.Count)
+            {
+                throw new ArgumentException("vertices and uv0s must have the same length");
+            }
+
+            normal = position = default;
             this.vertices = vertices.Zip(uv0s, (vertex, uv0) => new VertexCoordinate { vertex = vertex, uv0 = uv0 }).ToList();
             foreach (var vert in vertices)
             {
                 vert.AddFaceChecked(this);
+            }
+            RecalculateNormal();
+            RecalculatePosition();
+        }
+
+        /// <summary>
+        /// Construct from a triangle
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <param name="uv0s"></param>
+        public Face(TriangleVerts vertices, TriangleUVs uv0s = default)
+        {
+            normal = position = default;
+            this.vertices.Add(new VertexCoordinate
+            {
+                vertex = vertices.vert0,
+                uv0 = uv0s.uv0_0
+            });
+            this.vertices.Add(new VertexCoordinate
+            {
+                vertex = vertices.vert1,
+                uv0 = uv0s.uv0_1
+            });
+            this.vertices.Add(new VertexCoordinate
+            {
+                vertex = vertices.vert2,
+                uv0 = uv0s.uv0_2
+            });
+            foreach (var vert in this.vertices)
+            {
+                vert.vertex.AddFaceChecked(this);
+            }
+            RecalculateNormal();
+            RecalculatePosition();
+        }
+
+        /// <summary>
+        /// Construct from a quad
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <param name="uv0s"></param>
+        public Face(QuadVerts vertices, QuadUVs uv0s = default)
+        {
+            normal = position = default;
+            this.vertices.Add(new VertexCoordinate
+            {
+                vertex = vertices.vert0,
+                uv0 = uv0s.uv0_0
+            });
+            this.vertices.Add(new VertexCoordinate
+            {
+                vertex = vertices.vert1,
+                uv0 = uv0s.uv0_1
+            });
+            this.vertices.Add(new VertexCoordinate
+            {
+                vertex = vertices.vert2,
+                uv0 = uv0s.uv0_2
+            });
+            this.vertices.Add(new VertexCoordinate
+            {
+                vertex = vertices.vert3,
+                uv0 = uv0s.uv0_3
+            });
+            foreach (var vert in this.vertices)
+            {
+                vert.vertex.AddFaceChecked(this);
             }
             RecalculateNormal();
             RecalculatePosition();
