@@ -90,7 +90,7 @@ namespace Meshes
         /// <returns>index of the vertex</returns>
         public int AddVertex(float3 position, float3 normal, float4 tangent, float2 texCoord0)
         {
-            var vert = Vertex.Create(position, normal, tangent);
+            var vert = Vertex.Dangling(position, normal, tangent);
             Vertices.Add(vert);
             return VertexCount - 1;
         }

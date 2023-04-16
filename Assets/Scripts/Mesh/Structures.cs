@@ -54,9 +54,9 @@ namespace Meshes
         }
 
         private List<FaceIndex> faces = new List<FaceIndex>();
-        // public List<Edge> edges = new List<Edge>();
+        public List<Edge> edges = new List<Edge>();
 
-        public static Vertex Create(float3 position, float3 normal, float4 tangent)
+        public static Vertex Dangling(float3 position, float3 normal, float4 tangent)
         {
             return new Vertex
             {
@@ -64,6 +64,22 @@ namespace Meshes
                 Normal = normal,
                 Tangent = tangent,
             };
+        }
+
+        public static Vertex FromOtherConnected(Vertex other)
+        {
+            Vertex self = new Vertex
+            {
+                Position = other.Position,
+                Normal = other.Normal,
+                Tangent = other.Tangent,
+            };
+
+            Edge edge = new Edge(other, self);
+            self.edges.Add(edge);
+            other.edges.Add(edge);
+
+            return self;
         }
 
         public Stream0[] ToStream()
@@ -139,6 +155,43 @@ namespace Meshes
                 Debug.Log($"Tried adding existing face: {face}");
             }
         }
+
+        /// <summary>
+        /// Check if there is an Edge between this vertex and the other vertex. 
+        /// Create a new Edge if there isn't an Edge and then return the Edge.
+        /// </summary>
+        /// <param name="vertex">vertex to connect to</param>
+        /// <returns></returns>
+        internal Edge AddEdgeCheckedFromVertex(Vertex other)
+        {
+            foreach (Edge edge in edges)
+            {
+                if (edge.IsBetween(this, other))
+                {
+                    return edge;
+                }
+            }
+            return AddEdgeUncheckedFromVertex(other);
+        }
+
+        internal void AddEdgeChecked(Edge edge)
+        {
+            foreach (Edge potentialDuplicate in edges)
+            {
+                if (potentialDuplicate == edge)
+                {
+                    return;
+                }
+            }
+            edges.Add(edge);
+        }
+
+        internal Edge AddEdgeUncheckedFromVertex(Vertex other)
+        {
+            Edge newEdge = new Edge(this, other);
+            edges.Add(newEdge);
+            return newEdge;
+        }
     }
 
     public class Edge
@@ -146,12 +199,37 @@ namespace Meshes
         public Vertex one;
         public Vertex two;
 
-        public List<Face> faces = new List<Face>(2);
+        public float3 Position => (one.Position + two.Position) / 2.0f;
+        public float3 Normal => (one.Normal + two.Normal) / 2.0f;
+        public float Length => distance(one.Position, two.Position);
 
         public Edge(Vertex one, Vertex two)
         {
+            if (one == two)
+            {
+                throw new ArgumentException("Vertices must be unique");
+            }
             this.one = one;
             this.two = two;
+        }
+
+        public Boolean IsBetween(Vertex vertex1, Vertex vertex2)
+        {
+            return ((one == vertex1 && two == vertex2) || (one == vertex2 && two == vertex1));
+        }
+
+        public Vertex Other(Vertex vertex)
+        {
+            if (one == vertex)
+            {
+                return two;
+            } else if (two == vertex)
+            {
+                return one;
+            } else
+            {
+                throw new ArgumentException("Given vertex must be in the edge");
+            }
         }
     }
 
@@ -166,9 +244,8 @@ namespace Meshes
         }
 
         private List<VertexCoordinate> vertices = new List<VertexCoordinate>(4);
+        public List<Edge> edges = new List<Edge>(4);
         public int TriangleCount => GetTriangleCount();
-        
-        // public List<Edge> edges = new List<Edge>(4);
 
         private float3 position;
         private float3 normal;
@@ -203,8 +280,7 @@ namespace Meshes
             {
                 vert.AddFaceChecked(this);
             }
-            RecalculateNormal();
-            RecalculatePosition();
+            FinalizeSetup();
         }
 
         /// <summary>
@@ -234,8 +310,7 @@ namespace Meshes
             {
                 vert.vertex.AddFaceChecked(this);
             }
-            RecalculateNormal();
-            RecalculatePosition();
+            FinalizeSetup();
         }
 
         /// <summary>
@@ -270,8 +345,25 @@ namespace Meshes
             {
                 vert.vertex.AddFaceChecked(this);
             }
+            FinalizeSetup();
+        }
+
+        private void FinalizeSetup()
+        {
+            GenerateEdges();
             RecalculateNormal();
             RecalculatePosition();
+        }
+
+        private void GenerateEdges()
+        {
+            for (int i = 0; i < vertices.Count; ++i)
+            {
+                Vertex first = vertices[i].vertex;
+                Vertex second = vertices[(i + 1) % vertices.Count].vertex;
+                Edge edge = first.AddEdgeCheckedFromVertex(second);
+                edges.Add(edge);
+            }
         }
 
         public int GetTriangleCount()

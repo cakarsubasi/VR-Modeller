@@ -19,6 +19,11 @@ namespace Meshes
             throw new NotImplementedException { };
         }
 
+        public void SelectShortestPath(Vertex vertex1, Vertex vertex2)
+        {
+            throw new NotImplementedException { };
+        }
+
         public void SelectFacesFromVertices(in List<Vertex> vertices, out List<Face> faces)
         {
             throw new NotImplementedException { };
