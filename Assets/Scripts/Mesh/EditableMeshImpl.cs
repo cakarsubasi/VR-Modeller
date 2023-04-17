@@ -144,28 +144,22 @@ namespace Meshes
             var uvs = mesh.uv;
             Setup(this.mesh);
 
-            int[] vertexmap = new int[vertices.Length];
+            Vertex[] vertexmap = new Vertex[vertices.Length];
 
             for (int i = 0; i < vertices.Length; ++i)
             {
-                int trueIndex = AddVertexPossiblyOverlapping(vertices[i], normals[i], tangents[i], uvs[i]);
-                vertexmap[i] = trueIndex;
+                vertexmap[i] = AddVertexPossiblyOverlapping(vertices[i], normals[i], tangents[i]);
             }
             for (int i = 0; i < triangles.Length; i += 3)
             {
-                int ind0 = vertexmap[triangles[i]];
-                int ind1 = vertexmap[triangles[i + 1]];
-                int ind2 = vertexmap[triangles[i + 2]];
-                TriangleUVs uv0s = new TriangleUVs(uvs[triangles[i]], uvs[triangles[i + 1]], uvs[triangles[i + 2]]);
-                AddTriangle(int3(ind0, ind1, ind2), uv0s);
+                TriangleVerts verts = new(vertexmap[triangles[i]], vertexmap[triangles[i + 1]], vertexmap[triangles[i + 2]]);
+                TriangleUVs uv0s = new(uvs[triangles[i]], uvs[triangles[i + 1]], uvs[triangles[i + 2]]);
+                AddTriangle(verts, uv0s);
             }
+            RecalculateNormals();
             WriteAllToMesh();
+            RecalculateBounds();
             return this.mesh;
-        }
-
-        public void Extrude()
-        {
-            throw new NotImplementedException { };
         }
 
         /// <summary>
@@ -276,7 +270,7 @@ namespace Meshes
 
         public void RecalculateBounds()
         {
-            throw new NotImplementedException { };
+            Mesh.RecalculateBounds();
         }
 
         public override string ToString()

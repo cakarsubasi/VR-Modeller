@@ -43,8 +43,9 @@ namespace Meshes
 
     public class Vertex
     {
-        public float3 Position;
-        public float3 Normal;
+        public float3 Position { get; set; }
+        public float3 Normal { get; set; }
+        // is the tangent even needed?
         public float4 Tangent;
 
         private struct FaceIndex
@@ -56,7 +57,15 @@ namespace Meshes
         private List<FaceIndex> faces = new List<FaceIndex>();
         public List<Edge> edges = new List<Edge>();
 
-        public static Vertex Dangling(float3 position, float3 normal, float4 tangent)
+        /// <summary>
+        /// Create an unconnected Vertex at the given position with the optional
+        /// normal and tangent
+        /// </summary>
+        /// <param name="position">position</param>
+        /// <param name="normal">normal</param>
+        /// <param name="tangent">tangent</param>
+        /// <returns></returns>
+        internal static Vertex Dangling(float3 position, float3 normal = default, float4 tangent = default)
         {
             return new Vertex
             {
@@ -66,7 +75,7 @@ namespace Meshes
             };
         }
 
-        public static Vertex FromOtherConnected(Vertex other)
+        public static Vertex FromOtherVertexConnected(Vertex other)
         {
             Vertex self = new Vertex
             {
@@ -138,6 +147,19 @@ namespace Meshes
                 }
             }
             return -1;
+        }
+
+        public void RecalculateNormal()
+        {
+            Normal = 0;
+            if (faces.Count > 0)
+            {
+                foreach (FaceIndex faceIndex in faces)
+                {
+                    Normal += faceIndex.face.Normal;
+                }
+                Normal /= faces.Count;
+            }
         }
 
         public override string ToString()
@@ -366,17 +388,6 @@ namespace Meshes
             }
         }
 
-        public int GetTriangleCount()
-        {
-            if (vertices.Count < 3)
-            {
-                return 0;
-            } else
-            {
-                return vertices.Count - 2;
-            }
-        }
-
         public void RecalculateNormal()
         {
             if (vertices.Count < 3)
@@ -399,6 +410,32 @@ namespace Meshes
                 position += vert.Position;
             }
             position /= vertices.Count;
+        }
+
+        public int GetTriangleCount()
+        {
+            if (vertices.Count < 3)
+            {
+                return 0;
+            }
+            else
+            {
+                return vertices.Count - 2;
+            }
+        }
+
+        
+        /// <summary>
+        /// Flip the face by reversing the order of vertices
+        /// </summary>
+        /// <param name="flipNormal">Whether to also flip the normal immediately</param>
+        public void FlipFace(bool flipNormal)
+        {
+            vertices.Reverse();
+            if (flipNormal)
+            {
+                normal = -Normal;
+            }
         }
 
         public void AddVertex()

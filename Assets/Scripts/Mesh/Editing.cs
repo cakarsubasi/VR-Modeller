@@ -41,10 +41,48 @@ namespace Meshes
             throw new NotImplementedException { };
         }
 
-
         public void SetFace()
         {
             throw new NotImplementedException { };
         }
+
+        /// <summary>
+        /// Recalculate normals
+        /// </summary>
+        public void RecalculateNormals()
+        {
+            foreach (Face face in Faces)
+            {
+                face.RecalculateNormal();
+            }
+            // vertices derive their normals from the faces
+            // so their normals have to be calculated after
+            foreach (Vertex vertex in Vertices)
+            {
+                vertex.RecalculateNormal();
+            }
+        }
+
+        /// <summary>
+        /// Flip normals
+        /// </summary>
+        public void FlipNormals()
+        {
+            foreach (Face face in Faces)
+            {
+                face.FlipFace(true);
+            }
+            foreach (Vertex vertex in Vertices)
+            {
+                vertex.Normal = -vertex.Normal;
+            }
+        }
+
+
+        public void RecalculateTangents()
+        {
+            throw new NotImplementedException { };
+        }
+
     }
 }

@@ -47,19 +47,29 @@ namespace Meshes
             throw new NotImplementedException { };
         }
 
-        private IndexedVertex FindByPosition(float3 position)
+        /// <summary>
+        /// Find a Vertex in the given position and return the first one if it exists
+        /// </summary>
+        /// <param name="position">position</param>
+        /// <returns>The Vertex</returns>
+        private Vertex? FindByPosition(float3 position)
         {
-            var idx = Vertices.FindIndex(vertex => vertex.Position.Equals(position));
-            Vertex? vertex = null;
-            if (idx != -1)
-                vertex = Vertices[idx];
-            return new IndexedVertex
+            foreach (Vertex vertex in Vertices)
             {
-                index = idx,
-                vertex = vertex
-            };
+                if (vertex.Position.Equals(position))
+                {
+                    return vertex;
+                }
+            }
+            return null;
         }
 
+        /// <summary>
+        /// Find all Vertices in a given position and return them in a list. May be useful while
+        /// eliminating duplicates.
+        /// </summary>
+        /// <param name="position">position</param>
+        /// <returns>List of vertices</returns>
         private List<Vertex> FindAllByPosition(float3 position)
         {
             return Vertices.FindAll(vert => vert.Position.Equals(position)).ToList();

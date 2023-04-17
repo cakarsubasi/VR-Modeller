@@ -65,6 +65,30 @@ public class MeshesTestScript
 
     }
 
+    [Test]
+    public void TestExtrudeOneVertex()
+    {
+
+    }
+
+    [Test]
+    public void TestExtrudeOneEdge()
+    {
+
+    }
+
+    /// <summary>
+    /// Extrude one face from a quad to create a cube.
+    /// <br>There is some subtletly involved in this test as the 
+    /// normals have to face the same direction across the mesh when the extrusion is done
+    /// </br>
+    /// </summary>
+    [Test]
+    public void TestExtrudeOneFace()
+    {
+
+    }
+
     // A Test behaves as an ordinary method
     [Test]
     public void NewTestScriptSimplePasses()
