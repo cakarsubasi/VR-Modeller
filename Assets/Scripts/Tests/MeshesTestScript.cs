@@ -57,6 +57,7 @@ public class MeshesTestScript
         {
             Assert.AreEqual(float3(0f, 0f, 1f), vertex.Normal);
             Assert.Contains(vertex, face.Vertices);
+            Assert.AreEqual(2, vertex.EdgeCount);
         }
     }
 
@@ -86,6 +87,7 @@ public class MeshesTestScript
         {
             Assert.AreEqual(float3(0f, 0f, 1f), vertex.Normal);
             Assert.Contains(vertex, face.Vertices);
+            Assert.AreEqual(2, vertex.EdgeCount);
         }
     }
 
@@ -330,9 +332,9 @@ public class MeshesTestScript
         Assert.AreEqual(1, mesh.FaceCount);
         Assert.AreEqual(3, mesh.VertexCount);
 
-        Assert.AreEqual(vert1.edges.Count, 2);
-        Assert.AreEqual(vert3.edges.Count, 2);
-        Assert.AreEqual(vert4.edges.Count, 2);
+        Assert.AreEqual(2, vert1.edges.Count);
+        Assert.AreEqual(2, vert3.edges.Count);
+        Assert.AreEqual(2, vert4.edges.Count);
     }
 
     /// <summary>

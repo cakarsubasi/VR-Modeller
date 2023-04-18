@@ -56,14 +56,19 @@ namespace Meshes
         // is the tangent even needed?
         public float4 Tangent;
 
-        private struct FaceIndex
+        public bool Alive = true;
+
+        internal struct FaceIndex
         {
             public Face face;
             public int index;
         }
 
-        private List<FaceIndex> faces = new List<FaceIndex>(4);
+        internal List<FaceIndex> faces = new List<FaceIndex>(4);
         public List<Edge> edges = new List<Edge>(4);
+
+        public int FaceCount => faces.Count;
+        public int EdgeCount => edges.Count;
 
         /// <summary>
         /// Create an unconnected Vertex at the given position with the optional
@@ -295,7 +300,31 @@ namespace Meshes
         {
             Edge newEdge = new Edge(this, other);
             edges.Add(newEdge);
+            other.edges.Add(newEdge);
             return newEdge;
+        }
+
+        internal void Delete()
+        {
+            // clear edges first
+            foreach(Edge edge in edges)
+            {
+                edge.Delete();
+                edge.Other(this).RemoveEdge(edge);
+            }
+            edges.Clear();
+
+            foreach (FaceIndex face in faces)
+            {
+                face.face.Clear();
+            }
+            faces.Clear();
+            Alive = false;
+        }
+
+        internal void RemoveEdge(Edge edge)
+        {
+            edges.Remove(edge);
         }
 
         public override string ToString()
@@ -308,6 +337,8 @@ namespace Meshes
     {
         public Vertex one;
         public Vertex two;
+
+        public bool Alive = true;
 
         public float3 Position => (one.Position + two.Position) / 2.0f;
         public float3 Normal => (one.Normal + two.Normal) / 2.0f;
@@ -348,6 +379,11 @@ namespace Meshes
             one.Position += relative;
             two.Position += relative;
         }
+
+        public void Delete()
+        {
+            Alive = false;
+        }
     }
 
     public enum ShadingType
@@ -369,12 +405,14 @@ namespace Meshes
         private readonly List<VertexCoordinate> vertices;
         public List<Vertex> Vertices => vertices.Select(item => item.vertex).ToList();
 
-        public readonly List<Edge> edges; // = new List<Edge>(4);
+        public readonly List<Edge> edges;
 
         public int TriangleCount => GetTriangleCount();
 
         private float3 position;
         private float3 normal;
+
+        public bool Alive = true;
 
         private static readonly int3[] empty = new int3[0];
         private static readonly int3[] degenerate = { int3(0, 0, 0) };
@@ -644,6 +682,18 @@ namespace Meshes
                 }
             }
             return float2(0f, 0f);
+        }
+
+        internal void Delete()
+        {
+            throw new NotImplementedException { };
+        }
+
+        internal void Clear()
+        {
+            edges.Clear();
+            vertices.Clear();
+            Alive = false;
         }
 
         /// <summary>

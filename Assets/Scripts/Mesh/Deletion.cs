@@ -13,13 +13,23 @@ namespace Meshes
         /// <param name="vertex">Vertex to dissolve</param>
         public void DissolveVertex(Vertex vertex)
         {
-            // delete the vertex
+            var faces = vertex.faces;
 
-            // shift the vertex buffer left
+            throw new NotImplementedException { };
+        }
 
-            // update the index buffer values
+        private Face MergeFaces(List<Face> faces, Vertex mergeOn)
+        {
+            List<Vertex> newFaceVerts = new List<Vertex>(9);
+            foreach (Face face in faces)
+            {
+                var verts = face.Vertices;
+                verts.Remove(mergeOn);
+                foreach (Vertex vert in verts)
+                {
 
-            // copy all of the updated values to the 
+                }
+            }
 
             throw new NotImplementedException { };
         }
@@ -30,7 +40,8 @@ namespace Meshes
         /// <param name="vertex">Vertex to delete</param>
         public void DeleteVertex(Vertex vertex)
         {
-            throw new NotImplementedException { };
+            vertex.Delete();
+            ExecuteDeletion();
         }
 
         /// <summary>
@@ -68,10 +79,8 @@ namespace Meshes
         /// </summary>
         private void ExecuteDeletion()
         {
-            //Faces.RemoveAll(face => face.Alive == false);
-            //Vertices.RemoveAll(vertex => vertex.Alive == false);
-
-            throw new NotImplementedException { };
+            Faces.RemoveAll(face => face.Alive == false);
+            Vertices.RemoveAll(vertex => vertex.Alive == false);
         }
     }
 

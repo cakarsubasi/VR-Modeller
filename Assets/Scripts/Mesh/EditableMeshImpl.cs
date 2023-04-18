@@ -207,6 +207,8 @@ namespace Meshes
         /// </summary>
         public void WriteAllToMesh()
         {
+            int previousVertexCount = _vertexCountInternal;
+            int previousIndexCount = _indexCountInternal;
             // figure out the indices
             OptimizeIndices();
             // resize the vertex and index buffers if needed
@@ -231,6 +233,9 @@ namespace Meshes
             }
             mesh.SetIndexBufferData<int3>(indexStream, 0, 0, _indexCountInternal,
                 flags: MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds);
+
+            // If any deletions have occurred, zero out the remainder
+            DeletePadding(_vertexCountInternal, previousVertexCount, _indexCountInternal, previousIndexCount);
         }
 
         public void UnsafeWriteVertexToMesh(Vertex vertex)
