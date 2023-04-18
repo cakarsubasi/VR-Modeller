@@ -162,6 +162,14 @@ namespace Meshes
             return this.mesh;
         }
 
+        public void Combine(EditableMeshImpl other)
+        {
+            Vertices.AddRange(other.Vertices);
+            Faces.AddRange(other.Faces);
+            other.Vertices.Clear();
+            other.Faces.Clear();
+        }
+
         /// <summary>
         /// Optimize the in memory representation of the mesh for rendering.
         /// <br></br>
@@ -215,9 +223,9 @@ namespace Meshes
                 flags: MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds);
         }
 
-        public void UnsafeWriteVertexToMesh(int index)
+        public void UnsafeWriteVertexToMesh(Vertex vertex)
         {
-            UnsafeWriteVerticesToMesh(new List<Vertex>() { Vertices[index] });
+            UnsafeWriteVerticesToMesh(new List<Vertex>() { vertex });
         }
 
         /// <summary>
@@ -228,18 +236,19 @@ namespace Meshes
         /// <param name="verts">vertices to write</param>
         public void UnsafeWriteVerticesToMesh(List<Vertex> verts)
         {
+            NativeArray<Stream0> buffer = new(1, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             foreach (var vert in verts)
             {
                 Stream0[] stream = vert.ToStream();
                 int[] indices = vert.Indices();
-                NativeArray<Stream0> buffer = new(1, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+
                 for (int i = 0; i < indices.Length; ++i)
                 {
                     buffer[0] = stream[i];
                     Mesh.SetVertexBufferData<Stream0>(buffer, 0, indices[i], 1);
                 }
-                buffer.Dispose();
             }
+            buffer.Dispose();
         }
 
         private void DeletePadding(int vertexStart, int vertexEnd, int triangleStart, int triangleEnd)

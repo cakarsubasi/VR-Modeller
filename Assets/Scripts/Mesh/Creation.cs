@@ -9,6 +9,7 @@ using static Unity.Mathematics.math;
 
 namespace Meshes
 {
+
     /// <summary>
     /// struct to pass three vertex references
     /// </summary>
@@ -259,7 +260,28 @@ namespace Meshes
             return face;
         }
 
-        public void Extrude()
+        public struct ExtrusionResult
+        {
+            public List<Vertex> vertices;
+            public List<Face> faces;
+        }
+
+        public Vertex Extrude(Vertex input)
+        {
+            throw new NotImplementedException { };
+        }
+
+        public Edge Extrude(Edge input)
+        {
+            throw new NotImplementedException { };
+        }
+
+        public Face Extrude(Face face)
+        {
+            throw new NotImplementedException { };
+        }
+
+        public void Extrude(in List<Vertex> selection, out List<Vertex> created)
         {
             throw new NotImplementedException { };
         }

@@ -14,34 +14,34 @@ namespace Meshes
     partial struct EditableMeshImpl
     {
 
-        public void SelectLoop(Vertex vertex, float startingAngle, float maximumAngle)
+        public void SelectLoop(Vertex vertex, out List<Vertex> selection, float startingAngle = 0f, float maximumAngle = 90f)
         {
             throw new NotImplementedException { };
         }
 
-        public void SelectShortestPath(Vertex vertex1, Vertex vertex2)
+        public void SelectShortestPath(Vertex vertex1, Vertex vertex2, out List<Vertex> selection)
         {
             throw new NotImplementedException { };
         }
 
-        public void SelectFacesFromVertices(in List<Vertex> vertices, out List<Face> faces)
+        public void SelectFacesFromVertices(in List<Vertex> vertices, out List<Face> selection)
         {
             throw new NotImplementedException { };
         }
 
-        public void SelectMore(Vertex vertex)
-        {
-            // much easier when keeping track of edges
-            throw new NotImplementedException { };
-        }
-
-        public void SelectLess(ArrayList vertex)
+        public void SelectMore(out List<Vertex> selection)
         {
             // much easier when keeping track of edges
             throw new NotImplementedException { };
         }
 
-        public void SelectSeam(Vertex vertex, float startingAngle, float maximumAngle)
+        public void SelectLess(out List<Vertex> selection)
+        {
+            // much easier when keeping track of edges
+            throw new NotImplementedException { };
+        }
+
+        public void SelectSeam(Vertex vertex, out List<Vertex> selection, float startingAngle, float maximumAngle)
         {
             // adding this would require also keeping track of edges
             throw new NotImplementedException { };

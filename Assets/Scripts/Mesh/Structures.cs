@@ -91,6 +91,30 @@ namespace Meshes
             return self;
         }
 
+        public bool IsConnected(Vertex other)
+        {
+            foreach (Edge edge in edges)
+            {
+                if (edge.Other(this) == other)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public Edge? GetEdgeTo(Vertex other)
+        {
+            foreach (Edge edge in edges)
+            {
+                if (edge.Other(this) == other)
+                {
+                    return edge;
+                }
+            }
+            return null;
+        }
+
         internal Stream0[] ToStream()
         {
             var stream = new Stream0[faces.Count];
@@ -162,11 +186,6 @@ namespace Meshes
             }
         }
 
-        public override string ToString()
-        {
-            return $"{base.ToString()}: position: {Position}, Faces: {faces.Count}";
-        }
-
         internal void AddFaceChecked(Face face)
         {
             if (!faces.Select(structure => structure.face).Contains(face))
@@ -214,6 +233,11 @@ namespace Meshes
             edges.Add(newEdge);
             return newEdge;
         }
+
+        public override string ToString()
+        {
+            return $"{base.ToString()}: position: {Position}, Faces: {faces.Count}";
+        }
     }
 
     public class Edge
@@ -253,6 +277,13 @@ namespace Meshes
                 throw new ArgumentException("Given vertex must be in the edge");
             }
         }
+
+        public void MoveRelative(float3 relative)
+        {
+            // need a more robust API later
+            one.Position += relative;
+            two.Position += relative;
+        }
     }
 
     public class Face
@@ -285,6 +316,7 @@ namespace Meshes
         public Face()
         {
             normal = position = Unity.Mathematics.float3.zero;
+            vertices = new List<VertexCoordinate>(0);
         }
 
         /// <summary>
@@ -362,6 +394,12 @@ namespace Meshes
                 vert.AddFaceChecked(this);
             }
             FinalizeSetup();
+        }
+
+        public enum ShadingType
+        {
+            Flat = 0,
+            Smooth = 1,
         }
 
         /// <summary>
@@ -483,6 +521,16 @@ namespace Meshes
             {
                 return vertices.Count - 2;
             }
+        }
+
+        public void MoveRelative(float3 relative)
+        {
+            // add a more robust transform API later
+            foreach(var vert in vertices)
+            {
+                vert.vertex.Position += relative;
+            }
+            position += relative;
         }
 
         

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Meshes
 {
@@ -9,8 +10,8 @@ namespace Meshes
         /// <br></br>
         /// Generally speaking, this is not what you want.
         /// </summary>
-        /// <param name="index">index of the vertex to delete</param>
-        public void DeleteVertex(int index)
+        /// <param name="vertex">Vertex to dissolve</param>
+        public void DissolveVertex(Vertex vertex)
         {
             // delete the vertex
 
@@ -26,8 +27,8 @@ namespace Meshes
         /// <summary>
         /// Delete a vertex and also delete its connecting faces.
         /// </summary>
-        /// <param name="index">index of the vertex to delete</param>
-        public void DeleteVertexRecursive(int index)
+        /// <param name="vertex">Vertex to delete</param>
+        public void DeleteVertex(Vertex vertex)
         {
             throw new NotImplementedException { };
         }
@@ -35,8 +36,8 @@ namespace Meshes
         /// <summary>
         /// Delete a face but leave the surrounding vertices intact.
         /// </summary>
-        /// <param name="index">index of the face to delete</param>
-        public void DeleteFace(int index)
+        /// <param name="face">Face to dissolve</param>
+        public void DissolveFace(Face face)
         {
             throw new NotImplementedException { };
         }
@@ -45,9 +46,31 @@ namespace Meshes
         /// Delete a face while also deleting the surrounding vertices as well as 
         /// faces surrounding those vertices
         /// </summary>
-        /// <param name="index">index of the face to delete</param>
-        public void DeleteFaceRecursive(int index)
+        /// <param name="face">Face to delete</param>
+        public void DeleteFace(Face face)
         {
+            throw new NotImplementedException { };
+        }
+
+        public void DeleteVertices(List<Vertex> vertices)
+        {
+
+        }
+
+        public void DissolveVertices(List<Vertex> vertices)
+        {
+
+        }
+
+        /// <summary>
+        /// To minimize unnecessary iterations, we first plan a deletion, and then
+        /// apply it by iterating over the lists
+        /// </summary>
+        private void ExecuteDeletion()
+        {
+            //Faces.RemoveAll(face => face.Alive == false);
+            //Vertices.RemoveAll(vertex => vertex.Alive == false);
+
             throw new NotImplementedException { };
         }
     }
