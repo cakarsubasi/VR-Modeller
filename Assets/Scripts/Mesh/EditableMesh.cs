@@ -37,7 +37,7 @@ public class EditableMesh : MonoBehaviour
             var vert2 = float3(1f, 0f, 0f);
             var vert3 = float3(1f, 1f, 0f);
             var vert4 = float3(0f, 1f, 0f);
-            meshInternal.AddFace(vert1, vert2, vert3, vert4);
+            meshInternal.CreateVerticesAndQuad(vert1, vert2, vert3, vert4);
             GetComponent<MeshFilter>().mesh = mesh;
         }
         meshInternal.WriteAllToMesh();

@@ -65,7 +65,7 @@ namespace Meshes
         /// <param name="normal">normal</param>
         /// <param name="tangent">tangent</param>
         /// <returns></returns>
-        internal static Vertex Dangling(float3 position, float3 normal = default, float4 tangent = default)
+        public static Vertex Dangling(float3 position, float3 normal = default, float4 tangent = default)
         {
             return new Vertex
             {
@@ -91,7 +91,7 @@ namespace Meshes
             return self;
         }
 
-        public Stream0[] ToStream()
+        internal Stream0[] ToStream()
         {
             var stream = new Stream0[faces.Count];
             for (int i = 0; i < faces.Count; ++i)
@@ -108,7 +108,7 @@ namespace Meshes
         /// Write the vertex to a vertex buffer without allocations
         /// </summary>
         /// <param name="stream"></param>
-        public void WriteToStream(ref NativeArray<Stream0> stream)
+        internal void WriteToStream(ref NativeArray<Stream0> stream)
         {
             Stream0 temp = default;
             temp.position = Position;
@@ -265,8 +265,11 @@ namespace Meshes
             public float3 Position => vertex.Position;
         }
 
-        private List<VertexCoordinate> vertices = new List<VertexCoordinate>(4);
+        private List<VertexCoordinate> vertices; // = new List<VertexCoordinate>(4);
+        public List<Vertex> Vertices => vertices.Select(item => item.vertex).ToList();
+
         public List<Edge> edges = new List<Edge>(4);
+
         public int TriangleCount => GetTriangleCount();
 
         private float3 position;
@@ -297,7 +300,63 @@ namespace Meshes
             }
 
             normal = position = default;
-            this.vertices = vertices.Zip(uv0s, (vertex, uv0) => new VertexCoordinate { vertex = vertex, uv0 = uv0 }).ToList();
+            this.vertices = new List<VertexCoordinate>(vertices.Count);
+            for (int i = 0; i < vertices.Count; ++i)
+            {
+                this.vertices.Add(new VertexCoordinate
+                {
+                    vertex = vertices[i],
+                    uv0 = uv0s[i]
+                });
+            }
+            foreach (var vert in vertices)
+            {
+                vert.AddFaceChecked(this);
+            }
+            FinalizeSetup();
+        }
+
+        public Face(List<Vertex> vertices, float2[] uv0s)
+        {
+            if (vertices.Count != uv0s.Length)
+            {
+                throw new ArgumentException("vertices and uv0s must have the same length");
+            }
+
+            normal = position = default;
+            this.vertices = new List<VertexCoordinate>(vertices.Count);
+            for (int i = 0; i < vertices.Count; ++i)
+            {
+                this.vertices.Add(new VertexCoordinate
+                {
+                    vertex = vertices[i],
+                    uv0 = uv0s[i]
+                });
+            }
+            foreach (var vert in vertices)
+            {
+                vert.AddFaceChecked(this);
+            }
+            FinalizeSetup();
+        }
+
+        public Face(Vertex[] vertices, float2[] uv0s)
+        {
+            if (vertices.Length != uv0s.Length)
+            {
+                throw new ArgumentException("vertices and uv0s must have the same length");
+            }
+
+            normal = position = default;
+            this.vertices = new List<VertexCoordinate>(vertices.Length);
+            for (int i = 0; i < vertices.Length; ++i)
+            {
+                this.vertices.Add(new VertexCoordinate
+                {
+                    vertex = vertices[i],
+                    uv0 = uv0s[i]
+                });
+            }
             foreach (var vert in vertices)
             {
                 vert.AddFaceChecked(this);
@@ -313,6 +372,7 @@ namespace Meshes
         public Face(TriangleVerts vertices, TriangleUVs uv0s = default)
         {
             normal = position = default;
+            this.vertices = new List<VertexCoordinate>(3);
             this.vertices.Add(new VertexCoordinate
             {
                 vertex = vertices.vert0,
@@ -343,6 +403,7 @@ namespace Meshes
         public Face(QuadVerts vertices, QuadUVs uv0s = default)
         {
             normal = position = default;
+            this.vertices = new List<VertexCoordinate>(4);
             this.vertices.Add(new VertexCoordinate
             {
                 vertex = vertices.vert0,

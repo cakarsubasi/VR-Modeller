@@ -148,13 +148,13 @@ namespace Meshes
 
             for (int i = 0; i < vertices.Length; ++i)
             {
-                vertexmap[i] = AddVertexPossiblyOverlapping(vertices[i], normals[i], tangents[i]);
+                vertexmap[i] = CreateVertexOrReturnReferenceIfExists(vertices[i], normals[i], tangents[i]);
             }
             for (int i = 0; i < triangles.Length; i += 3)
             {
                 TriangleVerts verts = new(vertexmap[triangles[i]], vertexmap[triangles[i + 1]], vertexmap[triangles[i + 2]]);
                 TriangleUVs uv0s = new(uvs[triangles[i]], uvs[triangles[i + 1]], uvs[triangles[i + 2]]);
-                AddTriangle(verts, uv0s);
+                CreateTriangle(verts, uv0s);
             }
             RecalculateNormals();
             WriteAllToMesh();

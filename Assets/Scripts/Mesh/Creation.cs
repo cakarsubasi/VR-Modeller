@@ -9,6 +9,9 @@ using static Unity.Mathematics.math;
 
 namespace Meshes
 {
+    /// <summary>
+    /// struct to pass three vertex references
+    /// </summary>
     public struct TriangleVerts
     {
         public Vertex vert0;
@@ -23,6 +26,9 @@ namespace Meshes
         }
     }
 
+    /// <summary>
+    /// struct to pass four vertex references
+    /// </summary>
     public struct QuadVerts
     {
         public Vertex vert0;
@@ -39,6 +45,9 @@ namespace Meshes
         }
     }
 
+    /// <summary>
+    /// struct to pass three UVs
+    /// </summary>
     public struct TriangleUVs
     {
         public float2 uv0_0;
@@ -53,6 +62,9 @@ namespace Meshes
         }
     }
 
+    /// <summary>
+    /// struct to pass four UVs
+    /// </summary>
     public struct QuadUVs
     {
         public float2 uv0_0;
@@ -72,36 +84,56 @@ namespace Meshes
     partial struct EditableMeshImpl
     {
         /// <summary>
-        /// Add Vertex to the given position
+        /// Create Vertex at the given position
         /// </summary>
         /// <param name="position">position of the vertex</param>
-        /// <returns>index of the vertex</returns>
-        public Vertex AddVertex(float3 position)
+        /// <returns>reference to the vertex</returns>
+        public Vertex CreateVertex(float3 position)
         {
-            return AddVertex(position, normal: back(), tangent: float4(1f, 0f, 0f, -1f));
+            return CreateVertex(position, normal: back(), tangent: float4(1f, 0f, 0f, -1f));
         }
 
         /// <summary>
-        /// Add Vertex to the given position with the given normal and tangent
+        /// Create Vertex to the given position with the given normal and tangent
         /// </summary>
         /// <param name="position">position to add to</param>
         /// <param name="normal">normal of the vertex</param>
         /// <param name="tangent">tangent of the vertex</param>
         /// <param name="texCoord0">UV coordinate of the vertex</param>
-        /// <returns>index of the vertex</returns>
-        public Vertex AddVertex(float3 position, float3 normal, float4 tangent)
+        /// <returns>reference to the vertex</returns>
+        public Vertex CreateVertex(float3 position, float3 normal, float4 tangent)
         {
             var vert = Vertex.Dangling(position, normal, tangent);
             Vertices.Add(vert);
             return vert;
         }
 
-        public Vertex AddVertexPossiblyOverlapping(float3 position, float3 normal, float4 tangent)
+        /// <summary>
+        /// Create vertex at the given position if one does not already exist, otherwise
+        /// return the reference to the existing vertex
+        /// </summary>
+        /// <param name="position">position to search</param>
+        /// <returns>reference to the vertex</returns>
+        public Vertex CreateVertexOrReturnReferenceIfExists(float3 position)
+        {
+            return CreateVertexOrReturnReferenceIfExists(position, normal: back(), tangent: float4(1f, 0f, 0f, -1f));
+        }
+
+        /// <summary>
+        /// Create vertex at the given position with given normal and tangents
+        /// if one does not already exist at that position, otherwise
+        /// return the reference to the existing vertex
+        /// </summary>
+        /// <param name="position">position</param>
+        /// <param name="normal">normal</param>
+        /// <param name="tangent">tangent</param>
+        /// <returns></returns>
+        public Vertex CreateVertexOrReturnReferenceIfExists(float3 position, float3 normal, float4 tangent)
         {
             Vertex? vertMaybe = FindByPosition(position);
             if (vertMaybe == null)
             {
-                return AddVertex(position, normal, tangent);
+                return CreateVertex(position, normal, tangent);
             }
             else
             {
@@ -109,35 +141,48 @@ namespace Meshes
             }
         }
 
-        public Vertex AddVertexOn(int index)
+        /// <summary>
+        /// Create a new vertex connected to the other Vertex and return a reference
+        /// to the new vertex, the new vertex will have the same position as the other vertex
+        /// </summary>
+        /// <param name="other">vertex to connect the new vertex</param>
+        /// <returns>reference to the created vertex</returns>
+        public Vertex CreateVertexConnectedTo(Vertex other)
         {
-            return AddVertex(Vertices[index].Position);
+            Vertex vertex = Vertex.FromOtherVertexConnected(other);
+            Vertices.Add(vertex);
+            return vertex;
         }
 
         /// <summary>
-        /// Add a quad by creating four vertices
+        /// Add a quad by creating four vertices. References to the created vertices
+        /// can be accessed with Face.Vertices
         /// </summary>
-        /// <param name="pos1"></param>
-        /// <param name="pos2"></param>
-        /// <param name="pos3"></param>
-        /// <param name="pos4"></param>
-        public Face AddFace(float3 pos1, float3 pos2, float3 pos3, float3 pos4)
+        /// <param name="pos1">position 1</param>
+        /// <param name="pos2">position 2</param>
+        /// <param name="pos3">position 3</param>
+        /// <param name="pos4">position 4</param>
+        /// <returns>Reference to the face</returns>
+        public Face CreateVerticesAndQuad(float3 pos1, float3 pos2, float3 pos3, float3 pos4)
         {
             var verts = new QuadVerts
             (
-                AddVertex(pos1),
-                AddVertex(pos2),
-                AddVertex(pos3),
-                AddVertex(pos4)
+                CreateVertex(pos1),
+                CreateVertex(pos2),
+                CreateVertex(pos3),
+                CreateVertex(pos4)
             );
-            return AddFace(verts);
+            return CreateQuad(verts);
         }
 
+        [Obsolete("new API does not use vertex indices")]
         /// <summary>
-        /// Add a quad between the given four vertices using vertex indices
+        /// Create quad between the given four vertices using vertex indices
         /// </summary>
         /// <param name="vertices"></param>
-        public Face AddFace(int4 vertices, QuadUVs uv0s = default)
+        /// <param name="uv0s"></param>
+        /// <returns>Reference to the face</returns>
+        public Face CreateQuad(int4 vertices, QuadUVs uv0s = default)
         {
             QuadVerts face_verts = new QuadVerts(
                 this.Vertices[vertices.x],
@@ -145,34 +190,42 @@ namespace Meshes
                 this.Vertices[vertices.z],
                 this.Vertices[vertices.w]
                 );
-            return AddFace(face_verts, uv0s);
+            return CreateQuad(face_verts, uv0s);
         }
 
-        public Face AddFace(QuadVerts verts, QuadUVs uv0s = default)
+        /// <summary>
+        /// Create a face given the vertices
+        /// </summary>
+        /// <param name="verts"></param>
+        /// <param name="uv0s"></param>
+        /// <returns></returns>
+        public Face CreateQuad(QuadVerts verts, QuadUVs uv0s = default)
         {
             var face = new Face(verts, uv0s);
             Faces.Add(face);
             return face;
         }
 
-        public Face AddTriangle(int3 vertices, TriangleUVs uv0s = default)
+        [Obsolete("new API does not use vertex indices")]
+        public Face CreateTriangle(int3 vertices, TriangleUVs uv0s = default)
         {
             TriangleVerts face_verts = new TriangleVerts(
                 this.Vertices[vertices.x],
                 this.Vertices[vertices.y],
                 this.Vertices[vertices.z]
                 );
-            return AddTriangle(face_verts, uv0s);
+            return CreateTriangle(face_verts, uv0s);
         }
 
-        public Face AddTriangle(TriangleVerts vertices, TriangleUVs uv0s = default)
+        public Face CreateTriangle(TriangleVerts vertices, TriangleUVs uv0s = default)
         {
             var face = new Face(vertices, uv0s);
             Faces.Add(face);
             return face;
         }
 
-        public Face AddNGon(int[] vertices, float2[] uv0s)
+        [Obsolete("new API does not use vertex indices")]
+        public Face CreateNGon(int[] vertices, float2[] uv0s)
         {
             List<Vertex> face_verts = new List<Vertex>(vertices.Length);
             
@@ -180,12 +233,84 @@ namespace Meshes
             throw new NotImplementedException { };
         }
 
-        public Face AddNGon(List<Vertex> vertices, float2[] uv0s)
+        public Face CreateNGon(List<Vertex> vertices)
+        {
+            float2[] uv0s = new float2[vertices.Count];
+            return CreateNGon(vertices, uv0s);
+        }
+
+        public Face CreateNGon(Vertex[] vertices)
+        {
+            float2[] uv0s = new float2[vertices.Length];
+            return CreateNGon(vertices, uv0s);
+        }
+
+        public Face CreateNGon(Vertex[] vertices, float2[] uv0s)
+        {
+            Face face = new Face(vertices, uv0s);
+            Faces.Add(face);
+            return face;
+        }
+
+        public Face CreateNGon(List<Vertex> vertices, float2[] uv0s)
+        {
+            Face face = new Face(vertices, uv0s);
+            Faces.Add(face);
+            return face;
+        }
+
+        public void Extrude()
         {
             throw new NotImplementedException { };
         }
 
-        public void Extrude()
+
+        public Vertex AddVertex(Vertex vertex)
+        {
+            if (Vertices.Contains(vertex)) {
+                return vertex;
+            } else
+            {
+                return AddVertexUnchecked(vertex);
+            }
+        }
+
+        /// <summary>
+        /// Add a presumably externally created vertex 
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <returns></returns>
+        public Vertex AddVertexUnchecked(Vertex vertex)
+        {
+            Vertices.Add(vertex);
+            return vertex;
+        }
+
+        public Vertex[] AddVertices(params Vertex[] vertices)
+        {
+            Vertex[] return_list = new Vertex[vertices.Length];
+            for (int i = 0; i < vertices.Length; ++i)
+            {
+                return_list[i] = AddVertex(vertices[i]);
+            }
+            return return_list;
+        }
+
+        public Vertex[] AddVerticesUnchecked(params Vertex[] vertices)
+        {
+            foreach (Vertex vertex in vertices)
+            {
+                AddVertexUnchecked(vertex);
+            }
+            return vertices;
+        }
+
+        public Edge AddEdge(Vertex vertex1, Vertex vertex2)
+        {
+            throw new NotImplementedException { };
+        }
+
+        public Vertex MergeVertex(Vertex vert1, Vertex vert2)
         {
             throw new NotImplementedException { };
         }
