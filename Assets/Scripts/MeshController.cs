@@ -27,7 +27,7 @@ public class MeshController : MonoBehaviour
         meshFilter = GetComponent<MeshFilter>();
         mesh = meshFilter.mesh;
         //Vertices = mesh.vertices.ToList();
-        Vertices = editableMesh.Vertices.ToList();
+        Vertices = editableMesh.VertexLocations.ToList();
         //Debug.Log("Vertices: " + Vertices.Count);
 
         List<Vector3> updatedVertices = new List<Vector3>();

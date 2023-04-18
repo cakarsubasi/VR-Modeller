@@ -1,8 +1,8 @@
 ﻿using Unity.Collections;
 using Unity.Mathematics;
+using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Rendering;
-using System.Runtime.InteropServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,15 +12,7 @@ using static Unity.Mathematics.math;
 
 namespace Meshes
 {
-    [StructLayout(LayoutKind.Sequential)]
-    public struct Stream0
-    {
-        public float3 position; // 12 bytes
-        public float3 normal; // 12 bytes
-        public float4 tangent; // 16 bytes
-        public float2 texCoord0; // 8 bytes
-    }
-    public struct EditableMeshImpl
+    public partial struct EditableMeshImpl
     {
         public struct IndexedVertex
         {
@@ -28,31 +20,34 @@ namespace Meshes
             public Vertex? vertex;
         }
 
-        private Mesh Mesh;
+        private Mesh mesh;
 
-        private List<Vertex> _vertices;
-        private List<Face> _faces;
+        public Mesh Mesh { get => mesh; set => CopySetup(value); }
 
-        private int _maxVerts => defaultMaxVerts;
+        public List<Vertex> Vertices;
+        public List<Face> Faces;
+
         private int _vertexCountInternal;
-        private int _maxFaces => defaultMaxTris;
+        private int vertexCountMaximum;
+        private int _indexCountInternal;
+        private int indexCountMaximum;
 
         private static readonly int defaultMaxVerts = ushort.MaxValue;
         private static readonly int defaultMaxTris = ushort.MaxValue / 3;
 
-        public int VertexCount { get => _vertices.Count; }
+        public int VertexCount { get => Vertices.Count; }
 
-        public int FaceCount { get => _faces.Count; }
+        public int FaceCount { get => Faces.Count; }
         public int TriangleCount { get; private set; }
 
-        public Vector3[] Vertices
+        public Vector3[] VertexLocations
         {
-            get => _vertices.Select(vertex => (Vector3)vertex.Position).ToArray();
+            get => Vertices.Select(vertex => (Vector3)vertex.Position).ToArray();
         }
 
-        public Vector3[] Faces
+        public Vector3[] FaceLocations
         {
-            get => _faces.Select(face => (Vector3)face.Position).ToArray();
+            get => Faces.Select(face => (Vector3)face.Position).ToArray();
         }
 
         /// <summary>
@@ -61,7 +56,8 @@ namespace Meshes
         /// <param name="mesh">Container mesh to write to</param>
         public void Setup(Mesh mesh)
         {
-            Mesh = mesh;
+            this.mesh = mesh;
+            this.mesh.MarkDynamic();
 
             Mesh.MeshDataArray meshDataArray = Mesh.AllocateWritableMeshData(1);
             Mesh.MeshData meshData = meshDataArray[0];
@@ -99,8 +95,11 @@ namespace Meshes
                 MeshUpdateFlags.DontRecalculateBounds | MeshUpdateFlags.DontValidateIndices);
 
             // initialize safe garbage here
-            _vertices = new List<Vertex>(defaultMaxVerts);
-            _faces = new List<Face>(defaultMaxTris / 3);
+            Vertices = new List<Vertex>(defaultMaxVerts);
+            Faces = new List<Face>(defaultMaxTris / 3);
+
+            vertexCountMaximum = defaultMaxVerts;
+            indexCountMaximum = defaultMaxTris * 3;
 
             _vertexCountInternal = 0;
             TriangleCount = 0;
@@ -110,18 +109,20 @@ namespace Meshes
 
             for (int i = 0; i < stream0.Length; ++i)
             {
-                stream0[i] = default;
+                stream0[i] = Stream0.degenerate;
             }
             for (int i = 0; i < triangles.Length; ++i)
             {
-                triangles[i] = int3(0, 0, 0);
+                triangles[i] = Triangle.degenerate;
             }
         }
 
-        struct IntPair
+        private void ResizeInternalBuffers(int currentVertexCount, int currentIndexCount)
         {
-            public int first;
-            public int second;
+            // set up mesh again
+
+            // if the required vertices are too large, give up
+            throw new NotImplementedException { };
         }
 
         /// <summary>
@@ -132,7 +133,7 @@ namespace Meshes
         /// <returns>A reference to the new mesh instance</returns>
         public Mesh CopySetup(Mesh mesh)
         {
-            Mesh = new Mesh
+            this.mesh = new Mesh
             {
                 name = mesh.name,
             };
@@ -141,218 +142,163 @@ namespace Meshes
             var normals = mesh.normals;
             var tangents = mesh.tangents;
             var uvs = mesh.uv;
-            Setup(Mesh);
+            Setup(this.mesh);
 
-            int[] vertexmap = new int[vertices.Length];
+            Vertex[] vertexmap = new Vertex[vertices.Length];
 
             for (int i = 0; i < vertices.Length; ++i)
             {
-                Debug.Log($"idx: {i}\n\tpos: {vertices[i]}\n\tnorm: {normals[i]}\n");
-                int trueIndex = AddVertexPossiblyOverlapping(vertices[i], normals[i], tangents[i], uvs[i]);
-                Debug.Log($"true: {trueIndex}");
-                vertexmap[i] = trueIndex;
+                vertexmap[i] = CreateVertexOrReturnReferenceIfExists(vertices[i], normals[i], tangents[i]);
             }
             for (int i = 0; i < triangles.Length; i += 3)
             {
-                int ind0 = vertexmap[triangles[i]];
-                int ind1 = vertexmap[triangles[i + 1]];
-                int ind2 = vertexmap[triangles[i + 2]];
-                Debug.Log($"idx: {i}\n\tindices: {ind0}, {ind1}, {ind2}\n");
-                AddTriangle(int3(ind0, ind1, ind2));
+                TriangleVerts verts = new(vertexmap[triangles[i]], vertexmap[triangles[i + 1]], vertexmap[triangles[i + 2]]);
+                TriangleUVs uv0s = new(uvs[triangles[i]], uvs[triangles[i + 1]], uvs[triangles[i + 2]]);
+                CreateTriangle(verts, uv0s);
             }
-            return Mesh;
+            RecalculateNormals();
+            WriteAllToMesh();
+            RecalculateBounds();
+            return this.mesh;
         }
 
-        /// <summary>
-        /// Move a vertex of the given index to the specified position
-        /// </summary>
-        /// <param name="index">index of the vertex to move</param>
-        /// <param name="position">position to move to</param>
-        public void MoveVertex(int index, float3 position)
+        public void Combine(EditableMeshImpl other)
         {
-            // need to abstract real index
-            _vertices[index].Position = position;
-            //_vertices[index].position = position;
-            Stream0[] stream = _vertices[index].ToStream();
-            int[] indices = _vertices[index].Indices();
-            NativeArray<Stream0> buffer = new NativeArray<Stream0>(1, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
-            for (int i = 0; i < indices.Length; ++i)
-            {
-                buffer[0] = stream[i];
-                Mesh.SetVertexBufferData<Stream0>(buffer, 0, indices[i], 1);
-            }
-            buffer.Dispose();
+            Vertices.AddRange(other.Vertices);
+            Faces.AddRange(other.Faces);
+            other.Vertices.Clear();
+            other.Faces.Clear();
         }
 
-        /// <summary>
-        /// Add Vertex to the given position
-        /// </summary>
-        /// <param name="position">position of the vertex</param>
-        /// <returns>index of the vertex</returns>
-        public int AddVertex(float3 position)
-        {
-            return AddVertex(position, normal: back(), tangent: float4(1f, 0f, 0f, -1f), float2(0f, 0f));
-        }
-
-        public int AddVertexPossiblyOverlapping(float3 position, float3 normal, float4 tangent, float2 texCoord0)
-        {
-            IndexedVertex vertMaybe = FindByPosition(position, eps: 0.1f);
-            if (vertMaybe.vertex == null)
-            {
-                return AddVertex(position, normal, tangent, texCoord0);
-            }
-            else
-            {
-                vertMaybe.vertex.AddProps(normal, tangent, texCoord0, _vertexCountInternal);
-                _vertexCountInternal++;
-                return vertMaybe.index;
-            }
-        }
-
-
-        /// <summary>
-        /// Add Vertex to the given position with the given normal and tangent
-        /// </summary>
-        /// <param name="position">position to add to</param>
-        /// <param name="normal">normal of the vertex</param>
-        /// <param name="tangent">tangent of the vertex</param>
-        /// <param name="texCoord0">UV coordinate of the vertex</param>
-        /// <returns>index of the vertex</returns>
-        public int AddVertex(float3 position, float3 normal, float4 tangent, float2 texCoord0)
-        {
-            var vert = Vertex.Create(position, normal, tangent, texCoord0, _vertexCountInternal);
-            _vertices.Add(vert);
-            Stream0[] stream = vert.ToStream();
-            int[] indices = vert.Indices();
-            NativeArray<Stream0> buffer = new NativeArray<Stream0>(1, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
-            for (int i = 0; i < indices.Length; ++i)
-            {
-                buffer[0] = stream[i];
-                Mesh.SetVertexBufferData<Stream0>(buffer, 0, indices[i], 1);
-            }
-            buffer.Dispose();
-            _vertexCountInternal++;
-            return VertexCount - 1;
-        }
-
-        public void AddVertexProps(Vertex vertex, float3 normal, float4 tangent, float2 texCoord0)
-        {
-
-        }
-
-
-        public int AddVertexOn(int index)
-        {
-            return AddVertex(_vertices[index].Position);
-        }
-
-        public void DeleteVertex()
-        {
-            // delete the vertex
-
-            // shift the vertex buffer left
-
-            // update the index buffer values
-
-            // copy all of the updated values to the 
-
-            throw new NotImplementedException { };
-        }
-
-        public void DeleteFace()
+        public EditableMeshImpl Split(List<Vertex> vertices)
         {
             throw new NotImplementedException { };
         }
 
-        public void SetFace()
+        public EditableMeshImpl DeepCopy()
         {
             throw new NotImplementedException { };
         }
 
         /// <summary>
-        /// Add a quad by creating four vertices
+        /// Optimize the in memory representation of the mesh for rendering.
+        /// <br></br>
+        /// Call after particularly complex operations
         /// </summary>
-        /// <param name="pos1"></param>
-        /// <param name="pos2"></param>
-        /// <param name="pos3"></param>
-        /// <param name="pos4"></param>
-        public void AddFace(float3 pos1, float3 pos2, float3 pos3, float3 pos4)
+        public void OptimizeIndices()
         {
-            var indices = new int4
+            int i = 0;
+            foreach (Vertex vertex in Vertices)
             {
-                x = AddVertex(pos1),
-                y = AddVertex(pos2),
-                z = AddVertex(pos3),
-                w = AddVertex(pos4),
-            };
-            AddFace(indices);
+                i = vertex.OptimizeIndices(i);
+            }
+            _vertexCountInternal = i;
+
+            i = 0;
+            foreach (Face face in Faces)
+            {
+                i += face.TriangleCount;
+            }
+            _indexCountInternal =  i;
         }
 
         /// <summary>
-        /// Add a quad between the given four vertices
+        /// Call this method after modifying the mesh to update indices and display all of the changes
         /// </summary>
-        /// <param name="vertices"></param>
-        public void AddFace(int4 vertices)
+        public void WriteAllToMesh()
         {
-            List<Vertex> face_verts = new List<Vertex> {
-                _vertices[vertices.x],
-                _vertices[vertices.y],
-                _vertices[vertices.z],
-                _vertices[vertices.w]
-            };
-            var face = new Face(face_verts);
-            _faces.Add(face);
-            var buf = face.ToStream();
-            var buffer = new NativeArray<int3>(buf, Allocator.Temp);
-
-            Mesh.SetIndexBufferData<int3>(buffer, 0, TriangleCount, 2);
-            buffer.Dispose();
-            TriangleCount += 2;
-        }
-
-        public void AddTriangle(int3 vertices)
-        {
-            List<Vertex> face_verts = new List<Vertex> {
-                _vertices[vertices.x],
-                _vertices[vertices.y],
-                _vertices[vertices.z]
-            };
-            var face = new Face(face_verts);
-            _faces.Add(face);
-            var buf = face.ToStream();
-            var buffer = new NativeArray<int3>(buf, Allocator.Temp);
-            Mesh.SetIndexBufferData<int3>(buffer, 0, TriangleCount, 1);
-            buffer.Dispose();
-            TriangleCount += 1;
-        }
-
-        public void Extrude()
-        {
-            throw new NotImplementedException { };
-        }
-
-        // TODO: testing
-        private IndexedVertex FindByPosition(float3 position, float eps = 0f)
-        {
-            var idx = _vertices.FindIndex(vertex => vertex.Position.Equals(position));
-            Vertex? vertex = null;
-            if (idx != -1)
-                vertex = _vertices[idx];
-            return new IndexedVertex
+            // figure out the indices
+            OptimizeIndices();
+            // resize the vertex and index buffers if needed
+            if (_vertexCountInternal > vertexCountMaximum || _indexCountInternal > indexCountMaximum)
             {
-                index = idx,
-                vertex = vertex
-            };
+                ResizeInternalBuffers(_vertexCountInternal, _indexCountInternal);
+            }
+            // write vertices 
+            NativeArray<Stream0> vertexStream = new NativeArray<Stream0>(_vertexCountInternal, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            foreach (Vertex vertex in Vertices)
+            {
+                vertex.WriteToStream(ref vertexStream);
+            }
+            mesh.SetVertexBufferData<Stream0>(vertexStream, 0, 0, _vertexCountInternal,
+                flags: MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds);
+            vertexStream.Dispose();
+            NativeArray<int3> indexStream = new NativeArray<int3>(_indexCountInternal, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            int i = 0;
+            foreach(Face face in Faces)
+            {
+                i = face.WriteToStream(ref indexStream, i);
+            }
+            mesh.SetIndexBufferData<int3>(indexStream, 0, 0, _indexCountInternal,
+                flags: MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds);
         }
 
-        private List<Vertex> FindAllByPosition(float3 position)
+        public void UnsafeWriteVertexToMesh(Vertex vertex)
         {
-            return _vertices.FindAll(vert => vert.Position.Equals(position)).ToList();
+            UnsafeWriteVerticesToMesh(new List<Vertex>() { vertex });
+        }
+
+        /// <summary>
+        /// Write the given vertices to the mesh without validating indices. This is useful for applying
+        /// just movement for instance. If called after adding or deleting meshes or faces, it may result
+        /// in broken geometry.
+        /// </summary>
+        /// <param name="verts">vertices to write</param>
+        public void UnsafeWriteVerticesToMesh(List<Vertex> verts)
+        {
+            NativeArray<Stream0> buffer = new(1, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            foreach (var vert in verts)
+            {
+                Stream0[] stream = vert.ToStream();
+                int[] indices = vert.Indices();
+
+                for (int i = 0; i < indices.Length; ++i)
+                {
+                    buffer[0] = stream[i];
+                    Mesh.SetVertexBufferData<Stream0>(buffer, 0, indices[i], 1);
+                }
+            }
+            buffer.Dispose();
+        }
+
+        private void DeletePadding(int vertexStart, int vertexEnd, int triangleStart, int triangleEnd)
+        {
+            Stream0[] degenerateVert = { Stream0.degenerate };
+            for (int i = vertexStart; i < vertexEnd; i++)
+            {
+                mesh.SetVertexBufferData<Stream0>(degenerateVert, 0, i, 1,
+                    flags: MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds);
+            }
+            int3[] degenerateTriangle = { Triangle.degenerate };
+            for (int i = triangleStart; i < triangleEnd; i++)
+            {
+                mesh.SetIndexBufferData<int3>(degenerateTriangle, 0, i, 1, 
+                    flags: MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds);
+            }
+        }
+
+        /// <summary>
+        /// Recalculate the bounds for the renderer.
+        /// </summary>
+        public void RecalculateBounds()
+        {
+            Mesh.RecalculateBounds();
         }
 
         public override string ToString()
         {
-            return $"{base.ToString()}: vertices: {VertexCount}, faces: {FaceCount}";
+            var str = $"{base.ToString()}: vertices: {VertexCount}, faces: {FaceCount}";
+
+            foreach(Vertex vert in Vertices)
+            {
+                str = $"{str}\n{vert}";
+            }
+            str = $"{str}\nFaces:";
+            foreach (Face face in Faces)
+            {
+                str = $"{str}\n{face}";
+            }
+            return str;
         }
 
     }
