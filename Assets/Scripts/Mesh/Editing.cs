@@ -84,5 +84,15 @@ namespace Meshes
             throw new NotImplementedException { };
         }
 
+        public void Triangulate()
+        {
+            throw new NotImplementedException { };
+        }
+
+        public void TrianglesToQuads()
+        {
+            throw new NotImplementedException { };
+        }
+
     }
 }

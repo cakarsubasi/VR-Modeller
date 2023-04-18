@@ -48,14 +48,14 @@ public class MeshesTestScript
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
-        Assert.AreEqual(mesh.FaceCount, 1);
-        Assert.AreEqual(mesh.VertexCount, 4);
+        Assert.AreEqual(1, mesh.FaceCount);
+        Assert.AreEqual(4, mesh.VertexCount);
 
         Face face = mesh.Faces[0];
         Assert.AreEqual(face.Normal, float3(0f, 0f, 1f));
         foreach (Vertex vertex in mesh.Vertices)
         {
-            Assert.AreEqual(vertex.Normal, float3(0f, 0f, 1f));
+            Assert.AreEqual(float3(0f, 0f, 1f), vertex.Normal);
             Assert.Contains(vertex, face.Vertices);
         }
     }
@@ -72,14 +72,15 @@ public class MeshesTestScript
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
         Vertex vert4 = Vertex.Dangling(float3(0f, 1f, 0f));
         mesh.AddVerticesUnchecked(vert1, vert2, vert3, vert4);
-        mesh.CreateQuad(new QuadVerts(vert1, vert2, vert3, vert4));
+        Face face = mesh.CreateQuad(new QuadVerts(vert1, vert2, vert3, vert4));
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
         Assert.AreEqual(1, mesh.FaceCount);
         Assert.AreEqual(4, mesh.VertexCount);
+        Assert.AreEqual(4, face.VertexCount);
+        Assert.AreEqual(4, face.EdgeCount);
 
-        Face face = mesh.Faces[0];
         Assert.AreEqual(face.Normal, float3(0f, 0f, 1f));
         foreach (Vertex vertex in mesh.Vertices)
         {
@@ -153,7 +154,7 @@ public class MeshesTestScript
     }
 
     /// <summary>
-    /// Test a 5-Gon
+    /// Test creating a 5-gon
     /// </summary>
     [Test]
     public void TestCreateNGon()
@@ -181,6 +182,9 @@ public class MeshesTestScript
 
     }
 
+    /// <summary>
+    /// Test creating a 16-gon circle
+    /// </summary>
     [Test]
     public void TestCreateCircle()
     {
@@ -243,6 +247,10 @@ public class MeshesTestScript
         }
     }
 
+    /// <summary>
+    /// Start from one vertex, extrude from the vertex to create an edge.
+    /// Then extrude from that edge to create a quad.
+    /// </summary>
     [Test]
     public void TestExtrudeOneEdge()
     {

@@ -11,7 +11,7 @@ namespace Meshes
 {
 
     /// <summary>
-    /// struct to pass three vertex references
+    /// struct to pass three vertex references, this avoids allocations
     /// </summary>
     public struct TriangleVerts
     {
@@ -128,7 +128,7 @@ namespace Meshes
         /// <param name="position">position</param>
         /// <param name="normal">normal</param>
         /// <param name="tangent">tangent</param>
-        /// <returns></returns>
+        /// <returns>reference to the vertex</returns>
         public Vertex CreateVertexOrReturnReferenceIfExists(float3 position, float3 normal, float4 tangent)
         {
             Vertex? vertMaybe = FindByPosition(position);
@@ -176,13 +176,14 @@ namespace Meshes
             return CreateQuad(verts);
         }
 
-        [Obsolete("new API does not use vertex indices")]
+
         /// <summary>
         /// Create quad between the given four vertices using vertex indices
         /// </summary>
-        /// <param name="vertices"></param>
-        /// <param name="uv0s"></param>
+        /// <param name="vertices">four vertex indices</param>
+        /// <param name="uv0s">four uv values</param>
         /// <returns>Reference to the face</returns>
+        [Obsolete("new API does not use vertex indices")]
         public Face CreateQuad(int4 vertices, QuadUVs uv0s = default)
         {
             QuadVerts face_verts = new QuadVerts(
@@ -195,11 +196,11 @@ namespace Meshes
         }
 
         /// <summary>
-        /// Create a face given the vertices
+        /// Create quad given the vertices
         /// </summary>
-        /// <param name="verts"></param>
-        /// <param name="uv0s"></param>
-        /// <returns></returns>
+        /// <param name="verts">four vertices</param>
+        /// <param name="uv0s">four uv values</param>
+        /// <returns>Reference to the face</returns>
         public Face CreateQuad(QuadVerts verts, QuadUVs uv0s = default)
         {
             var face = new Face(verts, uv0s);
@@ -207,6 +208,12 @@ namespace Meshes
             return face;
         }
 
+        /// <summary>
+        /// Create triangle between the given three vertices using vertex indices
+        /// </summary>
+        /// <param name="vertices">three vertex indices</param>
+        /// <param name="uv0s">three uv values</param>
+        /// <returns>Reference to the face</returns>
         [Obsolete("new API does not use vertex indices")]
         public Face CreateTriangle(int3 vertices, TriangleUVs uv0s = default)
         {
@@ -218,6 +225,12 @@ namespace Meshes
             return CreateTriangle(face_verts, uv0s);
         }
 
+        /// <summary>
+        /// Create triangle with the given three vertices
+        /// </summary>
+        /// <param name="vertices">three vertices</param>
+        /// <param name="uv0s">three uv values</param>
+        /// <returns>Reference to the face</returns>
         public Face CreateTriangle(TriangleVerts vertices, TriangleUVs uv0s = default)
         {
             var face = new Face(vertices, uv0s);
@@ -225,27 +238,64 @@ namespace Meshes
             return face;
         }
 
+        /// <summary>
+        /// Create NGon with the given vertex indices
+        /// </summary>
+        /// <param name="vertices">N vertex indices</param>
+        /// <returns>Reference to the face</returns>
+        [Obsolete("new API does not use vertex indices")]
+        public Face CreateNGon(params int[] vertices)
+        {
+            float2[] uv0s = new float2[vertices.Length];
+            return CreateNGon(vertices, uv0s);
+        }
+
+        /// <summary>
+        /// Create NGon with the given vertex indices
+        /// </summary>
+        /// <param name="vertices">N vertex indices</param>
+        /// <param name="uv0s">N uv values</param>
+        /// <returns>Reference to the face</returns>
         [Obsolete("new API does not use vertex indices")]
         public Face CreateNGon(int[] vertices, float2[] uv0s)
         {
             List<Vertex> face_verts = new List<Vertex>(vertices.Length);
-            
-            //var face = new Face(face_verts, uv0s);
-            throw new NotImplementedException { };
+            foreach(int index in vertices)
+            {
+                face_verts.Add(this.Vertices[index]);
+            }
+
+            return CreateNGon(face_verts, uv0s);
         }
 
+        /// <summary>
+        /// Create NGon with the given vertices
+        /// </summary>
+        /// <param name="vertices">N vertices</param>
+        /// <returns>Reference to the face</returns>
         public Face CreateNGon(List<Vertex> vertices)
         {
             float2[] uv0s = new float2[vertices.Count];
             return CreateNGon(vertices, uv0s);
         }
 
-        public Face CreateNGon(Vertex[] vertices)
+        /// <summary>
+        /// Create NGon with the given vertices
+        /// </summary>
+        /// <param name="vertices">N vertices</param>
+        /// <returns>Reference to the face</returns>
+        public Face CreateNGon(params Vertex[] vertices)
         {
             float2[] uv0s = new float2[vertices.Length];
             return CreateNGon(vertices, uv0s);
         }
 
+        /// <summary>
+        /// Create NGon with the given vertices
+        /// </summary>
+        /// <param name="vertices">N vertices</param>
+        /// <param name="uv0s">N uv values</param>
+        /// <returns>Reference to the face</returns>
         public Face CreateNGon(Vertex[] vertices, float2[] uv0s)
         {
             Face face = new Face(vertices, uv0s);
@@ -253,6 +303,12 @@ namespace Meshes
             return face;
         }
 
+        /// <summary>
+        /// Create NGon with the given vertices
+        /// </summary>
+        /// <param name="vertices">N vertices</param>
+        /// <param name="uv0s">N uv values</param>
+        /// <returns>Reference to the face</returns>
         public Face CreateNGon(List<Vertex> vertices, float2[] uv0s)
         {
             Face face = new Face(vertices, uv0s);
@@ -286,7 +342,14 @@ namespace Meshes
             throw new NotImplementedException { };
         }
 
-
+        /// <summary>
+        /// Add an outside Vertex to the EditableMesh. You probably do not need
+        /// to use this method unless you are creating a Mesh from scratch. This 
+        /// method checks if the vertex already exists in the list, but does not
+        /// check if faces referenced by the vertex exists in the EditableMesh.
+        /// </summary>
+        /// <param name="vertex">vertex to add</param>
+        /// <returns></returns>
         public Vertex AddVertex(Vertex vertex)
         {
             if (Vertices.Contains(vertex)) {
@@ -298,16 +361,21 @@ namespace Meshes
         }
 
         /// <summary>
-        /// Add a presumably externally created vertex 
+        /// Add a presumably externally created vertex to the EditableMesh.
         /// </summary>
-        /// <param name="vertex"></param>
-        /// <returns></returns>
+        /// <param name="vertex">vertex to add</param>
+        /// <returns>the vertex</returns>
         public Vertex AddVertexUnchecked(Vertex vertex)
         {
             Vertices.Add(vertex);
             return vertex;
         }
 
+        /// <summary>
+        /// Add multiple vertices to the editable mesh, checking if each one already exists
+        /// </summary>
+        /// <param name="vertices">vertices to add</param>
+        /// <returns>the list of vertices</returns>
         public Vertex[] AddVertices(params Vertex[] vertices)
         {
             Vertex[] return_list = new Vertex[vertices.Length];
@@ -318,6 +386,11 @@ namespace Meshes
             return return_list;
         }
 
+        /// <summary>
+        /// Add multiple vertices to the editable mesh, without any checks
+        /// </summary>
+        /// <param name="vertices">vertices to add</param>
+        /// <returns>the list of vertices</returns>
         public Vertex[] AddVerticesUnchecked(params Vertex[] vertices)
         {
             foreach (Vertex vertex in vertices)
@@ -327,6 +400,15 @@ namespace Meshes
             return vertices;
         }
 
+        /// <summary>
+        /// Add an edge between the given two vertices if one does
+        /// not already exist and return the edge.
+        /// Right now, this function doesn't have much purpose unless we
+        /// expose edges more to the outside.
+        /// </summary>
+        /// <param name="vertex1">vertex 1</param>
+        /// <param name="vertex2">vertex 2</param>
+        /// <returns>edge between them</returns>
         public Edge AddEdge(Vertex vertex1, Vertex vertex2)
         {
             throw new NotImplementedException { };

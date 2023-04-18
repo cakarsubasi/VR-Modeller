@@ -16,20 +16,24 @@ namespace Meshes
         public static readonly int3 degenerate = int3(ushort.MaxValue - 1, ushort.MaxValue - 1, ushort.MaxValue - 1);
     }
 
-
+    /// <summary>
+    /// Stream representation of a vertex for the renderer. Each vertex may create
+    /// multiple Stream0s based on the faces around it.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public struct Stream0
     {
         public float3 position; // 12 bytes
         public float3 normal; // 12 bytes
         public float4 tangent; // 16 bytes
-        public float2 texCoord0; // 8 bytes
+        public float2 uv0; // 8 bytes
 
         public static readonly Stream0 degenerate = new Stream0
         {
             position = float3(0f, 0f, 0f),
             normal = float3(0f, 0f, 0f),
             tangent = float4(0f, 0f, 0f, 0f),
+            uv0 = float2(0f, 0f)
         };
     }
 
@@ -41,6 +45,10 @@ namespace Meshes
         bool Alive { get; set; }
     }
 
+    /// <summary>
+    /// The Vertex class describes a single corner in the mesh and is described by its
+    /// position, other vertices it connects to, and the faces it is a part of.
+    /// </summary>
     public class Vertex
     {
         public float3 Position { get; set; }
@@ -54,8 +62,8 @@ namespace Meshes
             public int index;
         }
 
-        private List<FaceIndex> faces = new List<FaceIndex>();
-        public List<Edge> edges = new List<Edge>();
+        private List<FaceIndex> faces = new List<FaceIndex>(4);
+        public List<Edge> edges = new List<Edge>(4);
 
         /// <summary>
         /// Create an unconnected Vertex at the given position with the optional
@@ -75,6 +83,12 @@ namespace Meshes
             };
         }
 
+        /// <summary>
+        /// Create a vertex at the position of the other vertex with an edge
+        /// that connects to that vertex
+        /// </summary>
+        /// <param name="other">other vertex</param>
+        /// <returns>newly created vertex</returns>
         public static Vertex FromOtherVertexConnected(Vertex other)
         {
             Vertex self = new Vertex
@@ -91,6 +105,11 @@ namespace Meshes
             return self;
         }
 
+        /// <summary>
+        /// Returns true if this vertex has an edge to the other vertex
+        /// </summary>
+        /// <param name="other">other vertex</param>
+        /// <returns>true if connected</returns>
         public bool IsConnected(Vertex other)
         {
             foreach (Edge edge in edges)
@@ -103,6 +122,11 @@ namespace Meshes
             return false;
         }
 
+        /// <summary>
+        /// Get the edge between this vertex and other vertex if it exists
+        /// </summary>
+        /// <param name="other">other vertex</param>
+        /// <returns>The edge if it exists, otherwise null</returns>
         public Edge? GetEdgeTo(Vertex other)
         {
             foreach (Edge edge in edges)
@@ -115,6 +139,11 @@ namespace Meshes
             return null;
         }
 
+        /// <summary>
+        /// Convert the information in this vertex to a stream.
+        /// Use WriteToStream() instead to avoid allocations.
+        /// </summary>
+        /// <returns>The stream</returns>
         internal Stream0[] ToStream()
         {
             var stream = new Stream0[faces.Count];
@@ -123,7 +152,7 @@ namespace Meshes
                 stream[i].position = Position;
                 stream[i].normal = Normal;
                 stream[i].tangent = Tangent;
-                stream[i].texCoord0 = faces[i].face.GetUVof(this);
+                stream[i].uv0 = faces[i].face.GetUVof(this);
             }
             return stream;
         }
@@ -131,7 +160,7 @@ namespace Meshes
         /// <summary>
         /// Write the vertex to a vertex buffer without allocations
         /// </summary>
-        /// <param name="stream"></param>
+        /// <param name="stream">stream to write into</param>
         internal void WriteToStream(ref NativeArray<Stream0> stream)
         {
             Stream0 temp = default;
@@ -140,7 +169,7 @@ namespace Meshes
             temp.tangent = Tangent;
             for (int i = 0; i < faces.Count; ++i)
             {
-                temp.texCoord0 = faces[i].face.GetUVof(this);
+                temp.uv0 = faces[i].face.GetUVof(this);
                 stream[faces[i].index] = temp;
             }
         }
@@ -150,8 +179,18 @@ namespace Meshes
             return faces.Select(props => props.index).ToArray();
         }
 
+        /// <summary>
+        /// Set stream indices for each face for rendering
+        /// </summary>
+        /// <param name="beginning">first free index</param>
+        /// <returns>beginning + number of indices used by the vertex</returns>
         public int OptimizeIndices(int beginning)
         {
+            // TODO: make some faces share indices for efficiency
+
+            // Maybe instead of optimizing this ahead of time
+            // We should get the beginning in WriteToStream() instead
+            // Need to figure out a way to send the information to faces
             for (int i = 0; i < faces.Count; ++i)
             {
                 var prop = faces[i];
@@ -161,6 +200,11 @@ namespace Meshes
             return beginning + faces.Count;
         }
 
+        /// <summary>
+        /// Get the stream index associated with each face
+        /// </summary>
+        /// <param name="face"></param>
+        /// <returns></returns>
         public int GetIndex(Face face)
         {
             foreach (FaceIndex faceIndex in faces)
@@ -173,6 +217,11 @@ namespace Meshes
             return -1;
         }
 
+        /// <summary>
+        /// Recalculate the normal based on adjacent faces.
+        /// The face normals have to be calculated first, else 
+        /// the effect of this function will likely be incorrect.
+        /// </summary>
         public void RecalculateNormal()
         {
             Normal = 0;
@@ -186,6 +235,11 @@ namespace Meshes
             }
         }
 
+        /// <summary>
+        /// Add a face to the internal faces list, but check if the face
+        /// is already included first
+        /// </summary>
+        /// <param name="face">face to add</param>
         internal void AddFaceChecked(Face face)
         {
             if (!faces.Select(structure => structure.face).Contains(face))
@@ -215,6 +269,11 @@ namespace Meshes
             return AddEdgeUncheckedFromVertex(other);
         }
 
+        /// <summary>
+        /// Add an edge to the internal edges list, but check
+        /// if the edge is already in the list first.
+        /// </summary>
+        /// <param name="edge"></param>
         internal void AddEdgeChecked(Edge edge)
         {
             foreach (Edge potentialDuplicate in edges)
@@ -227,6 +286,11 @@ namespace Meshes
             edges.Add(edge);
         }
 
+        /// <summary>
+        /// Add 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         internal Edge AddEdgeUncheckedFromVertex(Vertex other)
         {
             Edge newEdge = new Edge(this, other);
@@ -236,7 +300,7 @@ namespace Meshes
 
         public override string ToString()
         {
-            return $"{base.ToString()}: position: {Position}, Faces: {faces.Count}";
+            return $"{base.ToString()}: position: {Position}, Faces: {faces.Count}, Edges: {edges.Count}";
         }
     }
 
@@ -286,6 +350,12 @@ namespace Meshes
         }
     }
 
+    public enum ShadingType
+    {
+        Flat = 0,
+        Smooth = 1,
+    }
+
     public class Face
     {
         // Assume that the list of vertices is clockwise on the face
@@ -296,10 +366,10 @@ namespace Meshes
             public float3 Position => vertex.Position;
         }
 
-        private List<VertexCoordinate> vertices; // = new List<VertexCoordinate>(4);
+        private readonly List<VertexCoordinate> vertices;
         public List<Vertex> Vertices => vertices.Select(item => item.vertex).ToList();
 
-        public List<Edge> edges = new List<Edge>(4);
+        public readonly List<Edge> edges; // = new List<Edge>(4);
 
         public int TriangleCount => GetTriangleCount();
 
@@ -313,10 +383,14 @@ namespace Meshes
 
         public float3 Position => position;
         public float3 Normal => normal;
+        public int VertexCount => vertices.Count;
+        public int EdgeCount => edges.Count;
+
         public Face()
         {
             normal = position = Unity.Mathematics.float3.zero;
             vertices = new List<VertexCoordinate>(0);
+            edges = new List<Edge>(0);
         }
 
         /// <summary>
@@ -333,6 +407,7 @@ namespace Meshes
 
             normal = position = default;
             this.vertices = new List<VertexCoordinate>(vertices.Count);
+            edges = new List<Edge>(vertices.Count);
             for (int i = 0; i < vertices.Count; ++i)
             {
                 this.vertices.Add(new VertexCoordinate
@@ -357,6 +432,7 @@ namespace Meshes
 
             normal = position = default;
             this.vertices = new List<VertexCoordinate>(vertices.Count);
+            edges = new List<Edge>(vertices.Count);
             for (int i = 0; i < vertices.Count; ++i)
             {
                 this.vertices.Add(new VertexCoordinate
@@ -381,6 +457,7 @@ namespace Meshes
 
             normal = position = default;
             this.vertices = new List<VertexCoordinate>(vertices.Length);
+            edges = new List<Edge>(vertices.Length);
             for (int i = 0; i < vertices.Length; ++i)
             {
                 this.vertices.Add(new VertexCoordinate
@@ -396,12 +473,6 @@ namespace Meshes
             FinalizeSetup();
         }
 
-        public enum ShadingType
-        {
-            Flat = 0,
-            Smooth = 1,
-        }
-
         /// <summary>
         /// Construct from a triangle
         /// </summary>
@@ -411,6 +482,7 @@ namespace Meshes
         {
             normal = position = default;
             this.vertices = new List<VertexCoordinate>(3);
+            edges = new List<Edge>(3);
             this.vertices.Add(new VertexCoordinate
             {
                 vertex = vertices.vert0,
@@ -434,14 +506,16 @@ namespace Meshes
         }
 
         /// <summary>
-        /// Construct from a quad
+        /// Construct from a quad. The caller should ensure the vertices lie on the same plane
+        /// and form a valid face counter clockwise, else the results might be unexpected.
         /// </summary>
-        /// <param name="vertices"></param>
-        /// <param name="uv0s"></param>
+        /// <param name="vertices">four vertices counter-clockwise</param>
+        /// <param name="uv0s">default uv values</param>
         public Face(QuadVerts vertices, QuadUVs uv0s = default)
         {
             normal = position = default;
             this.vertices = new List<VertexCoordinate>(4);
+            edges = new List<Edge>(4);
             this.vertices.Add(new VertexCoordinate
             {
                 vertex = vertices.vert0,
@@ -469,6 +543,9 @@ namespace Meshes
             FinalizeSetup();
         }
 
+        /// <summary>
+        /// Create edges around the vertices, calculate normals and position.
+        /// </summary>
         private void FinalizeSetup()
         {
             GenerateEdges();

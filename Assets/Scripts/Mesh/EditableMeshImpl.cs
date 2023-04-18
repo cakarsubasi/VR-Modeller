@@ -170,6 +170,16 @@ namespace Meshes
             other.Faces.Clear();
         }
 
+        public EditableMeshImpl Split(List<Vertex> vertices)
+        {
+            throw new NotImplementedException { };
+        }
+
+        public EditableMeshImpl DeepCopy()
+        {
+            throw new NotImplementedException { };
+        }
+
         /// <summary>
         /// Optimize the in memory representation of the mesh for rendering.
         /// <br></br>
@@ -267,16 +277,9 @@ namespace Meshes
             }
         }
 
-        public void Triangulate()
-        {
-            throw new NotImplementedException { };
-        }
-
-        public void TrianglesToQuads()
-        {
-            throw new NotImplementedException { };
-        }
-
+        /// <summary>
+        /// Recalculate the bounds for the renderer.
+        /// </summary>
         public void RecalculateBounds()
         {
             Mesh.RecalculateBounds();

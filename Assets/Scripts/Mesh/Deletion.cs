@@ -54,12 +54,12 @@ namespace Meshes
 
         public void DeleteVertices(List<Vertex> vertices)
         {
-
+            throw new NotImplementedException { };
         }
 
         public void DissolveVertices(List<Vertex> vertices)
         {
-
+            throw new NotImplementedException { };
         }
 
         /// <summary>
