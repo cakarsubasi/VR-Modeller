@@ -89,14 +89,32 @@ public class ObjectController : MonoBehaviour
         {
             foreach (var item in AllObjects)
             {
-                item.transform.Find("GizmoPosition").gameObject.SetActive(true);
+                item.transform.FindChildWithTag("GizmoPosition").gameObject.SetActive(true);
             }
         }
         else
         {
             foreach (var item in AllObjects)
             {
-                item.transform.Find("GizmoPosition").gameObject.SetActive(false);
+                item.transform.FindChildWithTag("GizmoPosition").gameObject.SetActive(false);
+            }
+        }
+    }
+
+    public void OnRotate(bool rotating)
+    {
+        if (rotating)
+        {
+            foreach (var item in AllObjects)
+            {
+                item.transform.FindChildWithTag("GizmoRotation").gameObject.SetActive(true);
+            }
+        }
+        else
+        {
+            foreach (var item in AllObjects)
+            {
+                item.transform.FindChildWithTag("GizmoRotation").gameObject.SetActive(false);
             }
         }
     }

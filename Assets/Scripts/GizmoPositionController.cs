@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class GizmoPositionArrowController : MonoBehaviour
+public class GizmoPositionController : MonoBehaviour
 {
     public GameObject xArrow, yArrow, zArrow, xSquare, ySquare, zSquare;
 

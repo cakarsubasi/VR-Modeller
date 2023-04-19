@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Vertex
   - MeshObject
+  - GizmoPosition
+  - GizmoRotation
   layers:
   - Default
   - TransparentFX
