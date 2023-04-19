@@ -15,7 +15,7 @@ public class MeshController : MonoBehaviour
     List<Vector3> vertices = new List<Vector3>();
     List<GameObject> vertexObjects = new List<GameObject>();
     bool isSelected;
-    EditableMeshImpl editableMesh;
+    UMesh editableMesh;
 
     public List<Vector3> Vertices { get => vertices; set => vertices = value; }
     public Mesh Mesh { get => mesh; set => mesh = value; }
@@ -27,7 +27,7 @@ public class MeshController : MonoBehaviour
         meshFilter = GetComponent<MeshFilter>();
         mesh = meshFilter.mesh;
         //Vertices = mesh.vertices.ToList();
-        Vertices = editableMesh.Vertices.ToList();
+        Vertices = editableMesh.VertexLocations.ToList();
         //Debug.Log("Vertices: " + Vertices.Count);
 
         List<Vector3> updatedVertices = new List<Vector3>();
