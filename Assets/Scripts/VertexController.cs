@@ -5,12 +5,12 @@ public class VertexController : MonoBehaviour
 {
     Material material;
     MeshController meshController;
-    int[] assignedVertices;
+    int vertexIndex;
     bool isSelected;
     GameObject parent;
     MeshCollider parentCollider;
 
-    public int[] AssignedVertices { get => assignedVertices; set => assignedVertices = value; }
+    public int VertexIndex { get => vertexIndex; set => vertexIndex = value; }
     public bool IsSelected { get => isSelected; set => isSelected = value; }
 
     private void Start()
@@ -53,10 +53,7 @@ public class VertexController : MonoBehaviour
     {
         if (IsSelected)
         {
-            for (int i = 0; i < AssignedVertices.Length; i++)
-            {
-                meshController.Vertices[AssignedVertices[i]] = parent.transform.InverseTransformPoint(transform.position);
-            }
+            meshController.Vertices[VertexIndex] = parent.transform.InverseTransformPoint(transform.position);
 
             meshController.Mesh.vertices = meshController.Vertices.ToArray();
 
