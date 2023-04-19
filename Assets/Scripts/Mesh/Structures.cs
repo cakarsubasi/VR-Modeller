@@ -11,11 +11,6 @@ using UnityEngine;
 #nullable enable
 namespace Meshes
 {
-    static class Triangle
-    {
-        public static readonly int3 degenerate = int3(ushort.MaxValue - 1, ushort.MaxValue - 1, ushort.MaxValue - 1);
-    }
-
     /// <summary>
     /// Stream representation of a vertex for the renderer. Each vertex may create
     /// multiple Stream0s based on the faces around it.
@@ -38,14 +33,6 @@ namespace Meshes
     }
 
     /// <summary>
-    /// Use this maybe to do cleanup afterwards?
-    /// </summary>
-    interface IMeshStruct
-    {
-        bool Alive { get; set; }
-    }
-
-    /// <summary>
     /// The Vertex class describes a single corner in the mesh and is described by its
     /// position, other vertices it connects to, and the faces it is a part of.
     /// </summary>
@@ -56,14 +43,19 @@ namespace Meshes
         // is the tangent even needed?
         public float4 Tangent;
 
-        private struct FaceIndex
+        public bool Alive = true;
+
+        internal struct FaceIndex
         {
             public Face face;
             public int index;
         }
 
-        private List<FaceIndex> faces = new List<FaceIndex>(4);
+        internal List<FaceIndex> faces = new List<FaceIndex>(4);
         public List<Edge> edges = new List<Edge>(4);
+
+        public int FaceCount => faces.Count;
+        public int EdgeCount => edges.Count;
 
         /// <summary>
         /// Create an unconnected Vertex at the given position with the optional
@@ -103,6 +95,16 @@ namespace Meshes
             other.edges.Add(edge);
 
             return self;
+        }
+
+        public List<Face> GetFaces()
+        {
+            List<Face> faces = new List<Face>(this.faces.Count);
+            foreach (FaceIndex faceIndex in this.faces)
+            {
+                faces.Add(faceIndex.face);
+            }
+            return faces;
         }
 
         /// <summary>
@@ -245,7 +247,8 @@ namespace Meshes
             if (!faces.Select(structure => structure.face).Contains(face))
             {
                 faces.Add(new FaceIndex { face = face });
-            } else
+            }
+            else
             {
                 Debug.Log($"Tried adding existing face: {face}");
             }
@@ -295,7 +298,31 @@ namespace Meshes
         {
             Edge newEdge = new Edge(this, other);
             edges.Add(newEdge);
+            other.edges.Add(newEdge);
             return newEdge;
+        }
+
+        internal void Delete()
+        {
+            // clear edges first
+            foreach (Edge edge in edges)
+            {
+                edge.Delete();
+                edge.Other(this).RemoveEdge(edge);
+            }
+            edges.Clear();
+
+            foreach (FaceIndex face in faces)
+            {
+                face.face.Delete();
+            }
+            faces.Clear();
+            Alive = false;
+        }
+
+        internal void RemoveEdge(Edge edge)
+        {
+            edges.Remove(edge);
         }
 
         public override string ToString()
@@ -308,6 +335,8 @@ namespace Meshes
     {
         public Vertex one;
         public Vertex two;
+
+        public bool Alive = true;
 
         public float3 Position => (one.Position + two.Position) / 2.0f;
         public float3 Normal => (one.Normal + two.Normal) / 2.0f;
@@ -348,12 +377,22 @@ namespace Meshes
             one.Position += relative;
             two.Position += relative;
         }
+
+        public void Delete()
+        {
+            Alive = false;
+        }
     }
 
     public enum ShadingType
     {
         Flat = 0,
         Smooth = 1,
+    }
+
+    static class Triangle
+    {
+        public static readonly int3 degenerate = int3(ushort.MaxValue - 1, ushort.MaxValue - 1, ushort.MaxValue - 1);
     }
 
     public class Face
@@ -366,15 +405,19 @@ namespace Meshes
             public float3 Position => vertex.Position;
         }
 
+        //private ShadingType shading = ShadingType.Flat;
+
         private readonly List<VertexCoordinate> vertices;
         public List<Vertex> Vertices => vertices.Select(item => item.vertex).ToList();
 
-        public readonly List<Edge> edges; // = new List<Edge>(4);
+        public readonly List<Edge> edges;
 
         public int TriangleCount => GetTriangleCount();
 
         private float3 position;
         private float3 normal;
+
+        public bool Alive = true;
 
         private static readonly int3[] empty = new int3[0];
         private static readonly int3[] degenerate = { int3(0, 0, 0) };
@@ -588,6 +631,10 @@ namespace Meshes
             position /= vertices.Count;
         }
 
+        /// <summary>
+        /// Get the number of triangles required to show this face
+        /// </summary>
+        /// <returns>0 if less than 3 vertices, number of vertices minus 2 otherwise</returns>
         public int GetTriangleCount()
         {
             if (vertices.Count < 3)
@@ -598,6 +645,18 @@ namespace Meshes
             {
                 return vertices.Count - 2;
             }
+        }
+
+        public bool ContainsVertex(Vertex vertex)
+        {
+            foreach (VertexCoordinate vertexCoordinate in vertices)
+            {
+                if (vertexCoordinate.vertex == vertex)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public void MoveRelative(float3 relative)
@@ -644,6 +703,24 @@ namespace Meshes
                 }
             }
             return float2(0f, 0f);
+        }
+
+        public List<Face> GetAdjacentFaces()
+        {
+            throw new NotImplementedException { };
+        }
+
+        public void GetAdjacentFaces(List<Face> faces)
+        {
+            throw new NotImplementedException { };
+        }
+
+
+        internal void Delete()
+        {
+            edges.Clear();
+            vertices.Clear();
+            Alive = false;
         }
 
         /// <summary>

@@ -82,7 +82,7 @@ namespace Meshes
         }
     }
 
-    partial struct EditableMeshImpl
+    partial struct UMesh
     {
         /// <summary>
         /// Create Vertex at the given position
@@ -310,6 +310,19 @@ namespace Meshes
         /// <param name="uv0s">N uv values</param>
         /// <returns>Reference to the face</returns>
         public Face CreateNGon(List<Vertex> vertices, float2[] uv0s)
+        {
+            Face face = new Face(vertices, uv0s);
+            Faces.Add(face);
+            return face;
+        }
+
+        /// <summary>
+        /// Create NGon with the given vertices
+        /// </summary>
+        /// <param name="vertices">N vertices</param>
+        /// <param name="uv0s">N uv values</param>
+        /// <returns>Reference to the face</returns>
+        public Face CreateNGon(List<Vertex> vertices, List<float2> uv0s)
         {
             Face face = new Face(vertices, uv0s);
             Faces.Add(face);

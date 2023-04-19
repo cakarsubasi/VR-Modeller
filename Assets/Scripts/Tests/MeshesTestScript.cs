@@ -12,16 +12,16 @@ using static Unity.Mathematics.math;
 public class MeshesTestScript
 {
 
-    public EditableMeshImpl EditableMeshEmpty()
+    public UMesh EditableMeshEmpty()
     {
-        EditableMeshImpl mesh = default;
+        UMesh mesh = default;
         mesh.Setup(new Mesh());
         return mesh;
     }
 
-    public EditableMeshImpl EditableMeshQuad()
+    public UMesh EditableMeshQuad()
     {
-        EditableMeshImpl mesh = default;
+        UMesh mesh = default;
         mesh.Setup(new Mesh());
         var vert1 = float3(0f, 0f, 0f);
         var vert2 = float3(1f, 0f, 0f);
@@ -39,7 +39,7 @@ public class MeshesTestScript
     [Test]
     public void TestCreateQuad()
     {
-        EditableMeshImpl mesh = EditableMeshEmpty();
+        UMesh mesh = EditableMeshEmpty();
         var vert1 = float3(0f, 0f, 0f);
         var vert2 = float3(1f, 0f, 0f);
         var vert3 = float3(1f, 1f, 0f);
@@ -57,6 +57,7 @@ public class MeshesTestScript
         {
             Assert.AreEqual(float3(0f, 0f, 1f), vertex.Normal);
             Assert.Contains(vertex, face.Vertices);
+            Assert.AreEqual(2, vertex.EdgeCount);
         }
     }
 
@@ -66,7 +67,7 @@ public class MeshesTestScript
     [Test]
     public void TestCreateQuad2()
     {
-        EditableMeshImpl mesh = EditableMeshEmpty();
+        UMesh mesh = EditableMeshEmpty();
         Vertex vert1 = Vertex.Dangling(float3(0f, 0f, 0f));
         Vertex vert2 = Vertex.Dangling(float3(1f, 0f, 0f));
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
@@ -86,6 +87,7 @@ public class MeshesTestScript
         {
             Assert.AreEqual(float3(0f, 0f, 1f), vertex.Normal);
             Assert.Contains(vertex, face.Vertices);
+            Assert.AreEqual(2, vertex.EdgeCount);
         }
     }
 
@@ -95,7 +97,7 @@ public class MeshesTestScript
     [Test]
     public void TestCreateQuad3()
     {
-        EditableMeshImpl mesh = EditableMeshEmpty();
+        UMesh mesh = EditableMeshEmpty();
         Vertex vert1 = Vertex.Dangling(float3(0f, 0f, 0f));
         mesh.AddVertexUnchecked(vert1);
 
@@ -128,7 +130,7 @@ public class MeshesTestScript
     [Test]
     public void TestCreateTwoTris()
     {
-        EditableMeshImpl mesh = EditableMeshEmpty();
+        UMesh mesh = EditableMeshEmpty();
         Vertex vert1 = Vertex.Dangling(float3(0f, 0f, 0f));
         Vertex vert2 = Vertex.Dangling(float3(1f, 0f, 0f));
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
@@ -159,7 +161,7 @@ public class MeshesTestScript
     [Test]
     public void TestCreateNGon()
     {
-        EditableMeshImpl mesh = EditableMeshEmpty();
+        UMesh mesh = EditableMeshEmpty();
         Vertex vert1 = Vertex.Dangling(float3(0f, 0f, 0f));
         Vertex vert2 = Vertex.Dangling(float3(1f, 0f, 0f));
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
@@ -188,7 +190,7 @@ public class MeshesTestScript
     [Test]
     public void TestCreateCircle()
     {
-        EditableMeshImpl mesh = EditableMeshEmpty();
+        UMesh mesh = EditableMeshEmpty();
         int points = 16;
         List<Vertex> vertices = new(16);
         for (int i = 0; i < points; ++i)
@@ -220,7 +222,7 @@ public class MeshesTestScript
     [Test]
     public void TestTriangleToQuad()
     {
-        EditableMeshImpl mesh = EditableMeshEmpty();
+        UMesh mesh = EditableMeshEmpty();
         Vertex vert1 = Vertex.Dangling(float3(0f, 0f, 0f));
         Vertex vert2 = Vertex.Dangling(float3(1f, 0f, 0f));
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
@@ -254,7 +256,7 @@ public class MeshesTestScript
     [Test]
     public void TestExtrudeOneEdge()
     {
-        EditableMeshImpl mesh = EditableMeshEmpty();
+        UMesh mesh = EditableMeshEmpty();
         Vertex vert1 = mesh.CreateVertex(float3(0f, 0f, 0f));
         Vertex vert2 = mesh.Extrude(vert1);
         vert1.Position = float3(1f, 0f, 0f);
@@ -291,7 +293,7 @@ public class MeshesTestScript
     [Test]
     public void TestExtrudeOneFace()
     {
-        EditableMeshImpl mesh = EditableMeshQuad();
+        UMesh mesh = EditableMeshQuad();
         Face face = mesh.Faces[0];
 
         Face otherFace = mesh.Extrude(face);
@@ -315,7 +317,7 @@ public class MeshesTestScript
     [Test]
     public void TestDeleteOneVertex1()
     {
-        EditableMeshImpl mesh = EditableMeshEmpty();
+        UMesh mesh = EditableMeshEmpty();
         Vertex vert1 = Vertex.Dangling(float3(0f, 0f, 0f));
         Vertex vert2 = Vertex.Dangling(float3(1f, 0f, 0f));
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
@@ -330,9 +332,9 @@ public class MeshesTestScript
         Assert.AreEqual(1, mesh.FaceCount);
         Assert.AreEqual(3, mesh.VertexCount);
 
-        Assert.AreEqual(vert1.edges.Count, 2);
-        Assert.AreEqual(vert3.edges.Count, 2);
-        Assert.AreEqual(vert4.edges.Count, 2);
+        Assert.AreEqual(2, vert1.edges.Count);
+        Assert.AreEqual(2, vert3.edges.Count);
+        Assert.AreEqual(2, vert4.edges.Count);
     }
 
     /// <summary>
@@ -343,7 +345,7 @@ public class MeshesTestScript
     [Test]
     public void TestDeleteOneVertex2()
     {
-        EditableMeshImpl mesh = EditableMeshEmpty();
+        UMesh mesh = EditableMeshEmpty();
         Vertex vert1 = Vertex.Dangling(float3(0f, 0f, 0f));
         Vertex vert2 = Vertex.Dangling(float3(1f, 0f, 0f));
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
@@ -371,7 +373,7 @@ public class MeshesTestScript
     [Test]
     public void TestDissolveOneVertex1()
     {
-        EditableMeshImpl mesh = EditableMeshEmpty();
+        UMesh mesh = EditableMeshEmpty();
         Vertex vert1 = Vertex.Dangling(float3(0f, 0f, 0f));
         Vertex vert2 = Vertex.Dangling(float3(1f, 0f, 0f));
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
@@ -399,7 +401,7 @@ public class MeshesTestScript
     [Test]
     public void TestDissolveOneVertex2()
     {
-        EditableMeshImpl mesh = EditableMeshEmpty();
+        UMesh mesh = EditableMeshEmpty();
         Vertex vert1 = Vertex.Dangling(float3(0f, 0f, 0f));
         Vertex vert2 = Vertex.Dangling(float3(1f, 0f, 0f));
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
@@ -422,7 +424,34 @@ public class MeshesTestScript
     [Test]
     public void TestDeleteOneFace()
     {
-        throw new NotImplementedException { };
+        UMesh mesh = EditableMeshEmpty();
+        Vertex vert1 = Vertex.Dangling(float3(0f, 0f, 0f));
+        Vertex vert2 = Vertex.Dangling(float3(1f, 0f, 0f));
+        Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
+        Vertex vert4 = Vertex.Dangling(float3(0f, 1f, 0f));
+        mesh.AddVerticesUnchecked(vert1, vert2, vert3, vert4);
+        Face face1 = mesh.CreateQuad(new QuadVerts(vert1, vert2, vert3, vert4));
+        Vertex vert5 = Vertex.Dangling(float3(2f, 0f, 0f));
+        Vertex vert6 = Vertex.Dangling(float3(2f, 1f, 0f));
+        mesh.AddVerticesUnchecked(vert5, vert6);
+        Face face2 = mesh.CreateQuad(new QuadVerts(vert2, vert5, vert6, vert3));
+        mesh.OptimizeIndices();
+        mesh.RecalculateNormals();
+
+        mesh.DeleteFace(face1);
+
+        Assert.AreEqual(1, mesh.FaceCount);
+        Assert.AreEqual(6, mesh.VertexCount);
+        Assert.IsTrue(vert1.Alive);
+        Assert.IsTrue(vert2.Alive);
+        Assert.IsTrue(vert3.Alive);
+        Assert.IsTrue(vert4.Alive);
+        Assert.IsTrue(vert5.Alive);
+        Assert.IsTrue(vert6.Alive);
+        Assert.AreEqual(2, vert5.EdgeCount);
+        Assert.AreEqual(2, vert6.EdgeCount);
+        Assert.AreEqual(1, vert5.FaceCount);
+        Assert.AreEqual(1, vert6.FaceCount);
     }
 
     [Test]

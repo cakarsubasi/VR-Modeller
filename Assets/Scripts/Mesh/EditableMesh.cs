@@ -7,12 +7,12 @@ using static Unity.Mathematics.math;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class EditableMesh : MonoBehaviour
 {
-    EditableMeshImpl meshInternal;
+    UMesh meshInternal;
 
     [SerializeField]
     Mesh? CopyFromMesh;
 
-    public EditableMeshImpl MeshInternal { get => meshInternal; private set => meshInternal = value; }
+    public UMesh MeshInternal { get => meshInternal; private set => meshInternal = value; }
 
     private void OnEnable()
     {
