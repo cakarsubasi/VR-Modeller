@@ -11,11 +11,14 @@ using static Unity.Mathematics.math;
 
 namespace Meshes
 {
-    partial struct EditableMeshImpl
+    partial struct UMesh
     {
 
         public void SelectFromIndices(List<int> indices, List<Vertex> selection)
         {
+            selection.Clear();
+            ResizeListAsNeeded(selection, indices.Count);
+            
             foreach (int index in indices)
             {
                 selection.Add(Vertices[index]);
@@ -32,9 +35,28 @@ namespace Meshes
             throw new NotImplementedException { };
         }
 
+        /// <summary>
+        /// Find selected faces from vertices, careful with this operation as it is V*F on mesh size
+        /// (not input size)
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <param name="selection"></param>
         public void SelectFacesFromVertices(List<Vertex> vertices, List<Face> selection)
         {
-            throw new NotImplementedException { };
+            selection.Clear();
+            foreach (Face face in Faces)
+            {
+                int i = 0;
+                foreach (Vertex vertex in vertices)
+                {
+                    if (face.ContainsVertex(vertex))
+                        i++;
+                }
+                if (i == face.VertexCount)
+                {
+                    selection.Add(face);
+                }
+            }
         }
 
         public void SelectMore(List<Vertex> selection)
@@ -81,6 +103,19 @@ namespace Meshes
         private List<Vertex> FindAllByPosition(float3 position)
         {
             return Vertices.FindAll(vert => vert.Position.Equals(position)).ToList();
+        }
+
+
+        private static void ResizeListAsNeeded<T>(List<T> list, int size)
+        {
+            if (size > 1e19)
+            {
+                throw new ArgumentException("Requested size is too large");
+            } 
+            if (size > list.Capacity)
+            {
+                list.Capacity = 2 * size;
+            }
         }
     }
 }

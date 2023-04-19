@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Meshes
 {
-    partial struct EditableMeshImpl
+    partial struct UMesh
     {
         /// <summary>
         /// Move a vertex of the given index to the specified position

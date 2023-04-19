@@ -12,7 +12,7 @@ using static Unity.Mathematics.math;
 
 namespace Meshes
 {
-    public partial struct EditableMeshImpl
+    public partial struct UMesh
     {
         public struct IndexedVertex
         {
@@ -162,7 +162,7 @@ namespace Meshes
             return this.mesh;
         }
 
-        public void Combine(EditableMeshImpl other)
+        public void Combine(UMesh other)
         {
             Vertices.AddRange(other.Vertices);
             Faces.AddRange(other.Faces);
@@ -170,12 +170,12 @@ namespace Meshes
             other.Faces.Clear();
         }
 
-        public EditableMeshImpl Split(List<Vertex> vertices)
+        public UMesh Split(List<Vertex> vertices)
         {
             throw new NotImplementedException { };
         }
 
-        public EditableMeshImpl DeepCopy()
+        public UMesh DeepCopy()
         {
             throw new NotImplementedException { };
         }

@@ -11,11 +11,6 @@ using UnityEngine;
 #nullable enable
 namespace Meshes
 {
-    static class Triangle
-    {
-        public static readonly int3 degenerate = int3(ushort.MaxValue - 1, ushort.MaxValue - 1, ushort.MaxValue - 1);
-    }
-
     /// <summary>
     /// Stream representation of a vertex for the renderer. Each vertex may create
     /// multiple Stream0s based on the faces around it.
@@ -35,14 +30,6 @@ namespace Meshes
             tangent = float4(0f, 0f, 0f, 0f),
             uv0 = float2(0f, 0f)
         };
-    }
-
-    /// <summary>
-    /// Use this maybe to do cleanup afterwards?
-    /// </summary>
-    interface IMeshStruct
-    {
-        bool Alive { get; set; }
     }
 
     /// <summary>
@@ -108,6 +95,16 @@ namespace Meshes
             other.edges.Add(edge);
 
             return self;
+        }
+
+        public List<Face> GetFaces()
+        {
+            List<Face> faces = new List<Face>(this.faces.Count);
+            foreach (FaceIndex faceIndex in this.faces)
+            {
+                faces.Add(faceIndex.face);
+            }
+            return faces;
         }
 
         /// <summary>
@@ -250,7 +247,8 @@ namespace Meshes
             if (!faces.Select(structure => structure.face).Contains(face))
             {
                 faces.Add(new FaceIndex { face = face });
-            } else
+            }
+            else
             {
                 Debug.Log($"Tried adding existing face: {face}");
             }
@@ -307,7 +305,7 @@ namespace Meshes
         internal void Delete()
         {
             // clear edges first
-            foreach(Edge edge in edges)
+            foreach (Edge edge in edges)
             {
                 edge.Delete();
                 edge.Other(this).RemoveEdge(edge);
@@ -316,7 +314,7 @@ namespace Meshes
 
             foreach (FaceIndex face in faces)
             {
-                face.face.Clear();
+                face.face.Delete();
             }
             faces.Clear();
             Alive = false;
@@ -392,6 +390,11 @@ namespace Meshes
         Smooth = 1,
     }
 
+    static class Triangle
+    {
+        public static readonly int3 degenerate = int3(ushort.MaxValue - 1, ushort.MaxValue - 1, ushort.MaxValue - 1);
+    }
+
     public class Face
     {
         // Assume that the list of vertices is clockwise on the face
@@ -401,6 +404,8 @@ namespace Meshes
             public float2 uv0;
             public float3 Position => vertex.Position;
         }
+
+        //private ShadingType shading = ShadingType.Flat;
 
         private readonly List<VertexCoordinate> vertices;
         public List<Vertex> Vertices => vertices.Select(item => item.vertex).ToList();
@@ -626,6 +631,10 @@ namespace Meshes
             position /= vertices.Count;
         }
 
+        /// <summary>
+        /// Get the number of triangles required to show this face
+        /// </summary>
+        /// <returns>0 if less than 3 vertices, number of vertices minus 2 otherwise</returns>
         public int GetTriangleCount()
         {
             if (vertices.Count < 3)
@@ -636,6 +645,18 @@ namespace Meshes
             {
                 return vertices.Count - 2;
             }
+        }
+
+        public bool ContainsVertex(Vertex vertex)
+        {
+            foreach (VertexCoordinate vertexCoordinate in vertices)
+            {
+                if (vertexCoordinate.vertex == vertex)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public void MoveRelative(float3 relative)
@@ -684,12 +705,18 @@ namespace Meshes
             return float2(0f, 0f);
         }
 
-        internal void Delete()
+        public List<Face> GetAdjacentFaces()
         {
             throw new NotImplementedException { };
         }
 
-        internal void Clear()
+        public void GetAdjacentFaces(List<Face> faces)
+        {
+            throw new NotImplementedException { };
+        }
+
+
+        internal void Delete()
         {
             edges.Clear();
             vertices.Clear();
