@@ -8,6 +8,7 @@ TagManager:
   - MeshObject
   - GizmoPosition
   - GizmoRotation
+  - GizmoScale
   layers:
   - Default
   - TransparentFX

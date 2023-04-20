@@ -15,12 +15,10 @@ public class GizmoRotationController : MonoBehaviour
 
     GameObject selectedCircle;
     Vector3 previousPosition;
-    Transform gizmoPosition;
 
     private void Start()
     {
-        targetObject = transform.parent;
-        gizmoPosition = transform.parent.FindChildWithTag("GizmoPosition");
+        targetObject = transform.parent.FindChildWithTag("MeshObject");
 
         xCircle.GetComponent<XRSimpleInteractable>().selectEntered.AddListener(OnGrabX);
         xCircle.GetComponent<XRSimpleInteractable>().selectExited.AddListener(OnRelease);
@@ -54,14 +52,17 @@ public class GizmoRotationController : MonoBehaviour
             if (selectedCircle == xCircle)
             {
                 targetObject.Rotate(angle, 0, 0, Space.World);
+                xCircle.transform.Rotate(angle, 0, 0, Space.World);
             }
             else if (selectedCircle == yCircle)
             {
                 targetObject.Rotate(0, angle, 0, Space.World);
+                yCircle.transform.Rotate(0, angle, 0, Space.World);
             }
             else if (selectedCircle == zCircle)
             {
                 targetObject.Rotate(0, 0, angle, Space.World);
+                zCircle.transform.Rotate(0, 0, angle, Space.World);
             }
 
             previousPosition = controllerPosition;
@@ -72,35 +73,23 @@ public class GizmoRotationController : MonoBehaviour
     {
         previousPosition = eventArgs.interactorObject.transform.position;
         selectedCircle = xCircle;
-        xCircle.transform.SetParent(targetObject.transform);
-        transform.SetParent(null);
-        gizmoPosition.SetParent(null);
     }
 
     private void OnGrabY(SelectEnterEventArgs eventArgs)
     {
         previousPosition = eventArgs.interactorObject.transform.position;
         selectedCircle = yCircle;
-        yCircle.transform.SetParent(targetObject.transform);
-        transform.SetParent(null);
-        gizmoPosition.SetParent(null);
     }
 
     private void OnGrabZ(SelectEnterEventArgs eventArgs)
     {
         previousPosition = eventArgs.interactorObject.transform.position;
         selectedCircle = zCircle;
-        zCircle.transform.SetParent(targetObject.transform);
-        transform.SetParent(null);
-        gizmoPosition.SetParent(null);
     }
 
     private void OnRelease(SelectExitEventArgs eventArgs)
     {
         selectedCircle = null;
-        xCircle.transform.SetParent(transform);
-        yCircle.transform.SetParent(transform);
-        zCircle.transform.SetParent(transform);
 
         if (snapping)
         {
@@ -113,8 +102,5 @@ public class GizmoRotationController : MonoBehaviour
             yCircle.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 90));
             zCircle.transform.rotation = Quaternion.Euler(new Vector3(0, 90, 0));
         }
-
-        transform.SetParent(targetObject.transform);
-        gizmoPosition.SetParent(targetObject.transform);
     }
 }

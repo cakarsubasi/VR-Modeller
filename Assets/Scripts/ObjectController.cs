@@ -89,14 +89,14 @@ public class ObjectController : MonoBehaviour
         {
             foreach (var item in AllObjects)
             {
-                item.transform.FindChildWithTag("GizmoPosition").gameObject.SetActive(true);
+                item.transform.parent.FindChildWithTag("GizmoPosition").gameObject.SetActive(true);
             }
         }
         else
         {
             foreach (var item in AllObjects)
             {
-                item.transform.FindChildWithTag("GizmoPosition").gameObject.SetActive(false);
+                item.transform.parent.FindChildWithTag("GizmoPosition").gameObject.SetActive(false);
             }
         }
     }
@@ -107,14 +107,32 @@ public class ObjectController : MonoBehaviour
         {
             foreach (var item in AllObjects)
             {
-                item.transform.FindChildWithTag("GizmoRotation").gameObject.SetActive(true);
+                item.transform.parent.FindChildWithTag("GizmoRotation").gameObject.SetActive(true);
             }
         }
         else
         {
             foreach (var item in AllObjects)
             {
-                item.transform.FindChildWithTag("GizmoRotation").gameObject.SetActive(false);
+                item.transform.parent.FindChildWithTag("GizmoRotation").gameObject.SetActive(false);
+            }
+        }
+    }
+
+    public void OnScale(bool scaling)
+    {
+        if (scaling)
+        {
+            foreach (var item in AllObjects)
+            {
+                item.transform.parent.FindChildWithTag("GizmoScale").gameObject.SetActive(true);
+            }
+        }
+        else
+        {
+            foreach (var item in AllObjects)
+            {
+                item.transform.parent.FindChildWithTag("GizmoScale").gameObject.SetActive(false);
             }
         }
     }

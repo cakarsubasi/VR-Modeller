@@ -42,6 +42,7 @@ public class UIMenuController : MonoBehaviour
             ObjectController.Instance.Moving = ObjectController.Instance.Rotating = ObjectController.Instance.Scaling = false;
             ObjectController.Instance.OnMove(false);
             ObjectController.Instance.OnRotate(false);
+            ObjectController.Instance.OnScale(false);
         }
     }
 
@@ -63,6 +64,7 @@ public class UIMenuController : MonoBehaviour
             ObjectController.Instance.Selecting = ObjectController.Instance.Rotating = ObjectController.Instance.Scaling = false;
             ObjectController.Instance.OnSelect(false);
             ObjectController.Instance.OnRotate(false);
+            ObjectController.Instance.OnScale(false);
         }
     }
 
@@ -84,6 +86,7 @@ public class UIMenuController : MonoBehaviour
             ObjectController.Instance.Moving = ObjectController.Instance.Selecting = ObjectController.Instance.Scaling = false;
             ObjectController.Instance.OnSelect(false);
             ObjectController.Instance.OnMove(false);
+            ObjectController.Instance.OnScale(false);
         }
     }
 
@@ -93,11 +96,13 @@ public class UIMenuController : MonoBehaviour
         {
             scaleMesh.material = menuMat;
             ObjectController.Instance.Scaling = false;
+            ObjectController.Instance.OnScale(false);
         }
         else
         {
             scaleMesh.material = scaleMat;
             ObjectController.Instance.Scaling = true;
+            ObjectController.Instance.OnScale(true);
 
             moveMesh.material = rotateMesh.material = selectMesh.material = menuMat;
             ObjectController.Instance.Moving = ObjectController.Instance.Rotating = ObjectController.Instance.Selecting = false;
