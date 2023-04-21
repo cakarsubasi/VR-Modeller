@@ -67,6 +67,14 @@ public class GizmoRotationController : MonoBehaviour
 
             previousPosition = controllerPosition;
         }
+        else
+        {
+            float distance = Vector3.Distance(transform.position, Camera.main.transform.position);
+            float minValue = 0.25f;
+            float maxValue = 1000f;
+            float scaleFactor = 0.2f;
+            transform.localScale = Vector3.one * Mathf.Clamp(distance * scaleFactor, minValue, maxValue);
+        }
     }
 
     private void OnGrabX(SelectEnterEventArgs eventArgs)

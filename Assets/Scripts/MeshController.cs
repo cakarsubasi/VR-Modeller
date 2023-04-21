@@ -8,7 +8,7 @@ using UnityEngine.InputSystem;
 public class MeshController : MonoBehaviour
 {
     public GameObject vertexHighlight;
-    public InputActionProperty closeAction, openAction;
+    public InputActionProperty openOrCloseAction;
 
     Mesh mesh;
     MeshFilter meshFilter;
@@ -16,13 +16,16 @@ public class MeshController : MonoBehaviour
     List<GameObject> vertexObjects = new List<GameObject>();
     bool isSelected;
     EditableMeshImpl editableMesh;
+    GameObject verticesParent;
 
     public List<Vector3> Vertices { get => vertices; set => vertices = value; }
     public Mesh Mesh { get => mesh; set => mesh = value; }
     public bool IsSelected { get => isSelected; set => isSelected = value; }
+    public GameObject VerticesParent { get => verticesParent; set => verticesParent = value; }
 
     private void Start()
     {
+        openOrCloseAction.action.performed += OpenVertices;
         ObjectController.Instance.AllObjects.Add(gameObject);
 
         editableMesh = GetComponent<EditableMesh>().MeshInternal;
@@ -61,55 +64,36 @@ public class MeshController : MonoBehaviour
                 vertex.SetActive(false);
             }
         }*/
-
     }
 
     IEnumerator InitVertexObjects(List<Vector3> vertices)
     {
-        List<Vector3> updatedVertices = new List<Vector3>();
-
-        Debug.Log("Strarted: " + vertices.Count);
-
+        verticesParent = new GameObject("VerticesParent");
+        verticesParent.transform.parent = this.transform;
+        verticesParent.transform.localPosition = Vector3.zero;
+        verticesParent.transform.localScale = Vector3.one;
+        verticesParent.SetActive(false);
         int i = 0;
         while (i < vertices.Count)
         {
-
-            //Debug.Log("i: " + i);
-
-            GameObject vertex = Instantiate(vertexHighlight, gameObject.transform);
+            GameObject vertex = Instantiate(vertexHighlight, verticesParent.transform);
             vertex.transform.localPosition = vertices[i];
             vertex.transform.localScale = transform.lossyScale / (Mathf.Pow(transform.lossyScale.x, 2) * 20);
             vertex.GetComponent<VertexController>().VertexIndex = i;
             vertexObjects.Add(vertex);
-            vertex.SetActive(false);
-            //Debug.Log("Instantiated vertex");
 
             i++;
             yield return null;
         }
     }
 
-    private void Update()
+
+    public void OpenVertices(InputAction.CallbackContext context)
     {
         if (IsSelected)
         {
-            bool isPrimaryPressed = closeAction.action.IsPressed();
-            bool isSecondaryPressed = openAction.action.IsPressed();
-
-            if (isPrimaryPressed)
-            {
-                foreach (var item in vertexObjects)
-                {
-                    item.SetActive(false);
-                }
-            }
-            else if (isSecondaryPressed)
-            {
-                foreach (var item in vertexObjects)
-                {
-                    item.SetActive(true);
-                }
-            }
+            bool isOpen = verticesParent.gameObject.activeInHierarchy;
+            verticesParent.SetActive(!isOpen);
         }
     }
 
@@ -118,21 +102,15 @@ public class MeshController : MonoBehaviour
         if (IsSelected)
         {
             IsSelected = false;
-            ObjectController.Instance.SelectedGameobject.Remove(gameObject);
+            ObjectController.Instance.SelectedGameobject = null;
             GetComponent<MeshRenderer>().material.color = Color.white;
         }
         else
         {
+            ObjectController.Instance.ClearSelectedObject();
             IsSelected = true;
-            ObjectController.Instance.SelectedGameobject.Add(gameObject);
+            ObjectController.Instance.SelectedGameobject = gameObject;
             GetComponent<MeshRenderer>().material.color = Color.cyan;
         }
     }
-
-    public void OnDiselect()
-    {
-        IsSelected = false;
-        ObjectController.Instance.SelectedGameobject.Remove(gameObject);
-    }
-
 }

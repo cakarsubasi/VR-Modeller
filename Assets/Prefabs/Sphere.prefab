@@ -103,26 +103,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   vertexHighlight: {fileID: 9164154604655469877, guid: d42f6a5a62be2c54586a60f7e15782b7,
     type: 3}
-  closeAction:
+  openOrCloseAction:
     m_UseReference: 1
     m_Action:
-      m_Name: 
+      m_Name: Open Or Close
       m_Type: 0
       m_ExpectedControlType: 
-      m_Id: 
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings: []
-      m_Flags: 0
-    m_Reference: {fileID: -8463826844095356590, guid: c348712bda248c246b8c49b3db54643f,
-      type: 3}
-  openAction:
-    m_UseReference: 1
-    m_Action:
-      m_Name: 
-      m_Type: 0
-      m_ExpectedControlType: 
-      m_Id: 
+      m_Id: 15746874-6872-4721-a2ec-fdbae278c674
       m_Processors: 
       m_Interactions: 
       m_SingletonActionBindings: []

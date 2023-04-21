@@ -30,19 +30,19 @@ public class UIMenuController : MonoBehaviour
         {
             selectMesh.material = menuMat;
             ObjectController.Instance.Selecting = false;
-            ObjectController.Instance.OnSelect(false);
+            ObjectController.Instance.OnSelect();
         }
         else
         {
             selectMesh.material = selectMat;
             ObjectController.Instance.Selecting = true;
-            ObjectController.Instance.OnSelect(true);
+            ObjectController.Instance.OnSelect();
 
             moveMesh.material = rotateMesh.material = scaleMesh.material = menuMat;
             ObjectController.Instance.Moving = ObjectController.Instance.Rotating = ObjectController.Instance.Scaling = false;
-            ObjectController.Instance.OnMove(false);
-            ObjectController.Instance.OnRotate(false);
-            ObjectController.Instance.OnScale(false);
+            ObjectController.Instance.OnMove();
+            ObjectController.Instance.OnRotate();
+            ObjectController.Instance.OnScale();
         }
     }
 
@@ -52,19 +52,19 @@ public class UIMenuController : MonoBehaviour
         {
             moveMesh.material = menuMat;
             ObjectController.Instance.Moving = false;
-            ObjectController.Instance.OnMove(false);
+            ObjectController.Instance.OnMove();
         }
         else
         {
             moveMesh.material = moveMat;
             ObjectController.Instance.Moving = true;
-            ObjectController.Instance.OnMove(true);
+            ObjectController.Instance.OnMove();
 
             selectMesh.material = rotateMesh.material = scaleMesh.material = menuMat;
             ObjectController.Instance.Selecting = ObjectController.Instance.Rotating = ObjectController.Instance.Scaling = false;
-            ObjectController.Instance.OnSelect(false);
-            ObjectController.Instance.OnRotate(false);
-            ObjectController.Instance.OnScale(false);
+            ObjectController.Instance.OnSelect();
+            ObjectController.Instance.OnRotate();
+            ObjectController.Instance.OnScale();
         }
     }
 
@@ -74,19 +74,19 @@ public class UIMenuController : MonoBehaviour
         {
             rotateMesh.material = menuMat;
             ObjectController.Instance.Rotating = false;
-            ObjectController.Instance.OnRotate(false);
+            ObjectController.Instance.OnRotate();
         }
         else
         {
             rotateMesh.material = rotateMat;
             ObjectController.Instance.Rotating = true;
-            ObjectController.Instance.OnRotate(true);
+            ObjectController.Instance.OnRotate();
 
             moveMesh.material = selectMesh.material = scaleMesh.material = menuMat;
             ObjectController.Instance.Moving = ObjectController.Instance.Selecting = ObjectController.Instance.Scaling = false;
-            ObjectController.Instance.OnSelect(false);
-            ObjectController.Instance.OnMove(false);
-            ObjectController.Instance.OnScale(false);
+            ObjectController.Instance.OnSelect();
+            ObjectController.Instance.OnMove();
+            ObjectController.Instance.OnScale();
         }
     }
 
@@ -96,19 +96,19 @@ public class UIMenuController : MonoBehaviour
         {
             scaleMesh.material = menuMat;
             ObjectController.Instance.Scaling = false;
-            ObjectController.Instance.OnScale(false);
+            ObjectController.Instance.OnScale();
         }
         else
         {
             scaleMesh.material = scaleMat;
             ObjectController.Instance.Scaling = true;
-            ObjectController.Instance.OnScale(true);
+            ObjectController.Instance.OnScale();
 
             moveMesh.material = rotateMesh.material = selectMesh.material = menuMat;
             ObjectController.Instance.Moving = ObjectController.Instance.Rotating = ObjectController.Instance.Selecting = false;
-            ObjectController.Instance.OnSelect(false);
-            ObjectController.Instance.OnMove(false);
-            ObjectController.Instance.OnRotate(false);
+            ObjectController.Instance.OnSelect();
+            ObjectController.Instance.OnMove();
+            ObjectController.Instance.OnRotate();
         }
     }
 }

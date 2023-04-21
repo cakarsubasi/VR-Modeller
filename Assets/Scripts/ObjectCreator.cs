@@ -26,5 +26,17 @@ public class ObjectCreator : MonoBehaviour
 
         GameObject sca = Instantiate(GizmoScale, parent.transform);
         sca.name = sca.name.Replace("(Clone)", "");
+
+        ObjectController.Instance.OnSelect();
+        ObjectController.Instance.OnMove();
+        ObjectController.Instance.OnRotate();
+        ObjectController.Instance.OnScale();
+
+        go.GetComponent<MeshController>().OnSelect();
+
+        ObjectController.Instance.OnSelect();
+        ObjectController.Instance.OnMove();
+        ObjectController.Instance.OnRotate();
+        ObjectController.Instance.OnScale();
     }
 }

@@ -790,18 +790,9 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "OpenVertices",
+                    "name": "OpenOrCloseVertices",
                     "type": "Button",
                     "id": "12f6d95b-1d43-47ff-8c0d-5de5bf42c27c",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "CloseVertices",
-                    "type": "Button",
-                    "id": "362aa707-e246-4046-a3d1-41caafe176ca",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -901,21 +892,10 @@
                     "name": "",
                     "id": "f1976c10-6719-4ef6-b228-23b80b60d4a9",
                     "path": "<XRController>{RightHand}/primaryButton",
-                    "interactions": "Press(pressPoint=1,behavior=2)",
-                    "processors": "",
-                    "groups": "Generic XR Controller",
-                    "action": "OpenVertices",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "fde71c49-b6c7-46c0-bbd6-01a8530795d4",
-                    "path": "<XRController>{RightHand}/secondaryButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "CloseVertices",
+                    "action": "OpenOrCloseVertices",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
