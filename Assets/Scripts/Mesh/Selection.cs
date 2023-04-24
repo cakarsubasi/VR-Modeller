@@ -41,7 +41,7 @@ namespace Meshes
         /// </summary>
         /// <param name="vertices"></param>
         /// <param name="selection"></param>
-        public void SelectFacesFromVertices(List<Vertex> vertices, List<Face> selection)
+        public void SelectFacesFromVertices(IEnumerable<Vertex> vertices, ICollection<Face> selection)
         {
             selection.Clear();
             foreach (Face face in Faces)
@@ -82,11 +82,11 @@ namespace Meshes
         /// </summary>
         /// <param name="position">position</param>
         /// <returns>The Vertex</returns>
-        private Vertex? FindByPosition(float3 position)
+        public Vertex? FindByPosition(float3 position, float eps = 0.01f)
         {
             foreach (Vertex vertex in Vertices)
             {
-                if (vertex.Position.Equals(position))
+                if (math.length(vertex.Position - position) < eps)
                 {
                     return vertex;
                 }
@@ -100,9 +100,9 @@ namespace Meshes
         /// </summary>
         /// <param name="position">position</param>
         /// <returns>List of vertices</returns>
-        private List<Vertex> FindAllByPosition(float3 position)
+        public List<Vertex> FindAllByPosition(float3 position, float eps = 0.01f)
         {
-            return Vertices.FindAll(vert => vert.Position.Equals(position)).ToList();
+            return Vertices.FindAll(vert => math.length(vert.Position - position) < eps).ToList();
         }
 
 
