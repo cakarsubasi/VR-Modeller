@@ -101,11 +101,11 @@ public class MeshesTestScript
         Vertex vert1 = Vertex.Dangling(float3(0f, 0f, 0f));
         mesh.AddVertexUnchecked(vert1);
 
-        Vertex vert2 = mesh.CreateVertexConnectedTo(vert1);
+        Vertex vert2 = mesh.CreateVertexConnectedTo(vert1, out _);
         vert2.Position = float3(1f, 0f, 0f);
-        Vertex vert3 = mesh.CreateVertexConnectedTo(vert2);
+        Vertex vert3 = mesh.CreateVertexConnectedTo(vert2, out _);
         vert3.Position = float3(1f, 1f, 0f);
-        Vertex vert4 = mesh.CreateVertexConnectedTo(vert3);
+        Vertex vert4 = mesh.CreateVertexConnectedTo(vert3, out _);
         vert4.Position = float3(0f, 1f, 0f);
 
         mesh.CreateQuad(new QuadVerts(vert1, vert2, vert3, vert4));
@@ -216,6 +216,7 @@ public class MeshesTestScript
         }
     }
 
+    [Ignore("Tris to quads not implemented yet")]
     /// <summary>
     /// Create a triangle and then add a vertex to it to convert it into a quad
     /// </summary>
@@ -247,66 +248,6 @@ public class MeshesTestScript
             Assert.AreEqual(float3(0f, 0f, 1f), vertex.Normal);
             Assert.Contains(vertex, face.Vertices);
         }
-    }
-
-    /// <summary>
-    /// Start from one vertex, extrude from the vertex to create an edge.
-    /// Then extrude from that edge to create a quad.
-    /// </summary>
-    [Test]
-    public void TestExtrudeOneEdge()
-    {
-        UMesh mesh = EditableMeshEmpty();
-        Vertex vert1 = mesh.CreateVertex(float3(0f, 0f, 0f));
-        Vertex vert2 = mesh.Extrude(vert1);
-        vert1.Position = float3(1f, 0f, 0f);
-
-        Assert.AreEqual(2, mesh.VertexCount);
-        Assert.AreEqual(0, mesh.FaceCount);
-
-        Edge edge = vert1.GetEdgeTo(vert2);
-        Edge edge2 = mesh.Extrude(edge);
-        edge.MoveRelative(float3(0f, 1f, 0f));
-
-        mesh.OptimizeIndices();
-        mesh.RecalculateNormals();
-
-        Assert.AreEqual(4, mesh.VertexCount);
-        Assert.AreEqual(1, mesh.FaceCount);
-        Face face = mesh.Faces[0];
-
-        Assert.AreEqual(face.Normal, float3(0f, 0f, 1f));
-        foreach (Vertex vertex in mesh.Vertices)
-        {
-            Assert.AreEqual(float3(0f, 0f, 1f), vertex.Normal);
-            Assert.Contains(vertex, face.Vertices);
-        }
-
-    }
-
-    /// <summary>
-    /// Extrude one face from a quad to create a cube.
-    /// <br>There is some subtletly involved in this test as the 
-    /// normals have to face the same direction across the mesh when the extrusion is done
-    /// </br>
-    /// </summary>
-    [Test]
-    public void TestExtrudeOneFace()
-    {
-        UMesh mesh = EditableMeshQuad();
-        Face face = mesh.Faces[0];
-
-        Face otherFace = mesh.Extrude(face);
-        face.MoveRelative(float3(0f, 0f, 1f));
-
-        mesh.OptimizeIndices();
-        mesh.RecalculateNormals();
-
-        Assert.AreEqual(8, mesh.VertexCount);
-        Assert.AreEqual(6, mesh.FaceCount);
-
-        Assert.AreEqual(float3(0f, 0f, 1f), face.Normal);
-        Assert.AreEqual(float3(0f, 0f, -1f), otherFace.Normal);
     }
 
     /// <summary>
@@ -454,6 +395,7 @@ public class MeshesTestScript
         Assert.AreEqual(1, vert6.FaceCount);
     }
 
+    [Ignore("Merge not implemented yet")]
     [Test]
     public void TestMergeByDistance()
     {

@@ -9,6 +9,7 @@ namespace Meshes
 {
     partial struct UMesh
     {
+        [Obsolete("Just manipulate Vertex position directly")]
         /// <summary>
         /// Move a vertex of the given index to the specified position
         /// </summary>
@@ -27,6 +28,35 @@ namespace Meshes
                 mesh.SetVertexBufferData<Stream0>(buffer, 0, indices[i], 1);
             }
             buffer.Dispose();
+        }
+
+        public void MoveSelectionRelative(IEnumerable<Vertex> selection, float3 position)
+        {
+            foreach (Vertex vert in selection)
+            {
+                vert.Position += position;
+            }
+        }
+
+        public void MoveSelectionRelative(IEnumerable<Edge> selection, float3 position)
+        {
+            HashSet<Vertex> vertices = new HashSet<Vertex>();
+            foreach (Edge edge in selection)
+            {
+                vertices.Add(edge.one);
+                vertices.Add(edge.two);
+            }
+            MoveSelectionRelative(vertices, position);
+        }
+
+        public static float3 GetNormalVector(List<Vertex> vertices)
+        {
+            float3 norm = default;
+            foreach(Vertex vert in vertices)
+            {
+                norm += vert.Normal;
+            }
+            return math.normalize(norm);
         }
 
         public enum TransformType
