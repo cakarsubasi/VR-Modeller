@@ -808,11 +808,6 @@ namespace Meshes
         internal void DiscoverEdgesFromVertices()
         {
             edges.Clear();
-            Debug.Log($"{this}");
-            foreach(var vert in vertices)
-            {
-                Debug.Log($"{vert.vertex}");
-            }
             for (int i = 0; i < vertices.Count; i++)
             {
                 Vertex vert1 = vertices[i].vertex;

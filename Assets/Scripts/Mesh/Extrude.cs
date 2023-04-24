@@ -15,65 +15,47 @@ namespace Meshes
 
         public void Extrude(Vertex input)
         {
-            HashSet<Vertex> selectedVertices = new() { input };
-            HashSet<Edge> selectedEdges = new();
-            HashSet<Face> selectedFaces = new();
-            Extrude(selectedVertices, selectedEdges, selectedFaces);
+            extrusionHelper.Clear();
+            extrusionHelper.vertices.Add(input);
+            Extrude(extrusionHelper.vertices, extrusionHelper.edges, extrusionHelper.faces);
         }
 
         public void Extrude(Edge input)
         {
-            HashSet<Vertex> selectedVertices = new() { input.one, input.two };
-            HashSet<Edge> selectedEdges = new() { input };
-            HashSet<Face> selectedFaces = new();
-            Extrude(selectedVertices, selectedEdges, selectedFaces);
+            extrusionHelper.Clear();
+            extrusionHelper.vertices.Add(input.one);
+            extrusionHelper.vertices.Add(input.two);
+            extrusionHelper.edges.Add(input);
+            Extrude(extrusionHelper.vertices, extrusionHelper.edges, extrusionHelper.faces);
         }
 
-        public void Extrude(Face face)
+        public void Extrude(Face input)
         {
-            HashSet<Vertex> selectedVertices = new(face.Vertices);
-            HashSet<Edge> selectedEdges = new(face.edges);
-            HashSet<Face> selectedFaces = new() { face };
-            Extrude(selectedVertices, selectedEdges, selectedFaces);
+            extrusionHelper.Clear();
+            extrusionHelper.vertices.UnionWith(input.Vertices);
+            extrusionHelper.edges.UnionWith(input.edges);
+            extrusionHelper.faces.Add(input);
+            Extrude(extrusionHelper.vertices, extrusionHelper.edges, extrusionHelper.faces);
         }
 
         public void Extrude(List<Vertex> selection)
         {
-            HashSet<Vertex> selectedVertices = new(selection);
-            HashSet<Edge> selectedEdges = new();
-            HashSet<Face> selectedFaces = new();
-            foreach (Vertex vertex in selectedVertices)
-            {
-                foreach (Edge edge in vertex.edges)
-                {
-                    if (selectedVertices.Contains(edge.Other(vertex)))
-                    {
-                        selectedEdges.Add(edge);
-                    }
-                }
-            }
-            SelectFacesFromVertices(selectedVertices, selectedFaces);
-            Extrude(selectedVertices, selectedEdges, selectedFaces);
+            extrusionHelper.Load(ref this, selection);
+            Extrude(extrusionHelper.vertices, extrusionHelper.edges, extrusionHelper.faces);
         }
 
         public void Extrude(List<Edge> selection)
         {
-            HashSet<Vertex> selectedVertices = new();
-            HashSet<Edge> selectedEdges = new(selection);
-            HashSet<Face> selectedFaces = new();
-            foreach (Edge edge in selectedEdges)
-            {
-                selectedVertices.Add(edge.one);
-                selectedVertices.Add(edge.two);
-            }
-            SelectFacesFromVertices(selectedVertices, selectedFaces);
-            Extrude(selectedVertices, selectedEdges, selectedFaces);
+            extrusionHelper.Load(ref this, selection);
+            Extrude(extrusionHelper.vertices, extrusionHelper.edges, extrusionHelper.faces);
         }
 
         public void ExtrudeFaces(in List<Face> selection)
         {
-            throw new NotImplementedException { };
+            extrusionHelper.Load(selection);
+            Extrude(extrusionHelper.vertices, extrusionHelper.edges, extrusionHelper.faces);
         }
+
 
         public void Extrude(List<Vertex> vertices, List<Edge> edges, List<Face> faces)
         {
@@ -84,15 +66,93 @@ namespace Meshes
             Extrude(selectedVertices, selectedEdges, selectedFaces);
         }
 
+        /// <summary>
+        /// The purpose of this struct is to preallocate internal sets to avoid having to reallocate 
+        /// </summary>
+        private struct ExtrusionHelper
+        {
+            public HashSet<Vertex> vertices;
+            public HashSet<Edge> edges;
+            public HashSet<Face> faces;
+
+            public List<Face> facesTemp;
+            public List<Edge> edgesTemp;
+            public HashSet<Face> faceSetTemp;
+
+            internal void Setup()
+            {
+                vertices = new(8);
+                edges = new(16);
+                faces = new(4);
+                facesTemp = new(3);
+                edgesTemp = new(4);
+                faceSetTemp = new(4);
+            }
+
+            internal void Load(ref UMesh mesh, List<Vertex> vertexList)
+            {
+                Clear();
+                vertices.UnionWith(vertexList);
+                foreach (Vertex vertex in vertices)
+                {
+                    foreach (Edge edge in vertex.edges)
+                    {
+                        if (vertices.Contains(edge.Other(vertex)))
+                        {
+                            edges.Add(edge);
+                        }
+                    }
+                }
+                mesh.SelectFacesFromVertices(vertices, faces);
+            }
+
+            internal void Load(ref UMesh mesh, List<Edge> edgeList)
+            {
+                Clear();
+                edges.UnionWith(edgeList);
+                foreach (Edge edge in edgeList)
+                {
+                    vertices.Add(edge.one);
+                    vertices.Add(edge.two);
+                }
+                mesh.SelectFacesFromVertices(vertices, faces);
+            }
+
+            internal void Load(List<Face> faceList)
+            {
+                Clear();
+                faces.UnionWith(faceList);
+                foreach (Face face in faces)
+                {
+                    edges.UnionWith(face.edges);
+                    vertices.UnionWith(face.Vertices);
+                }
+            }
+
+            internal void Load(List<Vertex> vertexList, List<Edge> edgeList, List<Face> faceList)
+            {
+                Clear();
+                vertices.UnionWith(vertexList);
+                edges.UnionWith(edgeList);
+                faces.UnionWith(faceList);
+            }
+
+            internal void Clear()
+            {
+                vertices.Clear();
+                edges.Clear();
+                faces.Clear();
+            }
+        }
+
+        private ExtrusionHelper extrusionHelper;
+
         public void Extrude(HashSet<Vertex> selectedVertices, HashSet<Edge> selectedEdges, HashSet<Face> selectedFaces)
         {
 
-            List<Face> edgeLoop = new List<Face>(2);
-            List<Edge> edgeList = new List<Edge>(4);
-
-
-            HashSet<Face> facesToFixUp = new HashSet<Face>();
-            HashSet<Edge> newEdges = new HashSet<Edge>();
+            List<Face> edgeLoop = extrusionHelper.facesTemp;
+            List<Edge> edgeList = extrusionHelper.edgesTemp;
+            HashSet<Face> facesToFixUp = extrusionHelper.faceSetTemp;
 
             foreach (Vertex vertex in selectedVertices)
             {
@@ -102,7 +162,6 @@ namespace Meshes
                 }
 
                 Vertex created = CreateVertexConnectedTo(vertex, out Edge connection);
-                newEdges.Add(connection);
 
                 edgeList.AddRange(vertex.edges);
                 foreach (Edge edge in edgeList)
@@ -113,7 +172,6 @@ namespace Meshes
                         edge.ExchangeVertex(vertex, created);
                         created.AddEdgeUnchecked(edge);
                         vertex.RemoveEdge(edge);
-
                     }
                 }
                 edgeList.Clear();
@@ -149,8 +207,6 @@ namespace Meshes
                     Edge newEdge = CreateEdge(vert3, vert4);
                     Face newFace = CreateQuad(new QuadVerts(vert2, vert1, vert3, vert4));
                 }
-
-
 
                 // flip normal of new face as needed TODO
                 // internal edge

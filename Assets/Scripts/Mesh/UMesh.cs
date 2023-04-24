@@ -63,9 +63,10 @@ namespace Meshes
             Mesh.MeshData meshData = meshDataArray[0];
             Setup(meshData);
             Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, mesh);
+            InitializeHelperStructures();
         }
 
-        public void Setup(Mesh.MeshData meshData)
+        private void Setup(Mesh.MeshData meshData)
         {
             var vertexAttributes = new NativeArray<VertexAttributeDescriptor>(
     4, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
@@ -117,6 +118,11 @@ namespace Meshes
             }
         }
 
+        private void InitializeHelperStructures()
+        {
+            extrusionHelper.Setup();
+        }
+
         private void ResizeInternalBuffers(int currentVertexCount, int currentIndexCount)
         {
             // set up mesh again
@@ -159,6 +165,7 @@ namespace Meshes
             RecalculateNormals();
             WriteAllToMesh();
             RecalculateBounds();
+            InitializeHelperStructures();
             return this.mesh;
         }
 
