@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 513076247851908778}
   - component: {fileID: -2154741961349737467}
   - component: {fileID: -3600372739419837038}
-  - component: {fileID: -6322163883236852593}
   m_Layer: 0
   m_Name: ImportedCube
   m_TagString: MeshObject
@@ -116,6 +115,7 @@ MonoBehaviour:
       m_Flags: 0
     m_Reference: {fileID: 109764013769571655, guid: c348712bda248c246b8c49b3db54643f,
       type: 3}
+  copiedMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!64 &513076247851908778
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -239,20 +239,6 @@ MonoBehaviour:
   m_OnDeactivate:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &-6322163883236852593
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4092130501227634600}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb4d4d8b0a553c14496f62b3bbc821e6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  CopyFromMesh: {fileID: -5495902117074765545, guid: 03e79915adfa60242b61c7bc07140e9e,
-    type: 3}
 --- !u!1 &6516086853263377646
 GameObject:
   m_ObjectHideFlags: 0

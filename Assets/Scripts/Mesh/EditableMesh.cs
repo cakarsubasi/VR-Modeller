@@ -7,12 +7,12 @@ using static Unity.Mathematics.math;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class EditableMesh : MonoBehaviour
 {
-    EditableMeshImpl meshInternal;
+    UMesh meshInternal;
 
     [SerializeField]
     Mesh? CopyFromMesh;
 
-    public EditableMeshImpl MeshInternal { get => meshInternal; private set => meshInternal = value; }
+    public UMesh MeshInternal { get => meshInternal; private set => meshInternal = value; }
 
     private void OnEnable()
     {
@@ -37,10 +37,17 @@ public class EditableMesh : MonoBehaviour
             var vert2 = float3(1f, 0f, 0f);
             var vert3 = float3(1f, 1f, 0f);
             var vert4 = float3(0f, 1f, 0f);
-            meshInternal.AddFace(vert1, vert2, vert3, vert4);
+            meshInternal.CreateVerticesAndQuad(vert1, vert2, vert3, vert4);
             GetComponent<MeshFilter>().mesh = mesh;
         }
+        meshInternal.WriteAllToMesh();
         Debug.Log($"{meshInternal}");
+        
+    }
+
+    private void Update()
+    {
+        meshInternal.WriteAllToMesh();
     }
 
 }

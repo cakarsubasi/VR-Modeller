@@ -46,7 +46,6 @@ GameObject:
   - component: {fileID: 1792223186022373247}
   - component: {fileID: 3368316891401620976}
   - component: {fileID: 6440627655830714573}
-  - component: {fileID: -8983633050944547051}
   m_Layer: 0
   m_Name: Capsule
   m_TagString: MeshObject
@@ -147,6 +146,7 @@ MonoBehaviour:
       m_Flags: 0
     m_Reference: {fileID: 109764013769571655, guid: c348712bda248c246b8c49b3db54643f,
       type: 3}
+  copiedMesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!64 &1792223186022373247
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -270,16 +270,3 @@ MonoBehaviour:
   m_OnDeactivate:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &-8983633050944547051
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6029265292443060219}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb4d4d8b0a553c14496f62b3bbc821e6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  CopyFromMesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}

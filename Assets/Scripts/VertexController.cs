@@ -1,3 +1,4 @@
+using Unity.Mathematics;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
@@ -25,9 +26,11 @@ public class VertexController : MonoBehaviour
     {
         if (IsSelected)
         {
-            meshController.Vertices[VertexIndex] = targetMesh.transform.InverseTransformPoint(transform.position);
+            //meshController.Vertices[VertexIndex] = targetMesh.transform.InverseTransformPoint(transform.position);
+            //meshController.Mesh.vertices = meshController.Vertices.ToArray();
 
-            meshController.Mesh.vertices = meshController.Vertices.ToArray();
+            meshController.editableMesh.Vertices[VertexIndex].Position = (float3)targetMesh.transform.InverseTransformPoint(transform.position);
+            meshController.editableMesh.WriteAllToMesh();
 
             if (parentCollider != null)
             {

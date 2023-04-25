@@ -1,0 +1,89 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: UI Texts_en
+  m_EditorClassIdentifier: 
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: fee89e3254eab7b46bd670b2690a35d4, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 97997553664
+    m_Localized: Tools
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305510744064
+    m_Localized: Create
+    m_Metadata:
+      m_Items: []
+  - m_Id: 412272558080
+    m_Localized: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 477410099200
+    m_Localized: Help
+    m_Metadata:
+      m_Items: []
+  - m_Id: 528001794048
+    m_Localized: Select
+    m_Metadata:
+      m_Items: []
+  - m_Id: 580514480128
+    m_Localized: Rotate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 638752391168
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 771254648832
+    m_Localized: Scale
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11148482838528
+    m_Localized: Language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24116834598912
+    m_Localized: 'Create
+
+      Cube'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24287043649536
+    m_Localized: 'Create
+
+      Imported Cube'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24671552274432
+    m_Localized: 'Create
+
+      Capsule'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24794936115200
+    m_Localized: 'Create
+
+      Cylinder'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24881712070656
+    m_Localized: 'Create
+
+      Sphere'
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

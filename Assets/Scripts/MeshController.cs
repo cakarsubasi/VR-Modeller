@@ -9,13 +9,14 @@ public class MeshController : MonoBehaviour
 {
     public GameObject vertexHighlight;
     public InputActionProperty openOrCloseAction;
+    public Mesh copiedMesh;
 
     Mesh mesh;
     MeshFilter meshFilter;
     List<Vector3> vertices = new List<Vector3>();
     List<GameObject> vertexObjects = new List<GameObject>();
     bool isSelected;
-    EditableMeshImpl editableMesh;
+    public UMesh editableMesh;
     GameObject verticesParent;
 
     public List<Vector3> Vertices { get => vertices; set => vertices = value; }
@@ -28,11 +29,12 @@ public class MeshController : MonoBehaviour
         openOrCloseAction.action.performed += OpenVertices;
         ObjectController.Instance.AllObjects.Add(gameObject);
 
-        editableMesh = GetComponent<EditableMesh>().MeshInternal;
+
+        editableMesh = default;
         meshFilter = GetComponent<MeshFilter>();
-        mesh = meshFilter.mesh;
+        meshFilter.mesh = editableMesh.CopySetup(copiedMesh);
         //Vertices = mesh.vertices.ToList();
-        Vertices = editableMesh.Vertices.ToList();
+        Vertices = editableMesh.VertexLocations.ToList();
         //Debug.Log("Vertices: " + Vertices.Count);
 
         List<Vector3> updatedVertices = new List<Vector3>();
