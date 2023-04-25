@@ -50,20 +50,28 @@ namespace Meshes
             Extrude(extrusionHelper.vertices, extrusionHelper.edges, extrusionHelper.faces);
         }
 
+        /// <summary>
+        /// Extrude faces. Faces follow slightly different rules as it will only extrude parts
+        /// belonging to those faces. In other words, edges in between vertices that are part
+        /// of the faces will not be extruded.
+        /// </summary>
+        /// <param name="selection"></param>
         public void ExtrudeFaces(in List<Face> selection)
         {
             extrusionHelper.Load(selection);
             Extrude(extrusionHelper.vertices, extrusionHelper.edges, extrusionHelper.faces);
         }
 
-
+        /// <summary>
+        /// Extrude exactly the given vertices, edges, faces.
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <param name="edges"></param>
+        /// <param name="faces"></param>
         public void Extrude(List<Vertex> vertices, List<Edge> edges, List<Face> faces)
         {
-            HashSet<Vertex> selectedVertices = new(vertices);
-            HashSet<Edge> selectedEdges = new(edges);
-            HashSet<Face> selectedFaces = new(faces);
-
-            Extrude(selectedVertices, selectedEdges, selectedFaces);
+            extrusionHelper.Load(vertices, edges, faces);
+            Extrude(extrusionHelper.vertices, extrusionHelper.edges, extrusionHelper.faces);
         }
 
         /// <summary>
@@ -145,8 +153,6 @@ namespace Meshes
             }
         }
 
-        private ExtrusionHelper extrusionHelper;
-
         public void Extrude(HashSet<Vertex> selectedVertices, HashSet<Edge> selectedEdges, HashSet<Face> selectedFaces)
         {
 
@@ -192,18 +198,19 @@ namespace Meshes
             {
 
                 edge.GetEdgeLoops(edgeLoop);
-                // get the new vertices
-                Vertex vert1 = edge.one;
-                Vertex vert2 = edge.two;
-
-                Vertex vert3 = vert1.edges[^1].Other(vert1);
-                Vertex vert4 = vert2.edges[^1].Other(vert2);
 
                 // connect the new vertices
                 if (edgeLoop.Count >= 2 && selectedFaces.IsSupersetOf(edgeLoop)) {
                     continue;
                 } else
                 {
+                    // get the new vertices
+                    Vertex vert1 = edge.one;
+                    Vertex vert2 = edge.two;
+
+                    Vertex vert3 = vert1.edges[^1].Other(vert1);
+                    Vertex vert4 = vert2.edges[^1].Other(vert2);
+
                     Edge newEdge = CreateEdge(vert3, vert4);
                     Face newFace = CreateQuad(new QuadVerts(vert2, vert1, vert3, vert4));
                 }
@@ -214,6 +221,7 @@ namespace Meshes
                 {
 
                 }
+
 
             }
 

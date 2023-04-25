@@ -36,9 +36,9 @@ namespace Meshes
 
         public int VertexCount { get => Vertices.Count; }
         public int FaceCount { get => Faces.Count; }
-
         public int EdgeCount { get => Edges.Count; }
 
+        private ExtrusionHelper extrusionHelper;
 
         public Vector3[] VertexLocations
         {
