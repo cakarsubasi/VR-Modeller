@@ -14,17 +14,16 @@ namespace Meshes
 {
     public partial struct UMesh
     {
-        public struct IndexedVertex
-        {
-            public int index;
-            public Vertex? vertex;
-        }
 
         private Mesh mesh;
 
         public Mesh Mesh { get => mesh; set => CopySetup(value); }
 
         public List<Vertex> Vertices;
+        /// <summary>
+        /// Currently unstable, do not rely on this
+        /// </summary>
+        public List<Edge> Edges;
         public List<Face> Faces;
 
         private int _vertexCountInternal;
@@ -36,9 +35,10 @@ namespace Meshes
         private static readonly int defaultMaxTris = ushort.MaxValue / 3;
 
         public int VertexCount { get => Vertices.Count; }
-
         public int FaceCount { get => Faces.Count; }
-        public int TriangleCount { get; private set; }
+        public int EdgeCount { get => Edges.Count; }
+
+        private ExtrusionHelper extrusionHelper;
 
         public Vector3[] VertexLocations
         {
@@ -63,9 +63,10 @@ namespace Meshes
             Mesh.MeshData meshData = meshDataArray[0];
             Setup(meshData);
             Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, mesh);
+            InitializeHelperStructures();
         }
 
-        public void Setup(Mesh.MeshData meshData)
+        private void Setup(Mesh.MeshData meshData)
         {
             var vertexAttributes = new NativeArray<VertexAttributeDescriptor>(
     4, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
@@ -97,12 +98,12 @@ namespace Meshes
             // initialize safe garbage here
             Vertices = new List<Vertex>(defaultMaxVerts);
             Faces = new List<Face>(defaultMaxTris / 3);
+            Edges = new List<Edge>(defaultMaxTris / 2);
 
             vertexCountMaximum = defaultMaxVerts;
             indexCountMaximum = defaultMaxTris * 3;
 
             _vertexCountInternal = 0;
-            TriangleCount = 0;
 
             var stream0 = meshData.GetVertexData<Stream0>();
             var triangles = meshData.GetIndexData<int>().Reinterpret<int3>(4);
@@ -117,11 +118,16 @@ namespace Meshes
             }
         }
 
+        private void InitializeHelperStructures()
+        {
+            extrusionHelper.Setup();
+        }
+
         private void ResizeInternalBuffers(int currentVertexCount, int currentIndexCount)
         {
             // set up mesh again
 
-            // if the required vertices are too large, give up
+            // if the required vertices arSe too large, give up
             throw new NotImplementedException { };
         }
 
@@ -159,6 +165,7 @@ namespace Meshes
             RecalculateNormals();
             WriteAllToMesh();
             RecalculateBounds();
+            InitializeHelperStructures();
             return this.mesh;
         }
 
