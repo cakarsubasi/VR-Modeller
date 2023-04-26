@@ -40,6 +40,7 @@ public class EditableMesh : MonoBehaviour
             meshInternal.CreateVerticesAndQuad(vert1, vert2, vert3, vert4);
             GetComponent<MeshFilter>().mesh = mesh;
         }
+        meshInternal.OptimizeRendering();
         meshInternal.WriteAllToMesh();
         Debug.Log($"{meshInternal}");
         

@@ -273,9 +273,9 @@ public class MeshesTestScript
         Assert.AreEqual(1, mesh.FaceCount);
         Assert.AreEqual(3, mesh.VertexCount);
 
-        Assert.AreEqual(2, vert1.edges.Count);
-        Assert.AreEqual(2, vert3.edges.Count);
-        Assert.AreEqual(2, vert4.edges.Count);
+        Assert.AreEqual(2, vert1.Edges.Count);
+        Assert.AreEqual(2, vert3.Edges.Count);
+        Assert.AreEqual(2, vert4.Edges.Count);
     }
 
     /// <summary>
@@ -301,9 +301,9 @@ public class MeshesTestScript
         Assert.AreEqual(0, mesh.FaceCount);
         Assert.AreEqual(3, mesh.VertexCount);
 
-        Assert.AreEqual(vert2.edges.Count, 1);
-        Assert.AreEqual(vert3.edges.Count, 2);
-        Assert.AreEqual(vert4.edges.Count, 1);
+        Assert.AreEqual(vert2.Edges.Count, 1);
+        Assert.AreEqual(vert3.Edges.Count, 2);
+        Assert.AreEqual(vert4.Edges.Count, 1);
     }
 
     /// <summary>
@@ -329,9 +329,9 @@ public class MeshesTestScript
         Assert.AreEqual(1, mesh.FaceCount);
         Assert.AreEqual(3, mesh.VertexCount);
 
-        Assert.AreEqual(vert1.edges.Count, 2);
-        Assert.AreEqual(vert3.edges.Count, 2);
-        Assert.AreEqual(vert4.edges.Count, 2);
+        Assert.AreEqual(vert1.Edges.Count, 2);
+        Assert.AreEqual(vert3.Edges.Count, 2);
+        Assert.AreEqual(vert4.Edges.Count, 2);
     }
 
     /// <summary>
@@ -357,9 +357,9 @@ public class MeshesTestScript
         Assert.AreEqual(1, mesh.FaceCount);
         Assert.AreEqual(3, mesh.VertexCount);
 
-        Assert.AreEqual(vert2.edges.Count, 2);
-        Assert.AreEqual(vert3.edges.Count, 2);
-        Assert.AreEqual(vert4.edges.Count, 2);
+        Assert.AreEqual(vert2.Edges.Count, 2);
+        Assert.AreEqual(vert3.Edges.Count, 2);
+        Assert.AreEqual(vert4.Edges.Count, 2);
     }
 
     [Test]

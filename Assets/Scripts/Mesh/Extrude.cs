@@ -162,7 +162,7 @@ namespace Meshes
 
             foreach (Vertex vertex in selectedVertices)
             {
-                if (vertex.IsManifold() && selectedFaces.IsSupersetOf(vertex.Faces))
+                if (vertex.IsManifold() && selectedFaces.IsSupersetOf(vertex.FacesIter))
                 {
                     continue;
                 }
@@ -182,7 +182,7 @@ namespace Meshes
                 }
                 edgeList.Clear();
 
-                edgeLoop.AddRange(vertex.Faces);
+                edgeLoop.AddRange(vertex.FacesIter);
                 foreach (Face face in edgeLoop)
                 {
                     if (!selectedFaces.Contains(face))
@@ -212,16 +212,22 @@ namespace Meshes
                     Vertex vert4 = vert2.edges[^1].Other(vert2);
 
                     Edge newEdge = CreateEdge(vert3, vert4);
-                    Face newFace = CreateQuad(new QuadVerts(vert2, vert1, vert3, vert4));
+
+                    if (edgeLoop.Count == 0)
+                    {
+                        Face newFace = CreateQuad(new QuadVerts(vert2, vert1, vert3, vert4));
+                    } else
+                    {
+                        if (edgeLoop[0].IsOrderedClockwise(vert1, vert2))
+                        {
+                            Face newFace = CreateQuad(new QuadVerts(vert2, vert1, vert3, vert4));
+                        } else
+                        {
+                            Face newFace = CreateQuad(new QuadVerts(vert2, vert4, vert3, vert1));
+                        }
+                    }
+
                 }
-
-                // flip normal of new face as needed TODO
-                // internal edge
-                if (!selectedFaces.IsSupersetOf(edgeLoop))
-                {
-
-                }
-
 
             }
 
@@ -232,6 +238,8 @@ namespace Meshes
             }
 
         }
+
+        
 
     }
 }
