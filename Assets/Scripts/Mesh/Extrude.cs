@@ -162,7 +162,7 @@ namespace Meshes
 
             foreach (Vertex vertex in selectedVertices)
             {
-                if (vertex.IsManifold() && selectedFaces.IsSupersetOf(vertex.Faces))
+                if (vertex.IsManifold() && selectedFaces.IsSupersetOf(vertex.FacesIter))
                 {
                     continue;
                 }
@@ -182,7 +182,7 @@ namespace Meshes
                 }
                 edgeList.Clear();
 
-                edgeLoop.AddRange(vertex.Faces);
+                edgeLoop.AddRange(vertex.FacesIter);
                 foreach (Face face in edgeLoop)
                 {
                     if (!selectedFaces.Contains(face))
@@ -232,6 +232,8 @@ namespace Meshes
             }
 
         }
+
+        
 
     }
 }

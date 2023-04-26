@@ -290,7 +290,7 @@ public class ExtrusionTestScript
         Vertex vert1 = mesh.FindByPosition(float3(0f, 1f, 0f));
         Face face = vert1.GetFaces()[0];
 
-        var selected = new List<Edge>(vert1.edges);
+        var selected = vert1.Edges;
         Assert.AreEqual(2, selected.Count);
 
         mesh.Extrude(selected);
@@ -445,7 +445,7 @@ public class ExtrusionTestScript
         Vertex vert2 = verts[1];
         Vertex vert3 = verts[2];
         Vertex vert4 = verts[3];
-        var edges = face.edges;
+        var edges = face.Edges;
 
         mesh.Extrude(edges);
         mesh.MoveSelectionRelative(edges, float3(0f, 0f, 1f));

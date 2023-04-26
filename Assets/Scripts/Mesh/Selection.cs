@@ -13,7 +13,7 @@ namespace Meshes
 {
     partial struct UMesh
     {
-
+        [Obsolete]
         public void SelectFromIndices(List<int> indices, List<Vertex> selection)
         {
             selection.Clear();
@@ -22,6 +22,31 @@ namespace Meshes
             foreach (int index in indices)
             {
                 selection.Add(Vertices[index]);
+            }
+        }
+
+
+        public void ExtendSelectionWith(ICollection<Vertex> vertices, ICollection<Edge> edges, ICollection<Face> faces, Vertex extension)
+        {
+            if (!vertices.Contains(extension))
+            {
+                vertices.Add(extension);
+            }
+
+            foreach (Edge edge in extension.edges)
+            {
+                if (!edges.Contains(edge))
+                {
+                    edges.Add(edge);
+                }
+            }
+
+            foreach (Face face in extension.FacesIter)
+            {
+                if (!faces.Contains(face))
+                {
+                    faces.Add(face);
+                }
             }
         }
 
