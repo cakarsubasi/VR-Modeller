@@ -34,7 +34,8 @@ namespace Meshes
         private int internalIndexCountMax;
 
         private static readonly int absoluteMaxVerts = 2 << 19;
-        private static readonly int absoluteMaxIndices = 2 << 19;
+        private static int AbsoluteMaxIndices => absoluteMaxTriangles * 3;
+        private static readonly int absoluteMaxTriangles = 2 << 19;
 
         private static readonly int initialMaxVerts = 320;
         private static readonly int initialMaxTriangles = 320;
@@ -129,9 +130,9 @@ namespace Meshes
             extrusionHelper.Setup();
         }
 
-        private void ResizeInternalBuffers(int currentVertexCount, int currentIndexCount)
+        private void ResizeInternalBuffers(int desiredVertexCount, int desiredTriangleCount)
         {
-            if (currentVertexCount > absoluteMaxVerts || currentIndexCount > absoluteMaxIndices)
+            if (desiredVertexCount > absoluteMaxVerts || desiredTriangleCount > absoluteMaxTriangles)
             {
                 // if the required vertices are too large, give up
                 throw new InvalidOperationException(
@@ -143,8 +144,17 @@ namespace Meshes
 
             Mesh.MeshDataArray meshDataArray = Mesh.AllocateWritableMeshData(1);
             Mesh.MeshData meshData = meshDataArray[0];
-            Setup(meshData, currentVertexCount, currentIndexCount);
+            Setup(meshData, desiredVertexCount, desiredTriangleCount);
             Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, mesh);
+        }
+
+        /// <summary>
+        /// Resize internal buffers to fit the data exactly
+        /// </summary>
+        public void OptimizeRendering()
+        {
+            OptimizeIndices();
+            ResizeInternalBuffers(internalVertexCount, internalTriangleCount);
         }
 
         /// <summary>
@@ -222,7 +232,7 @@ namespace Meshes
             {
                 i += face.TriangleCount;
             }
-            internalIndexCount =  i * 3;
+            internalIndexCount = i * 3;
         }
 
         /// <summary>
@@ -237,7 +247,7 @@ namespace Meshes
             // resize the vertex and index buffers if needed
             if (internalVertexCount > internalVertexCountMax || internalIndexCount > internalIndexCountMax)
             {
-                ResizeInternalBuffers(internalVertexCount, internalIndexCount);
+                ResizeInternalBuffers(internalVertexCount * 2, internalTriangleCount * 2);
             }
             // write vertices 
             NativeArray<Stream0> vertexStream = new NativeArray<Stream0>(internalVertexCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
