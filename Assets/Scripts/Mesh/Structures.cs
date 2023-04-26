@@ -105,7 +105,7 @@ namespace Meshes
 
     static class Triangle
     {
-        public static readonly int3 degenerate = int3(ushort.MaxValue - 1, ushort.MaxValue - 1, ushort.MaxValue - 1);
+        public static readonly int3 degenerate = int3(0, 0, 0);
     }
 
     /// <summary>
