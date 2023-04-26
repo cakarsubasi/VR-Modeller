@@ -204,16 +204,17 @@ namespace Meshes
         /// <returns>beginning + number of indices used by the vertex</returns>
         public int OptimizeIndices(int beginning)
         {
-            // TODO: make some faces share indices for efficiency
+            if (faces.Count == 0)
+            {
+                return beginning;
+            }
+            
             var firstProp = faces[0];
             float2 uv0 = firstProp.face.GetUVof(this);
             firstProp.index = beginning;
             firstProp.uv0 = uv0;
             faces[0] = firstProp;
 
-            // Maybe instead of optimizing this ahead of time
-            // We should get the beginning in WriteToStream() instead
-            // Need to figure out a way to send the information to faces
             int used = 1;
             for (int i = 1; i < faces.Count; ++i)
             {
@@ -735,10 +736,6 @@ namespace Meshes
                 Vertex vert1 = vertices[i].vertex;
                 Vertex vert2 = vertices[(i + 1) % vertices.Count].vertex;
                 Edge? edge = vert1.GetEdgeTo(vert2);
-                if (edge == null)
-                {
-                    throw new NullReferenceException($"Check if vertices are connected correctly: {vert1}, {vert2}");
-                }
                 edges.Add(edge);
             }
         }
@@ -806,6 +803,25 @@ namespace Meshes
             }
             return false;
         }
+
+        public bool IsOrderedClockwise(Vertex vert1, Vertex vert2)
+        {
+            for (int i = 0; i < vertices.Count; ++i)
+            {
+                if (vertices[i].vertex == vert1)
+                {
+                    if (vertices[(i+1) % vertices.Count].vertex == vert2)
+                    {
+                        return true;
+                    } else if (vertices[Math.Abs((i - 1) % vertices.Count)].vertex == vert2)
+                    {
+                        return false;
+                    }
+                }
+            }
+            throw new ArgumentException("vertices should be in the face");
+        }
+        
 
         public void MoveRelative(float3 relative)
         {
