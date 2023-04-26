@@ -14,31 +14,40 @@ namespace Meshes
 {
     public partial struct UMesh
     {
-        public struct IndexedVertex
-        {
-            public int index;
-            public Vertex? vertex;
-        }
 
         private Mesh mesh;
 
         public Mesh Mesh { get => mesh; set => CopySetup(value); }
+        public string Name { get => mesh.name; set => mesh.name = value; }
 
         public List<Vertex> Vertices;
+        /// <summary>
+        /// Currently unstable, do not rely on this
+        /// </summary>
+        public List<Edge> Edges;
         public List<Face> Faces;
 
-        private int _vertexCountInternal;
-        private int vertexCountMaximum;
-        private int _indexCountInternal;
-        private int indexCountMaximum;
+        private int internalVertexCount;
+        private int internalVertexCountMax;
+        private int internalIndexCount;
+        private int internalTriangleCount => internalIndexCount / 3;
+        private int internalIndexCountMax;
 
-        private static readonly int defaultMaxVerts = ushort.MaxValue;
-        private static readonly int defaultMaxTris = ushort.MaxValue / 3;
+        private static readonly int absoluteMaxVerts = 2 << 19;
+        private static int AbsoluteMaxIndices => absoluteMaxTriangles * 3;
+        private static readonly int absoluteMaxTriangles = 2 << 19;
+
+        private static readonly int initialMaxVerts = 320;
+        private static readonly int initialMaxTriangles = 320;
 
         public int VertexCount { get => Vertices.Count; }
-
         public int FaceCount { get => Faces.Count; }
-        public int TriangleCount { get; private set; }
+        /// <summary>
+        /// Currently unstable, do not rely on this
+        /// </summary>
+        public int EdgeCount { get => Edges.Count; }
+
+        private ExtrusionHelper extrusionHelper;
 
         public Vector3[] VertexLocations
         {
@@ -59,13 +68,19 @@ namespace Meshes
             this.mesh = mesh;
             this.mesh.MarkDynamic();
 
+            // initialize safe garbage here
+            Vertices = new List<Vertex>(initialMaxVerts / 2);
+            Faces = new List<Face>(initialMaxVerts / 2);
+            Edges = new List<Edge>(initialMaxVerts);
+
             Mesh.MeshDataArray meshDataArray = Mesh.AllocateWritableMeshData(1);
             Mesh.MeshData meshData = meshDataArray[0];
-            Setup(meshData);
+            Setup(meshData, initialMaxVerts, initialMaxTriangles);
             Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, mesh);
+            InitializeHelperStructures();
         }
 
-        public void Setup(Mesh.MeshData meshData)
+        private void Setup(Mesh.MeshData meshData, int vertexCount, int triangleCount)
         {
             var vertexAttributes = new NativeArray<VertexAttributeDescriptor>(
     4, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
@@ -85,24 +100,17 @@ namespace Meshes
                 attribute: VertexAttribute.TexCoord0,
                 dimension: 2);
 
-            meshData.SetVertexBufferParams(defaultMaxVerts, vertexAttributes);
+            meshData.SetVertexBufferParams(vertexCount, vertexAttributes);
             vertexAttributes.Dispose();
 
-            meshData.SetIndexBufferParams(defaultMaxTris * 3, IndexFormat.UInt32);
+            meshData.SetIndexBufferParams(triangleCount * 3, IndexFormat.UInt32);
 
             meshData.subMeshCount = 1;
-            meshData.SetSubMesh(0, new SubMeshDescriptor(0, defaultMaxTris * 3),
+            meshData.SetSubMesh(0, new SubMeshDescriptor(0, triangleCount * 3),
                 MeshUpdateFlags.DontRecalculateBounds | MeshUpdateFlags.DontValidateIndices);
 
-            // initialize safe garbage here
-            Vertices = new List<Vertex>(defaultMaxVerts);
-            Faces = new List<Face>(defaultMaxTris / 3);
-
-            vertexCountMaximum = defaultMaxVerts;
-            indexCountMaximum = defaultMaxTris * 3;
-
-            _vertexCountInternal = 0;
-            TriangleCount = 0;
+            internalVertexCountMax = vertexCount;
+            internalIndexCountMax = triangleCount * 3;
 
             var stream0 = meshData.GetVertexData<Stream0>();
             var triangles = meshData.GetIndexData<int>().Reinterpret<int3>(4);
@@ -117,12 +125,36 @@ namespace Meshes
             }
         }
 
-        private void ResizeInternalBuffers(int currentVertexCount, int currentIndexCount)
+        private void InitializeHelperStructures()
         {
+            extrusionHelper.Setup();
+        }
+
+        private void ResizeInternalBuffers(int desiredVertexCount, int desiredTriangleCount)
+        {
+            if (desiredVertexCount > absoluteMaxVerts || desiredTriangleCount > absoluteMaxTriangles)
+            {
+                // if the required vertices are too large, give up
+                throw new InvalidOperationException(
+                    "Number of vertices or triangle indices has exceeded the maximum allowed" +
+                    "by the API, this usually indicates that the previous operation has required" +
+                    "too many new vertices to be created and the operation was prevented");
+            }
             // set up mesh again
 
-            // if the required vertices are too large, give up
-            throw new NotImplementedException { };
+            Mesh.MeshDataArray meshDataArray = Mesh.AllocateWritableMeshData(1);
+            Mesh.MeshData meshData = meshDataArray[0];
+            Setup(meshData, desiredVertexCount, desiredTriangleCount);
+            Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, mesh);
+        }
+
+        /// <summary>
+        /// Resize internal buffers to fit the data exactly
+        /// </summary>
+        public void OptimizeRendering()
+        {
+            OptimizeIndices();
+            ResizeInternalBuffers(internalVertexCount, internalTriangleCount);
         }
 
         /// <summary>
@@ -159,6 +191,7 @@ namespace Meshes
             RecalculateNormals();
             WriteAllToMesh();
             RecalculateBounds();
+            InitializeHelperStructures();
             return this.mesh;
         }
 
@@ -192,14 +225,14 @@ namespace Meshes
             {
                 i = vertex.OptimizeIndices(i);
             }
-            _vertexCountInternal = i;
+            internalVertexCount = i;
 
             i = 0;
             foreach (Face face in Faces)
             {
                 i += face.TriangleCount;
             }
-            _indexCountInternal =  i;
+            internalIndexCount = i * 3;
         }
 
         /// <summary>
@@ -207,35 +240,35 @@ namespace Meshes
         /// </summary>
         public void WriteAllToMesh()
         {
-            int previousVertexCount = _vertexCountInternal;
-            int previousIndexCount = _indexCountInternal;
+            int previousVertexCount = internalVertexCount;
+            int previousIndexCount = internalIndexCount;
             // figure out the indices
             OptimizeIndices();
             // resize the vertex and index buffers if needed
-            if (_vertexCountInternal > vertexCountMaximum || _indexCountInternal > indexCountMaximum)
+            if (internalVertexCount > internalVertexCountMax || internalIndexCount > internalIndexCountMax)
             {
-                ResizeInternalBuffers(_vertexCountInternal, _indexCountInternal);
+                ResizeInternalBuffers(internalVertexCount * 2, internalTriangleCount * 2);
             }
             // write vertices 
-            NativeArray<Stream0> vertexStream = new NativeArray<Stream0>(_vertexCountInternal, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            NativeArray<Stream0> vertexStream = new NativeArray<Stream0>(internalVertexCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             foreach (Vertex vertex in Vertices)
             {
                 vertex.WriteToStream(ref vertexStream);
             }
-            mesh.SetVertexBufferData<Stream0>(vertexStream, 0, 0, _vertexCountInternal,
+            mesh.SetVertexBufferData<Stream0>(vertexStream, 0, 0, internalVertexCount,
                 flags: MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds);
             vertexStream.Dispose();
-            NativeArray<int3> indexStream = new NativeArray<int3>(_indexCountInternal, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            NativeArray<int3> indexStream = new NativeArray<int3>(internalIndexCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             int i = 0;
             foreach(Face face in Faces)
             {
                 i = face.WriteToStream(ref indexStream, i);
             }
-            mesh.SetIndexBufferData<int3>(indexStream, 0, 0, _indexCountInternal,
+            mesh.SetIndexBufferData<int3>(indexStream, 0, 0, internalTriangleCount,
                 flags: MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds);
 
             // If any deletions have occurred, zero out the remainder
-            DeletePadding(_vertexCountInternal, previousVertexCount, _indexCountInternal, previousIndexCount);
+            DeletePadding(internalVertexCount, previousVertexCount, internalIndexCount, previousIndexCount);
         }
 
         public void UnsafeWriteVertexToMesh(Vertex vertex)
@@ -288,6 +321,13 @@ namespace Meshes
         public void RecalculateBounds()
         {
             Mesh.RecalculateBounds();
+        }
+
+        public void Dispose()
+        {
+            Vertices.Clear();
+            Edges.Clear();
+            Faces.Clear();
         }
 
         public override string ToString()

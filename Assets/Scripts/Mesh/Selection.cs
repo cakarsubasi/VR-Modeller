@@ -13,7 +13,7 @@ namespace Meshes
 {
     partial struct UMesh
     {
-
+        [Obsolete]
         public void SelectFromIndices(List<int> indices, List<Vertex> selection)
         {
             selection.Clear();
@@ -22,6 +22,31 @@ namespace Meshes
             foreach (int index in indices)
             {
                 selection.Add(Vertices[index]);
+            }
+        }
+
+
+        public void ExtendSelectionWith(ICollection<Vertex> vertices, ICollection<Edge> edges, ICollection<Face> faces, Vertex extension)
+        {
+            if (!vertices.Contains(extension))
+            {
+                vertices.Add(extension);
+            }
+
+            foreach (Edge edge in extension.edges)
+            {
+                if (!edges.Contains(edge))
+                {
+                    edges.Add(edge);
+                }
+            }
+
+            foreach (Face face in extension.FacesIter)
+            {
+                if (!faces.Contains(face))
+                {
+                    faces.Add(face);
+                }
             }
         }
 
@@ -41,7 +66,7 @@ namespace Meshes
         /// </summary>
         /// <param name="vertices"></param>
         /// <param name="selection"></param>
-        public void SelectFacesFromVertices(List<Vertex> vertices, List<Face> selection)
+        public void SelectFacesFromVertices(IEnumerable<Vertex> vertices, ICollection<Face> selection)
         {
             selection.Clear();
             foreach (Face face in Faces)
@@ -82,11 +107,11 @@ namespace Meshes
         /// </summary>
         /// <param name="position">position</param>
         /// <returns>The Vertex</returns>
-        private Vertex? FindByPosition(float3 position)
+        public Vertex? FindByPosition(float3 position, float eps = 0.01f)
         {
             foreach (Vertex vertex in Vertices)
             {
-                if (vertex.Position.Equals(position))
+                if (math.length(vertex.Position - position) < eps)
                 {
                     return vertex;
                 }
@@ -100,9 +125,9 @@ namespace Meshes
         /// </summary>
         /// <param name="position">position</param>
         /// <returns>List of vertices</returns>
-        private List<Vertex> FindAllByPosition(float3 position)
+        public List<Vertex> FindAllByPosition(float3 position, float eps = 0.01f)
         {
-            return Vertices.FindAll(vert => vert.Position.Equals(position)).ToList();
+            return Vertices.FindAll(vert => math.length(vert.Position - position) < eps).ToList();
         }
 
 

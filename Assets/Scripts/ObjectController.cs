@@ -1,12 +1,14 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
 
 public class ObjectController : MonoBehaviour
 {
     public TextMeshProUGUI selectedObjectCountText;
 
     public static ObjectController Instance;
+    List<GameObject> allObjects = new();
     List<GameObject> selectedGameobject = new();
 
     float scaleFactor = 0.5f;
@@ -23,7 +25,10 @@ public class ObjectController : MonoBehaviour
     bool yRotationIncreaseButtonDown, yRotationDecreaseButtonDown = false;
     bool zRotationIncreaseButtonDown, zRotationDecreaseButtonDown = false;
 
+    bool selecting, moving, rotating, scaling;
+
     public List<GameObject> SelectedGameobject { get => selectedGameobject; set => selectedGameobject = value; }
+    public List<GameObject> AllObjects { get => allObjects; set => allObjects = value; }
     public bool ScaleDecreaseButtonDown { get => scaleDecreaseButtonDown; set => scaleDecreaseButtonDown = value; }
     public bool ScaleIncreaseButtonDown { get => scaleIncreaseButtonDown; set => scaleIncreaseButtonDown = value; }
     public bool XPositionIncreaseButtonDown { get => xPositionIncreaseButtonDown; set => xPositionIncreaseButtonDown = value; }
@@ -38,6 +43,11 @@ public class ObjectController : MonoBehaviour
     public bool YRotationDecreaseButtonDown { get => yRotationDecreaseButtonDown; set => yRotationDecreaseButtonDown = value; }
     public bool ZRotationIncreaseButtonDown { get => zRotationIncreaseButtonDown; set => zRotationIncreaseButtonDown = value; }
     public bool ZRotationDecreaseButtonDown { get => zRotationDecreaseButtonDown; set => zRotationDecreaseButtonDown = value; }
+    public bool Selecting { get => selecting; set => selecting = value; }
+    public bool Moving { get => moving; set => moving = value; }
+    public bool Rotating { get => rotating; set => rotating = value; }
+    public bool Scaling { get => scaling; set => scaling = value; }
+
 
     private void Awake()
     {
@@ -50,6 +60,63 @@ public class ObjectController : MonoBehaviour
         HandleScale();
         HandlePosition();
         HandleRotation();
+    }
+
+    public void OnSelect(bool selecting)
+    {
+        if (selecting)
+        {
+            foreach (var item in AllObjects)
+            {
+                item.GetComponent<XRSimpleInteractable>().enabled = true;
+                item.GetComponent<MeshCollider>().enabled = true;
+            }
+        }
+        else
+        {
+            foreach (var item in AllObjects)
+            {
+                item.GetComponent<XRSimpleInteractable>().enabled = false;
+                item.GetComponent<MeshCollider>().enabled = false;
+            }
+            OnClickClearSelectedObjects();
+        }
+    }
+
+    public void OnMove(bool moving)
+    {
+        if (moving)
+        {
+            foreach (var item in AllObjects)
+            {
+                item.transform.FindChildWithTag("GizmoPosition").gameObject.SetActive(true);
+            }
+        }
+        else
+        {
+            foreach (var item in AllObjects)
+            {
+                item.transform.FindChildWithTag("GizmoPosition").gameObject.SetActive(false);
+            }
+        }
+    }
+
+    public void OnRotate(bool rotating)
+    {
+        if (rotating)
+        {
+            foreach (var item in AllObjects)
+            {
+                item.transform.FindChildWithTag("GizmoRotation").gameObject.SetActive(true);
+            }
+        }
+        else
+        {
+            foreach (var item in AllObjects)
+            {
+                item.transform.FindChildWithTag("GizmoRotation").gameObject.SetActive(false);
+            }
+        }
     }
 
     private void HandleRotation()

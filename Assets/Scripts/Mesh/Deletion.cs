@@ -127,6 +127,11 @@ namespace Meshes
             throw new NotImplementedException { };
         }
 
+        public Face MergeFaces(Edge edge)
+        {
+            throw new NotImplementedException { };
+        }
+
         /// <summary>
         /// Delete a face but leave the surrounding vertices intact.
         /// </summary>

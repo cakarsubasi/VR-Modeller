@@ -85,6 +85,15 @@ namespace Meshes
     partial struct UMesh
     {
         /// <summary>
+        /// Create Vertex at origin (0, 0, 0)
+        /// </summary>
+        /// <returns>reference to the vertex</returns>
+        public Vertex CreateVertex()
+        {
+            return CreateVertex(Unity.Mathematics.float3.zero);
+        }
+
+        /// <summary>
         /// Create Vertex at the given position
         /// </summary>
         /// <param name="position">position of the vertex</param>
@@ -148,11 +157,21 @@ namespace Meshes
         /// </summary>
         /// <param name="other">vertex to connect the new vertex</param>
         /// <returns>reference to the created vertex</returns>
-        public Vertex CreateVertexConnectedTo(Vertex other)
+        public Vertex CreateVertexConnectedTo(Vertex other, out Edge edge)
         {
-            Vertex vertex = Vertex.FromOtherVertexConnected(other);
+            Vertex vertex = Vertex.FromOtherVertexUnconnected(other);
             Vertices.Add(vertex);
+            edge = CreateEdge(vertex, other);
             return vertex;
+        }
+
+        public Edge CreateEdge(Vertex one, Vertex two)
+        {
+            Edge edge = new Edge(one, two);
+            one.AddEdgeUnchecked(edge);
+            two.AddEdgeUnchecked(edge);
+            Edges.Add(edge);
+            return edge;
         }
 
         /// <summary>
@@ -328,33 +347,7 @@ namespace Meshes
             Faces.Add(face);
             return face;
         }
-
-        public struct ExtrusionResult
-        {
-            public List<Vertex> vertices;
-            public List<Face> faces;
-        }
-
-        public Vertex Extrude(Vertex input)
-        {
-            throw new NotImplementedException { };
-        }
-
-        public Edge Extrude(Edge input)
-        {
-            throw new NotImplementedException { };
-        }
-
-        public Face Extrude(Face face)
-        {
-            throw new NotImplementedException { };
-        }
-
-        public void Extrude(in List<Vertex> selection, out List<Vertex> created)
-        {
-            throw new NotImplementedException { };
-        }
-
+             
         /// <summary>
         /// Add an outside Vertex to the EditableMesh. You probably do not need
         /// to use this method unless you are creating a Mesh from scratch. This 

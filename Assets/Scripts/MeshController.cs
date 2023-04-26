@@ -23,6 +23,8 @@ public class MeshController : MonoBehaviour
 
     private void Start()
     {
+        ObjectController.Instance.AllObjects.Add(gameObject);
+
         editableMesh = GetComponent<EditableMesh>().MeshInternal;
         meshFilter = GetComponent<MeshFilter>();
         mesh = meshFilter.mesh;
@@ -66,39 +68,22 @@ public class MeshController : MonoBehaviour
     {
         List<Vector3> updatedVertices = new List<Vector3>();
 
-        //Debug.Log("Strarted: " + vertices.Count);
+        Debug.Log("Strarted: " + vertices.Count);
 
         int i = 0;
         while (i < vertices.Count)
         {
-            List<Vector3> sameVertices = vertices.FindAll(x => x == vertices[i]);
+
             //Debug.Log("i: " + i);
-            if (!updatedVertices.Contains(sameVertices[0]))
-            {
-                updatedVertices.Add(sameVertices[0]);
 
-                List<int> vertexIndexes = new List<int>();
+            GameObject vertex = Instantiate(vertexHighlight, gameObject.transform);
+            vertex.transform.localPosition = vertices[i];
+            vertex.transform.localScale = transform.lossyScale / (Mathf.Pow(transform.lossyScale.x, 2) * 20);
+            vertex.GetComponent<VertexController>().VertexIndex = i;
+            vertexObjects.Add(vertex);
+            vertex.SetActive(false);
+            //Debug.Log("Instantiated vertex");
 
-                int k = 0;
-                while (k < vertices.Count)
-                {
-                    //Debug.Log("k: " + k);
-                    if (vertices[k] == sameVertices[0])
-                    {
-                        vertexIndexes.Add(k);
-                        //Debug.Log(sameVertices[0] + " " + k);
-                    }
-                    k++;
-                    yield return null;
-                }
-                GameObject vertex = Instantiate(vertexHighlight, gameObject.transform);
-                vertex.transform.localPosition = vertices[i];
-                vertex.transform.localScale = transform.lossyScale / (Mathf.Pow(transform.lossyScale.x, 2) * 20);
-                vertex.GetComponent<VertexController>().AssignedVertices = vertexIndexes.ToArray();
-                vertexObjects.Add(vertex);
-                vertex.SetActive(false);
-                Debug.Log("Instantiated vertex");
-            }
             i++;
             yield return null;
         }
