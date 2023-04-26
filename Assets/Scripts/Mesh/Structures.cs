@@ -56,6 +56,7 @@ namespace Meshes
         {
             public Face face;
             public int index;
+            public float2 uv0;
         }
 
         internal List<FaceIndex> faces = new List<FaceIndex>(4);

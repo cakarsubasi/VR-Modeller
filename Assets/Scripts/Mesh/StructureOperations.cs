@@ -187,7 +187,7 @@ namespace Meshes
             temp.tangent = Tangent;
             for (int i = 0; i < faces.Count; ++i)
             {
-                temp.uv0 = faces[i].face.GetUVof(this);
+                temp.uv0 = faces[i].uv0;
                 stream[faces[i].index] = temp;
             }
         }
@@ -205,17 +205,34 @@ namespace Meshes
         public int OptimizeIndices(int beginning)
         {
             // TODO: make some faces share indices for efficiency
+            var firstProp = faces[0];
+            float2 uv0 = firstProp.face.GetUVof(this);
+            firstProp.index = beginning;
+            firstProp.uv0 = uv0;
+            faces[0] = firstProp;
 
             // Maybe instead of optimizing this ahead of time
             // We should get the beginning in WriteToStream() instead
             // Need to figure out a way to send the information to faces
-            for (int i = 0; i < faces.Count; ++i)
+            int used = 1;
+            for (int i = 1; i < faces.Count; ++i)
             {
                 var prop = faces[i];
-                prop.index = beginning + i;
+                float2 uv0next = prop.face.GetUVof(this);
+                if (uv0next.Equals(uv0))
+                {
+                    prop.index = beginning;
+                    prop.uv0 = uv0;
+                } else
+                {
+                    prop.index = beginning + used;
+                    prop.uv0 = uv0next;
+                    used++;
+                }
                 faces[i] = prop;
+
             }
-            return beginning + faces.Count;
+            return beginning + used;
         }
 
         /// <summary>
