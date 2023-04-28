@@ -34,7 +34,7 @@ public class VertexController : MonoBehaviour
 
             if (parentCollider != null)
             {
-                parentCollider.sharedMesh = meshController.Mesh;
+                parentCollider.sharedMesh = meshController.editableMesh.Mesh;
             }
         }
         //transform.localScale = parent.transform.lossyScale / (Mathf.Pow(parent.transform.lossyScale.x, 2) * 20);
