@@ -9,76 +9,71 @@ using static Unity.Mathematics.math;
 
 namespace Meshes
 {
+    using TriangleVerts = TriangleElement<Vertex>;
+    using TriangleUVs = TriangleElement<float2>;
+    using TriangleEdges = TriangleElement<Edge>;
 
-    /// <summary>
-    /// struct to pass three vertex references, this avoids allocations
-    /// </summary>
-    public struct TriangleVerts
+    using QuadVerts = QuadElement<Vertex>;
+    using QuadUVs = QuadElement<float2>;
+    using QuadEdges = QuadElement<Edge>;
+
+    public struct TriangleElement<T> : IEnumerable<T>
     {
-        public Vertex vert0;
-        public Vertex vert1;
-        public Vertex vert2;
+        public T f0;
+        public T f1;
+        public T f2;
 
-        public TriangleVerts(Vertex vert0, Vertex vert1, Vertex vert2)
+        public TriangleElement(T f0, T f1, T f2)
         {
-            this.vert0 = vert0;
-            this.vert1 = vert1;
-            this.vert2 = vert2;
+            this.f0 = f0;
+            this.f1 = f1;
+            this.f2 = f2;
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            yield return f0;
+            yield return f1;
+            yield return f2;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            yield return f0;
+            yield return f1;
+            yield return f2;
         }
     }
 
-    /// <summary>
-    /// struct to pass four vertex references
-    /// </summary>
-    public struct QuadVerts
+    public struct QuadElement<T> : IEnumerable<T>
     {
-        public Vertex vert0;
-        public Vertex vert1;
-        public Vertex vert2;
-        public Vertex vert3;
+        public T f0;
+        public T f1;
+        public T f2;
+        public T f3;
 
-        public QuadVerts(Vertex vert0, Vertex vert1, Vertex vert2, Vertex vert3)
+        public QuadElement(T f0, T f1, T f2, T f3)
         {
-            this.vert0 = vert0;
-            this.vert1 = vert1;
-            this.vert2 = vert2;
-            this.vert3 = vert3;
+            this.f0 = f0;
+            this.f1 = f1;
+            this.f2 = f2;
+            this.f3 = f3;
         }
-    }
 
-    /// <summary>
-    /// struct to pass three UVs
-    /// </summary>
-    public struct TriangleUVs
-    {
-        public float2 uv0_0;
-        public float2 uv0_1;
-        public float2 uv0_2;
-
-        public TriangleUVs(float2 uv0_0, float2 uv0_1, float2 uv0_2)
+        public IEnumerator<T> GetEnumerator()
         {
-            this.uv0_0 = uv0_0;
-            this.uv0_1 = uv0_1;
-            this.uv0_2 = uv0_2;
+            yield return f0;
+            yield return f1;
+            yield return f2;
+            yield return f3;
         }
-    }
 
-    /// <summary>
-    /// struct to pass four UVs
-    /// </summary>
-    public struct QuadUVs
-    {
-        public float2 uv0_0;
-        public float2 uv0_1;
-        public float2 uv0_2;
-        public float2 uv0_3;
-
-        public QuadUVs(float2 uv0_0, float2 uv0_1, float2 uv0_2, float2 uv0_3)
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            this.uv0_0 = uv0_0;
-            this.uv0_1 = uv0_1;
-            this.uv0_2 = uv0_2;
-            this.uv0_3 = uv0_3;
+            yield return f0;
+            yield return f1;
+            yield return f2;
+            yield return f3;
         }
     }
 
@@ -161,17 +156,80 @@ namespace Meshes
         {
             Vertex vertex = Vertex.FromOtherVertexUnconnected(other);
             Vertices.Add(vertex);
-            edge = CreateEdge(vertex, other);
+            edge = CreateEdgeUnchecked(vertex, other);
             return vertex;
         }
 
+        /// <summary>
+        /// Create an edge between the two vertices if one does not already exist.
+        /// <br>Note that while it is not necessarily invalid for multiple edges to 
+        /// exist between two vertices, it is generally undesirable</br>
+        /// </summary>
+        /// <param name="one"></param>
+        /// <param name="two"></param>
+        /// <returns></returns>
         public Edge CreateEdge(Vertex one, Vertex two)
+        {
+            Edge? edgeMaybe = one.GetEdgeTo(two);
+            if (edgeMaybe == null)
+            {
+                edgeMaybe = CreateEdgeUnchecked(one, two);
+            }
+            return edgeMaybe;
+        }
+
+        /// <summary>
+        /// Create an edge between the given two vertices skipping checks.
+        /// </summary>
+        /// <param name="vertex1">vertex 1</param>
+        /// <param name="vertex2">vertex 2</param>
+        /// <returns>edge between them</returns>
+        public Edge CreateEdgeUnchecked(Vertex one, Vertex two)
         {
             Edge edge = new Edge(one, two);
             one.AddEdgeUnchecked(edge);
             two.AddEdgeUnchecked(edge);
             Edges.Add(edge);
             return edge;
+        }
+
+
+        internal void CreateFaceLoop(ICollection<Vertex> verticesIn, List<Edge> edgesOut)
+        {
+            var iter = verticesIn.GetEnumerator();
+            // 0 element guard
+            if (!iter.MoveNext())
+                return;
+            Vertex first = iter.Current;
+            Vertex vert1;
+            Vertex vert2 = first;
+            while (iter.MoveNext())
+            {
+                vert1 = iter.Current;
+                edgesOut.Add(CreateEdge(vert1, vert2));
+                vert2 = vert1;
+            }
+            // 1 element guard
+            if (vert2 == first)
+                return;
+            edgesOut.Add(CreateEdge(vert2, first));
+        }
+
+        internal TriangleEdges CreateFaceLoop(TriangleVerts verts)
+        {
+            Edge e0 = CreateEdge(verts.f0, verts.f1);
+            Edge e1 = CreateEdge(verts.f1, verts.f2);
+            Edge e2 = CreateEdge(verts.f2, verts.f0);
+            return new TriangleEdges(e0, e1, e2);
+        }
+
+        internal QuadEdges CreateFaceLoop(QuadVerts verts)
+        {
+            Edge e0 = CreateEdge(verts.f0, verts.f1);
+            Edge e1 = CreateEdge(verts.f1, verts.f2);
+            Edge e2 = CreateEdge(verts.f2, verts.f3);
+            Edge e3 = CreateEdge(verts.f3, verts.f0);
+            return new QuadEdges(e0, e1, e2, e3);
         }
 
         /// <summary>
@@ -222,7 +280,8 @@ namespace Meshes
         /// <returns>Reference to the face</returns>
         public Face CreateQuad(QuadVerts verts, QuadUVs uv0s = default)
         {
-            var face = new Face(verts, uv0s);
+            QuadEdges faceLoop = CreateFaceLoop(verts);
+            var face = new Face(verts, faceLoop, uv0s);
             Faces.Add(face);
             return face;
         }
@@ -252,7 +311,8 @@ namespace Meshes
         /// <returns>Reference to the face</returns>
         public Face CreateTriangle(TriangleVerts vertices, TriangleUVs uv0s = default)
         {
-            var face = new Face(vertices, uv0s);
+            TriangleEdges faceLoop = CreateFaceLoop(vertices);
+            var face = new Face(vertices, faceLoop, uv0s);
             Faces.Add(face);
             return face;
         }
@@ -292,7 +352,7 @@ namespace Meshes
         /// </summary>
         /// <param name="vertices">N vertices</param>
         /// <returns>Reference to the face</returns>
-        public Face CreateNGon(List<Vertex> vertices)
+        public Face CreateNGon(ICollection<Vertex> vertices)
         {
             float2[] uv0s = new float2[vertices.Count];
             return CreateNGon(vertices, uv0s);
@@ -315,35 +375,11 @@ namespace Meshes
         /// <param name="vertices">N vertices</param>
         /// <param name="uv0s">N uv values</param>
         /// <returns>Reference to the face</returns>
-        public Face CreateNGon(Vertex[] vertices, float2[] uv0s)
+        public Face CreateNGon(ICollection<Vertex> vertices, ICollection<float2> uv0s)
         {
-            Face face = new Face(vertices, uv0s);
-            Faces.Add(face);
-            return face;
-        }
-
-        /// <summary>
-        /// Create NGon with the given vertices
-        /// </summary>
-        /// <param name="vertices">N vertices</param>
-        /// <param name="uv0s">N uv values</param>
-        /// <returns>Reference to the face</returns>
-        public Face CreateNGon(List<Vertex> vertices, float2[] uv0s)
-        {
-            Face face = new Face(vertices, uv0s);
-            Faces.Add(face);
-            return face;
-        }
-
-        /// <summary>
-        /// Create NGon with the given vertices
-        /// </summary>
-        /// <param name="vertices">N vertices</param>
-        /// <param name="uv0s">N uv values</param>
-        /// <returns>Reference to the face</returns>
-        public Face CreateNGon(List<Vertex> vertices, List<float2> uv0s)
-        {
-            Face face = new Face(vertices, uv0s);
+            List<Edge> faceLoop = new List<Edge>(vertices.Count);
+            CreateFaceLoop(vertices, faceLoop);
+            Face face = new Face(vertices, uv0s, faceLoop);
             Faces.Add(face);
             return face;
         }
@@ -404,20 +440,6 @@ namespace Meshes
                 AddVertexUnchecked(vertex);
             }
             return vertices;
-        }
-
-        /// <summary>
-        /// Add an edge between the given two vertices if one does
-        /// not already exist and return the edge.
-        /// Right now, this function doesn't have much purpose unless we
-        /// expose edges more to the outside.
-        /// </summary>
-        /// <param name="vertex1">vertex 1</param>
-        /// <param name="vertex2">vertex 2</param>
-        /// <returns>edge between them</returns>
-        public Edge AddEdge(Vertex vertex1, Vertex vertex2)
-        {
-            throw new NotImplementedException { };
         }
 
         public Vertex MergeVertex(Vertex vert1, Vertex vert2)

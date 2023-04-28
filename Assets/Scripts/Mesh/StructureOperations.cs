@@ -290,20 +290,23 @@ namespace Meshes
 
         /// <summary>
         /// Check if there is an Edge between this vertex and the other vertex. 
-        /// Create a new Edge if there isn't an Edge and then return the Edge.
+        /// Return the edge. If a new edge is created
         /// </summary>
         /// <param name="vertex">vertex to connect to</param>
         /// <returns></returns>
-        internal Edge AddEdgeCheckedFromVertex(Vertex other)
+        internal bool AddEdgeCheckedFromVertex(Vertex other, out Edge edgeBetween)
         {
             foreach (Edge edge in edges)
             {
                 if (edge.IsBetween(this, other))
                 {
-                    return edge;
+                    edgeBetween = edge;
+                    return false;
                 }
             }
-            return AddEdgeUncheckedFromVertex(other);
+
+            edgeBetween = AddEdgeUncheckedFromVertex(other);
+            return false;
         }
 
         /// <summary>
@@ -497,6 +500,17 @@ namespace Meshes
             return ret;
         }
 
+        public IEnumerable<Face> GetEdgeLoopsIter()
+        {
+            foreach (Face face in one.FacesIter)
+            {
+                if (two.FacesIter.Contains(face))
+                {
+                    yield return face;
+                }
+            }
+        }
+
         public void MoveRelative(float3 relative)
         {
             // need a more robust API later
@@ -506,6 +520,10 @@ namespace Meshes
 
         public void Delete()
         {
+            foreach (Face face in GetEdgeLoopsIter())
+            {
+                face.Delete();
+            }
             Alive = false;
         }
 
@@ -550,86 +568,26 @@ namespace Meshes
         /// <exception cref="ArgumentException">vertices and uv0s have different size</exception>
         /// <param name="vertices">vertices</param>
         /// <param name="uv0s">uv coordinates</param>
-        public Face(List<Vertex> vertices, List<float2> uv0s)
+        public Face(ICollection<Vertex> vertices, ICollection<float2> uv0s, List<Edge> edges)
         {
-            if (vertices.Count != uv0s.Count)
+            if (vertices.Count != uv0s.Count || uv0s.Count != edges.Count)
             {
                 throw new ArgumentException("vertices and uv0s must have the same length");
             }
-
+            
             Normal = Position = default;
             this.vertices = new List<VertexCoordinate>(vertices.Count);
-            edges = new List<Edge>(vertices.Count);
-            for (int i = 0; i < vertices.Count; ++i)
+            this.edges = edges;
+
+            foreach ((Vertex vert, float2 uv) in vertices.Zip(uv0s, Tuple.Create)) 
             {
                 this.vertices.Add(new VertexCoordinate
                 {
-                    vertex = vertices[i],
-                    uv0 = uv0s[i]
+                    vertex = vert,
+                    uv0 = uv
                 });
             }
-            foreach (var vert in vertices)
-            {
-                vert.AddFaceChecked(this);
-            }
-            FinalizeSetup();
-        }
 
-        /// <summary>
-        /// Arbitrary vertex count constructor
-        /// </summary>
-        /// <exception cref="ArgumentException">vertices and uv0s have different size</exception>
-        /// <param name="vertices">vertices</param>
-        /// <param name="uv0s">uv coordinates</param>
-        public Face(List<Vertex> vertices, float2[] uv0s)
-        {
-            if (vertices.Count != uv0s.Length)
-            {
-                throw new ArgumentException("vertices and uv0s must have the same length");
-            }
-
-            Normal = Position = default;
-            this.vertices = new List<VertexCoordinate>(vertices.Count);
-            edges = new List<Edge>(vertices.Count);
-            for (int i = 0; i < vertices.Count; ++i)
-            {
-                this.vertices.Add(new VertexCoordinate
-                {
-                    vertex = vertices[i],
-                    uv0 = uv0s[i]
-                });
-            }
-            foreach (var vert in vertices)
-            {
-                vert.AddFaceChecked(this);
-            }
-            FinalizeSetup();
-        }
-
-        /// <summary>
-        /// Arbitrary vertex count constructor
-        /// </summary>
-        /// <exception cref="ArgumentException">vertices and uv0s have different size</exception>
-        /// <param name="vertices">vertices</param>
-        /// <param name="uv0s">uv coordinates</param>
-        public Face(Vertex[] vertices, float2[] uv0s)
-        {
-            if (vertices.Length != uv0s.Length)
-            {
-                throw new ArgumentException("vertices and uv0s must have the same length");
-            }
-
-            Normal = Position = default;
-            this.vertices = new List<VertexCoordinate>(vertices.Length);
-            edges = new List<Edge>(vertices.Length);
-            for (int i = 0; i < vertices.Length; ++i)
-            {
-                this.vertices.Add(new VertexCoordinate
-                {
-                    vertex = vertices[i],
-                    uv0 = uv0s[i]
-                });
-            }
             foreach (var vert in vertices)
             {
                 vert.AddFaceChecked(this);
@@ -642,26 +600,29 @@ namespace Meshes
         /// </summary>
         /// <param name="vertices"></param>
         /// <param name="uv0s"></param>
-        public Face(TriangleVerts vertices, TriangleUVs uv0s = default)
+        public Face(TriangleElement<Vertex> vertices, TriangleElement<Edge> edges, TriangleElement<float2> uv0s = default)
         {
             Normal = Position = default;
             this.vertices = new List<VertexCoordinate>(3);
-            edges = new List<Edge>(3);
+            this.edges = new List<Edge>(3);
             this.vertices.Add(new VertexCoordinate
             {
-                vertex = vertices.vert0,
-                uv0 = uv0s.uv0_0
+                vertex = vertices.f0,
+                uv0 = uv0s.f0
             });
             this.vertices.Add(new VertexCoordinate
             {
-                vertex = vertices.vert1,
-                uv0 = uv0s.uv0_1
+                vertex = vertices.f1,
+                uv0 = uv0s.f1
             });
             this.vertices.Add(new VertexCoordinate
             {
-                vertex = vertices.vert2,
-                uv0 = uv0s.uv0_2
+                vertex = vertices.f2,
+                uv0 = uv0s.f2
             });
+            this.edges.Add(edges.f0);
+            this.edges.Add(edges.f1);
+            this.edges.Add(edges.f2);
             foreach (var vert in this.vertices)
             {
                 vert.vertex.AddFaceChecked(this);
@@ -675,35 +636,39 @@ namespace Meshes
         /// </summary>
         /// <param name="vertices">four vertices counter-clockwise</param>
         /// <param name="uv0s">default uv values</param>
-        public Face(QuadVerts vertices, QuadUVs uv0s = default)
+        public Face(QuadElement<Vertex> vertices, QuadElement<Edge> edges, QuadElement<float2> uv0s = default)
         {
             Normal = Position = default;
             this.vertices = new List<VertexCoordinate>(4);
-            edges = new List<Edge>(4);
+            this.edges = new List<Edge>(4);
             this.vertices.Add(new VertexCoordinate
             {
-                vertex = vertices.vert0,
-                uv0 = uv0s.uv0_0
+                vertex = vertices.f0,
+                uv0 = uv0s.f0
             });
             this.vertices.Add(new VertexCoordinate
             {
-                vertex = vertices.vert1,
-                uv0 = uv0s.uv0_1
+                vertex = vertices.f1,
+                uv0 = uv0s.f1
             });
             this.vertices.Add(new VertexCoordinate
             {
-                vertex = vertices.vert2,
-                uv0 = uv0s.uv0_2
+                vertex = vertices.f2,
+                uv0 = uv0s.f2
             });
             this.vertices.Add(new VertexCoordinate
             {
-                vertex = vertices.vert3,
-                uv0 = uv0s.uv0_3
+                vertex = vertices.f3,
+                uv0 = uv0s.f3
             });
             foreach (var vert in this.vertices)
             {
                 vert.vertex.AddFaceChecked(this);
             }
+            this.edges.Add(edges.f0);
+            this.edges.Add(edges.f1);
+            this.edges.Add(edges.f2);
+            this.edges.Add(edges.f3);
             FinalizeSetup();
         }
 
@@ -712,20 +677,8 @@ namespace Meshes
         /// </summary>
         private void FinalizeSetup()
         {
-            GenerateEdges();
             RecalculateNormal();
             RecalculatePosition();
-        }
-
-        private void GenerateEdges()
-        {
-            for (int i = 0; i < vertices.Count; ++i)
-            {
-                Vertex first = vertices[i].vertex;
-                Vertex second = vertices[(i + 1) % vertices.Count].vertex;
-                Edge edge = first.AddEdgeCheckedFromVertex(second);
-                edges.Add(edge);
-            }
         }
 
         internal void DiscoverEdgesFromVertices()

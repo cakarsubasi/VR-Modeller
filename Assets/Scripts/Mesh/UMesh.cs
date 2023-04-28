@@ -21,9 +21,6 @@ namespace Meshes
         public string Name { get => mesh.name; set => mesh.name = value; }
 
         public List<Vertex> Vertices;
-        /// <summary>
-        /// Currently unstable, do not rely on this
-        /// </summary>
         public List<Edge> Edges;
         public List<Face> Faces;
 
@@ -42,9 +39,6 @@ namespace Meshes
 
         public int VertexCount { get => Vertices.Count; }
         public int FaceCount { get => Faces.Count; }
-        /// <summary>
-        /// Currently unstable, do not rely on this
-        /// </summary>
         public int EdgeCount { get => Edges.Count; }
 
         private ExtrusionHelper extrusionHelper;
@@ -184,8 +178,8 @@ namespace Meshes
             }
             for (int i = 0; i < triangles.Length; i += 3)
             {
-                TriangleVerts verts = new(vertexmap[triangles[i]], vertexmap[triangles[i + 1]], vertexmap[triangles[i + 2]]);
-                TriangleUVs uv0s = new(uvs[triangles[i]], uvs[triangles[i + 1]], uvs[triangles[i + 2]]);
+                TriangleElement<Vertex> verts = new(vertexmap[triangles[i]], vertexmap[triangles[i + 1]], vertexmap[triangles[i + 2]]);
+                TriangleElement<float2> uv0s = new(uvs[triangles[i]], uvs[triangles[i + 1]], uvs[triangles[i + 2]]);
                 CreateTriangle(verts, uv0s);
             }
             RecalculateNormals();

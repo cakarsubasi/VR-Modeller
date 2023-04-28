@@ -187,6 +187,7 @@ namespace Meshes
         {
             Faces.RemoveAll(face => face.Alive == false);
             Vertices.RemoveAll(vertex => vertex.Alive == false);
+            Edges.RemoveAll(edge => edge.Alive == false);
         }
     }
 
