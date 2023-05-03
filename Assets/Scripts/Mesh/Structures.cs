@@ -132,6 +132,8 @@ namespace Meshes
         /// </summary>
         public List<Vertex> Vertices => vertices.Select(item => item.vertex).ToList();
 
+        internal IEnumerable<Vertex> VerticesIter => GetVerticesIter();
+
         /// <summary>
         /// Get a copy to the list of edges
         /// </summary>

@@ -114,6 +114,18 @@ namespace Meshes
         }
 
         /// <summary>
+        /// Create a Vertex by copying the properties of another vertex.
+        /// </summary>
+        /// <param name="otherVertex">Vertex to copy properties from</param>
+        /// <returns>A new unconnected vertex with the properties of otherVertex</returns>
+        public Vertex CreateVertex(Vertex otherVertex)
+        {
+            Vertex vert = Vertex.Copy(otherVertex);
+            Vertices.Add(vert);
+            return vert;
+        }
+
+        /// <summary>
         /// Create vertex at the given position if one does not already exist, otherwise
         /// return the reference to the existing vertex
         /// </summary>

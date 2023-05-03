@@ -54,6 +54,11 @@ namespace Meshes
             return self;
         }
 
+        public static Vertex Copy(Vertex other)
+        {
+            return Vertex.FromOtherVertexUnconnected(other);
+        }
+
         public static Vertex FromOtherVertexUnconnected(Vertex other)
         {
             Vertex self = new Vertex
@@ -727,6 +732,14 @@ namespace Meshes
                 Position += vert.Position;
             }
             Position /= vertices.Count;
+        }
+
+        internal IEnumerable<Vertex> GetVerticesIter()
+        {
+            foreach (var vertexIndex in vertices)
+            {
+                yield return vertexIndex.vertex;
+            }
         }
 
         /// <summary>
