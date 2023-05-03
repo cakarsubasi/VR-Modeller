@@ -76,6 +76,18 @@ MonoBehaviour:
     m_Localized: "K\xFCre\nYarat"
     m_Metadata:
       m_Items: []
+  - m_Id: 5095607523606528
+    m_Localized: "Aray\xFCz Men\xFCs\xFC:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5096181136621568
+    m_Localized: Sol El
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5096251206664192
+    m_Localized: "Sa\u011F El"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

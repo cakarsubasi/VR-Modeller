@@ -797,6 +797,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Primary Button (Menu)",
+                    "type": "Button",
+                    "id": "cf87e0f9-da78-4a8d-9a0a-dfef99fc4402",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -896,6 +905,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "OpenOrCloseVertices",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b24eeb9e-f280-422e-bac5-3e0100e5313c",
+                    "path": "<XRController>{RightHand}/primaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Primary Button (Menu)",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

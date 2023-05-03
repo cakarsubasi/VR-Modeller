@@ -9,6 +9,8 @@ TagManager:
   - GizmoPosition
   - GizmoRotation
   - GizmoScale
+  - LeftHand
+  - RightHand
   layers:
   - Default
   - TransparentFX
