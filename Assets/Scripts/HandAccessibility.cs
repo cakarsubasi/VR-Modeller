@@ -10,8 +10,6 @@ public class HandAccessibility : MonoBehaviour
     public Transform RightHandController;
     public Transform LeftHandController;
     public ToggleGroup toggleGroup;
-    public InputActionReference leftPrimaryButton;
-    public InputActionReference rightPrimaryButton;
 
     Toggle GetSelectedToggle()
     {
@@ -27,12 +25,10 @@ public class HandAccessibility : MonoBehaviour
         if(toggle.tag == "LeftHand")
         {
             menu.transform.SetParent(LeftHandController, false);
-            menu.GetComponent<UIMenuController>().primaryButton = leftPrimaryButton;
         }
         else
         {
             menu.transform.SetParent(RightHandController, false);
-            menu.GetComponent<UIMenuController>().primaryButton = rightPrimaryButton;
         }
     }
 
