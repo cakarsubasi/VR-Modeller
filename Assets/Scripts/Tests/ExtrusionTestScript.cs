@@ -74,8 +74,10 @@ public class ExtrusionTestScript
         Vertex extrudedVertex = vert1.GetConnectedVertices()[0];
 
         Assert.AreEqual(3, mesh.VertexCount);
-        Assert.AreEqual(1, vert1.EdgeCount);
+        Assert.AreEqual(2, mesh.EdgeCount);
         Assert.AreEqual(0, mesh.FaceCount);
+
+        Assert.AreEqual(1, vert1.EdgeCount);
 
         Assert.AreEqual(float3(2f, 0f, 0f), vert1.Position);
         Assert.AreEqual(float3(1f, 0f, 0f), extrudedVertex.Position);
@@ -99,7 +101,7 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(4, mesh.VertexCount);
-        // Assert.AreEqual(4, mesh.EdgeCount);
+        Assert.AreEqual(4, mesh.EdgeCount);
         Assert.AreEqual(2, vert1.EdgeCount);
         Assert.AreEqual(2, vert2.EdgeCount);
         Assert.AreEqual(1, mesh.FaceCount);
@@ -133,7 +135,7 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(4, mesh.VertexCount);
-        // Assert.AreEqual(4, mesh.EdgeCount);
+        Assert.AreEqual(4, mesh.EdgeCount);
         Assert.AreEqual(2, vert1.EdgeCount);
         Assert.AreEqual(2, vert2.EdgeCount);
         Assert.AreEqual(1, mesh.FaceCount);
@@ -167,7 +169,7 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(6, mesh.VertexCount);
-        // Assert.AreEqual(7, mesh.EdgeCount);
+        Assert.AreEqual(7, mesh.EdgeCount);
         Assert.AreEqual(2, mesh.FaceCount);
 
         Assert.AreEqual(2, vert1.EdgeCount);
@@ -211,7 +213,7 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(6, mesh.VertexCount);
-        // Assert.AreEqual(7, mesh.EdgeCount);
+        Assert.AreEqual(7, mesh.EdgeCount);
         Assert.AreEqual(2, mesh.FaceCount);
 
         Assert.AreEqual(2, vert1.EdgeCount);
@@ -256,7 +258,7 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(7, mesh.VertexCount);
-        // Assert.AreEqual(9, mesh.EdgeCount);
+        Assert.AreEqual(9, mesh.EdgeCount);
         Assert.AreEqual(3, vert1.EdgeCount);
         Assert.AreEqual(2, vert1.FaceCount);
         Assert.AreEqual(3, mesh.FaceCount);
@@ -290,7 +292,7 @@ public class ExtrusionTestScript
         Vertex vert1 = mesh.FindByPosition(float3(0f, 1f, 0f));
         Face face = vert1.GetFaces()[0];
 
-        var selected = new List<Edge>(vert1.edges);
+        var selected = vert1.Edges;
         Assert.AreEqual(2, selected.Count);
 
         mesh.Extrude(selected);
@@ -300,7 +302,7 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(7, mesh.VertexCount);
-        // Assert.AreEqual(9, mesh.EdgeCount);
+        Assert.AreEqual(9, mesh.EdgeCount);
         Assert.AreEqual(3, vert1.EdgeCount);
         Assert.AreEqual(2, vert1.FaceCount);
         Assert.AreEqual(3, mesh.FaceCount);
@@ -345,7 +347,7 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(8, mesh.VertexCount);
-        // Assert.AreEqual(12, mesh.EdgeCount);
+        Assert.AreEqual(12, mesh.EdgeCount);
         Assert.AreEqual(5, mesh.FaceCount);
 
         // stability tests
@@ -399,7 +401,7 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(8, mesh.VertexCount);
-        // Assert.AreEqual(12, mesh.EdgeCount);
+        Assert.AreEqual(12, mesh.EdgeCount);
         Assert.AreEqual(5, mesh.FaceCount);
 
         // stability tests
@@ -445,7 +447,7 @@ public class ExtrusionTestScript
         Vertex vert2 = verts[1];
         Vertex vert3 = verts[2];
         Vertex vert4 = verts[3];
-        var edges = face.edges;
+        var edges = face.Edges;
 
         mesh.Extrude(edges);
         mesh.MoveSelectionRelative(edges, float3(0f, 0f, 1f));
@@ -454,7 +456,7 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(8, mesh.VertexCount);
-        // Assert.AreEqual(12, mesh.EdgeCount);
+        Assert.AreEqual(12, mesh.EdgeCount);
         Assert.AreEqual(5, mesh.FaceCount);
 
         // stability tests
@@ -512,7 +514,7 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(12, mesh.VertexCount);
-        // Assert.AreEqual(19, mesh.EdgeCount);
+        Assert.AreEqual(19, mesh.EdgeCount);
         Assert.AreEqual(8, mesh.FaceCount);
 
         Vertex keyVertex1 = mesh.FindByPosition(float3(0f, 0f, 1f));
@@ -572,7 +574,7 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(17, mesh.VertexCount);
-        // Assert.AreEqual(28, mesh.EdgeCount);
+        Assert.AreEqual(28, mesh.EdgeCount);
         Assert.AreEqual(12, mesh.FaceCount);
     }
 

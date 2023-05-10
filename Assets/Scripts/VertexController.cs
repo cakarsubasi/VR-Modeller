@@ -1,17 +1,21 @@
+using Meshes;
 using Unity.Mathematics;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
 public class VertexController : MonoBehaviour
 {
+    public Material normalMaterial, activeMaterial;
+
     MeshController meshController;
-    int vertexIndex;
-    bool isSelected;
+    bool isSelected, isActivated = false;
     GameObject targetMesh;
     MeshCollider parentCollider;
+    Vertex vertex;
 
-    public int VertexIndex { get => vertexIndex; set => vertexIndex = value; }
     public bool IsSelected { get => isSelected; set => isSelected = value; }
+    public bool IsActivated { get => isActivated; set => isActivated = value; }
+    public Vertex Vertex { get => vertex; set => vertex = value; }
 
     private void Start()
     {
@@ -29,7 +33,7 @@ public class VertexController : MonoBehaviour
             //meshController.Vertices[VertexIndex] = targetMesh.transform.InverseTransformPoint(transform.position);
             //meshController.Mesh.vertices = meshController.Vertices.ToArray();
 
-            meshController.editableMesh.Vertices[VertexIndex].Position = (float3)targetMesh.transform.InverseTransformPoint(transform.position);
+            Vertex.Position = (float3)targetMesh.transform.InverseTransformPoint(transform.position);
             meshController.editableMesh.WriteAllToMesh();
 
             if (parentCollider != null)
@@ -37,6 +41,23 @@ public class VertexController : MonoBehaviour
                 parentCollider.sharedMesh = meshController.editableMesh.Mesh;
             }
         }
-        //transform.localScale = parent.transform.lossyScale / (Mathf.Pow(parent.transform.lossyScale.x, 2) * 20);
+    }
+
+    public void SetActiveState()
+    {
+        if (IsSelected) return;
+
+        IsActivated = !IsActivated;
+
+        if (IsActivated)
+        {
+            GetComponent<MeshRenderer>().material = activeMaterial;
+            meshController.ActiveVertices.Add(gameObject);
+        }
+        else
+        {
+            GetComponent<MeshRenderer>().material = normalMaterial;
+            meshController.ActiveVertices.Remove(gameObject);
+        }
     }
 }

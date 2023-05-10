@@ -21,25 +21,22 @@ public class EditableMesh : MonoBehaviour
 
         if (CopyFromMesh != null)
         {
-            meshInternal = default;
+            meshInternal = UMesh.Create();
             Debug.Log($"Vertex count: {CopyFromMesh.vertexCount}");
             GetComponent<MeshFilter>().mesh = meshInternal.CopySetup(CopyFromMesh);
             
         }
         else
         {
-            var mesh = new Mesh
-            {
-                name = "Flat quad"
-            };
-            meshInternal.Setup(mesh);
+            meshInternal = UMesh.Create(new Mesh(), "Flat quad");
             var vert1 = float3(0f, 0f, 0f);
             var vert2 = float3(1f, 0f, 0f);
             var vert3 = float3(1f, 1f, 0f);
             var vert4 = float3(0f, 1f, 0f);
             meshInternal.CreateVerticesAndQuad(vert1, vert2, vert3, vert4);
-            GetComponent<MeshFilter>().mesh = mesh;
+            GetComponent<MeshFilter>().mesh = meshInternal.Mesh;
         }
+        meshInternal.OptimizeRendering();
         meshInternal.WriteAllToMesh();
         Debug.Log($"{meshInternal}");
         

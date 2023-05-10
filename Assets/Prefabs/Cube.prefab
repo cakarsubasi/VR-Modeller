@@ -146,8 +146,7 @@ MonoBehaviour:
       m_Flags: 0
     m_Reference: {fileID: 109764013769571655, guid: c348712bda248c246b8c49b3db54643f,
       type: 3}
-  copiedMesh: {fileID: -5495902117074765545, guid: 03e79915adfa60242b61c7bc07140e9e,
-    type: 3}
+  copiedMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!64 &1876197934038270050
 MeshCollider:
   m_ObjectHideFlags: 0

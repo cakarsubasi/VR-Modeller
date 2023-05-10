@@ -1,16 +1,27 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit;
 
 public class ObjectController : MonoBehaviour
 {
     public static ObjectController Instance;
 
+    public Button deepCopyButton;
+
     List<GameObject> allObjects = new();
     GameObject selectedGameobject;
     bool selecting, moving, rotating, scaling;
 
-    public GameObject SelectedGameobject { get => selectedGameobject; set => selectedGameobject = value; }
+    public GameObject SelectedGameobject
+    {
+        get => selectedGameobject;
+        set
+        {
+            selectedGameobject = value;
+            UpdateButtonInteractability();
+        }
+    }
     public List<GameObject> AllObjects { get => allObjects; set => allObjects = value; }
     public bool Selecting { get => selecting; set => selecting = value; }
     public bool Moving { get => moving; set => moving = value; }
@@ -94,5 +105,13 @@ public class ObjectController : MonoBehaviour
         selectedGameobject.GetComponent<MeshRenderer>().material.color = Color.white;
         selectedGameobject.GetComponent<MeshController>().VerticesParent.SetActive(false);
         selectedGameobject = null;
+    }
+
+
+    private void UpdateButtonInteractability()
+    {
+        bool isInteractable = selectedGameobject != null;
+
+        deepCopyButton.interactable = isInteractable;
     }
 }

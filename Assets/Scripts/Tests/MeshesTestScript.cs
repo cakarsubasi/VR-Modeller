@@ -73,7 +73,7 @@ public class MeshesTestScript
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
         Vertex vert4 = Vertex.Dangling(float3(0f, 1f, 0f));
         mesh.AddVerticesUnchecked(vert1, vert2, vert3, vert4);
-        Face face = mesh.CreateQuad(new QuadVerts(vert1, vert2, vert3, vert4));
+        Face face = mesh.CreateQuad(new QuadElement<Vertex>(vert1, vert2, vert3, vert4));
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
@@ -108,7 +108,7 @@ public class MeshesTestScript
         Vertex vert4 = mesh.CreateVertexConnectedTo(vert3, out _);
         vert4.Position = float3(0f, 1f, 0f);
 
-        mesh.CreateQuad(new QuadVerts(vert1, vert2, vert3, vert4));
+        mesh.CreateQuad(new QuadElement<Vertex>(vert1, vert2, vert3, vert4));
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
@@ -136,8 +136,8 @@ public class MeshesTestScript
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
         Vertex vert4 = Vertex.Dangling(float3(0f, 1f, 0f));
         mesh.AddVerticesUnchecked(vert1, vert2, vert3, vert4);
-        Face face1 = mesh.CreateTriangle(new TriangleVerts(vert1, vert2, vert3));
-        Face face2 = mesh.CreateTriangle(new TriangleVerts(vert1, vert3, vert4));
+        Face face1 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert2, vert3));
+        Face face2 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert3, vert4));
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
@@ -229,8 +229,8 @@ public class MeshesTestScript
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
         Vertex vert4 = Vertex.Dangling(float3(0f, 1f, 0f));
         mesh.AddVerticesUnchecked(vert1, vert2, vert3, vert4);
-        Face face1 = mesh.CreateTriangle(new TriangleVerts(vert1, vert2, vert3));
-        Face face2 = mesh.CreateTriangle(new TriangleVerts(vert1, vert3, vert4));
+        Face face1 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert2, vert3));
+        Face face2 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert3, vert4));
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
@@ -264,8 +264,8 @@ public class MeshesTestScript
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
         Vertex vert4 = Vertex.Dangling(float3(0f, 1f, 0f));
         mesh.AddVerticesUnchecked(vert1, vert2, vert3, vert4);
-        Face face1 = mesh.CreateTriangle(new TriangleVerts(vert1, vert2, vert3));
-        Face face2 = mesh.CreateTriangle(new TriangleVerts(vert1, vert3, vert4));
+        Face face1 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert2, vert3));
+        Face face2 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert3, vert4));
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
@@ -273,9 +273,9 @@ public class MeshesTestScript
         Assert.AreEqual(1, mesh.FaceCount);
         Assert.AreEqual(3, mesh.VertexCount);
 
-        Assert.AreEqual(2, vert1.edges.Count);
-        Assert.AreEqual(2, vert3.edges.Count);
-        Assert.AreEqual(2, vert4.edges.Count);
+        Assert.AreEqual(2, vert1.Edges.Count);
+        Assert.AreEqual(2, vert3.Edges.Count);
+        Assert.AreEqual(2, vert4.Edges.Count);
     }
 
     /// <summary>
@@ -292,8 +292,8 @@ public class MeshesTestScript
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
         Vertex vert4 = Vertex.Dangling(float3(0f, 1f, 0f));
         mesh.AddVerticesUnchecked(vert1, vert2, vert3, vert4);
-        Face face1 = mesh.CreateTriangle(new TriangleVerts(vert1, vert2, vert3));
-        Face face2 = mesh.CreateTriangle(new TriangleVerts(vert1, vert3, vert4));
+        Face face1 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert2, vert3));
+        Face face2 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert3, vert4));
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
@@ -301,9 +301,9 @@ public class MeshesTestScript
         Assert.AreEqual(0, mesh.FaceCount);
         Assert.AreEqual(3, mesh.VertexCount);
 
-        Assert.AreEqual(vert2.edges.Count, 1);
-        Assert.AreEqual(vert3.edges.Count, 2);
-        Assert.AreEqual(vert4.edges.Count, 1);
+        Assert.AreEqual(vert2.Edges.Count, 1);
+        Assert.AreEqual(vert3.Edges.Count, 2);
+        Assert.AreEqual(vert4.Edges.Count, 1);
     }
 
     /// <summary>
@@ -320,8 +320,8 @@ public class MeshesTestScript
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
         Vertex vert4 = Vertex.Dangling(float3(0f, 1f, 0f));
         mesh.AddVerticesUnchecked(vert1, vert2, vert3, vert4);
-        Face face1 = mesh.CreateTriangle(new TriangleVerts(vert1, vert2, vert3));
-        Face face2 = mesh.CreateTriangle(new TriangleVerts(vert1, vert3, vert4));
+        Face face1 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert2, vert3));
+        Face face2 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert3, vert4));
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
@@ -329,9 +329,9 @@ public class MeshesTestScript
         Assert.AreEqual(1, mesh.FaceCount);
         Assert.AreEqual(3, mesh.VertexCount);
 
-        Assert.AreEqual(vert1.edges.Count, 2);
-        Assert.AreEqual(vert3.edges.Count, 2);
-        Assert.AreEqual(vert4.edges.Count, 2);
+        Assert.AreEqual(vert1.Edges.Count, 2);
+        Assert.AreEqual(vert3.Edges.Count, 2);
+        Assert.AreEqual(vert4.Edges.Count, 2);
     }
 
     /// <summary>
@@ -348,8 +348,8 @@ public class MeshesTestScript
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
         Vertex vert4 = Vertex.Dangling(float3(0f, 1f, 0f));
         mesh.AddVerticesUnchecked(vert1, vert2, vert3, vert4);
-        Face face1 = mesh.CreateTriangle(new TriangleVerts(vert1, vert2, vert3));
-        Face face2 = mesh.CreateTriangle(new TriangleVerts(vert1, vert3, vert4));
+        Face face1 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert2, vert3));
+        Face face2 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert3, vert4));
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
@@ -357,9 +357,9 @@ public class MeshesTestScript
         Assert.AreEqual(1, mesh.FaceCount);
         Assert.AreEqual(3, mesh.VertexCount);
 
-        Assert.AreEqual(vert2.edges.Count, 2);
-        Assert.AreEqual(vert3.edges.Count, 2);
-        Assert.AreEqual(vert4.edges.Count, 2);
+        Assert.AreEqual(vert2.Edges.Count, 2);
+        Assert.AreEqual(vert3.Edges.Count, 2);
+        Assert.AreEqual(vert4.Edges.Count, 2);
     }
 
     [Test]
@@ -371,11 +371,11 @@ public class MeshesTestScript
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
         Vertex vert4 = Vertex.Dangling(float3(0f, 1f, 0f));
         mesh.AddVerticesUnchecked(vert1, vert2, vert3, vert4);
-        Face face1 = mesh.CreateQuad(new QuadVerts(vert1, vert2, vert3, vert4));
+        Face face1 = mesh.CreateQuad(new QuadElement<Vertex>(vert1, vert2, vert3, vert4));
         Vertex vert5 = Vertex.Dangling(float3(2f, 0f, 0f));
         Vertex vert6 = Vertex.Dangling(float3(2f, 1f, 0f));
         mesh.AddVerticesUnchecked(vert5, vert6);
-        Face face2 = mesh.CreateQuad(new QuadVerts(vert2, vert5, vert6, vert3));
+        Face face2 = mesh.CreateQuad(new QuadElement<Vertex>(vert2, vert5, vert6, vert3));
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 

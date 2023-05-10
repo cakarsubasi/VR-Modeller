@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 
 namespace Meshes
 {
@@ -162,12 +159,15 @@ namespace Meshes
 
             foreach (Vertex vertex in selectedVertices)
             {
-                if (vertex.IsManifold() && selectedFaces.IsSupersetOf(vertex.Faces))
+                if (vertex.IsManifold() && selectedFaces.IsSupersetOf(vertex.FacesIter))
                 {
                     continue;
                 }
 
                 Vertex created = CreateVertexConnectedTo(vertex, out Edge connection);
+
+                edgeLoop.Clear();
+                edgeList.Clear();
 
                 edgeList.AddRange(vertex.edges);
                 foreach (Edge edge in edgeList)
@@ -180,9 +180,8 @@ namespace Meshes
                         vertex.RemoveEdge(edge);
                     }
                 }
-                edgeList.Clear();
 
-                edgeLoop.AddRange(vertex.Faces);
+                edgeLoop.AddRange(vertex.FacesIter);
                 foreach (Face face in edgeLoop)
                 {
                     if (!selectedFaces.Contains(face))
@@ -191,7 +190,7 @@ namespace Meshes
                         facesToFixUp.Add(face);
                     }
                 }
-                edgeLoop.Clear();
+
             }
 
             foreach (Edge edge in selectedEdges)
@@ -200,9 +199,11 @@ namespace Meshes
                 edge.GetEdgeLoops(edgeLoop);
 
                 // connect the new vertices
-                if (edgeLoop.Count >= 2 && selectedFaces.IsSupersetOf(edgeLoop)) {
+                if (edgeLoop.Count >= 2 && selectedFaces.IsSupersetOf(edgeLoop))
+                {
                     continue;
-                } else
+                }
+                else
                 {
                     // get the new vertices
                     Vertex vert1 = edge.one;
@@ -211,17 +212,25 @@ namespace Meshes
                     Vertex vert3 = vert1.edges[^1].Other(vert1);
                     Vertex vert4 = vert2.edges[^1].Other(vert2);
 
-                    Edge newEdge = CreateEdge(vert3, vert4);
-                    Face newFace = CreateQuad(new QuadVerts(vert2, vert1, vert3, vert4));
+                    Edge newEdge = CreateEdgeUnchecked(vert3, vert4);
+
+                    if (edgeLoop.Count == 0)
+                    {
+                        Face newFace = CreateQuad(new QuadElement<Vertex>(vert2, vert1, vert3, vert4));
+                    }
+                    else
+                    {
+                        if (edgeLoop[0].IsOrderedClockwise(vert1, vert2))
+                        {
+                            Face newFace = CreateQuad(new QuadElement<Vertex>(vert2, vert1, vert3, vert4));
+                        }
+                        else
+                        {
+                            Face newFace = CreateQuad(new QuadElement<Vertex>(vert2, vert4, vert3, vert1));
+                        }
+                    }
+
                 }
-
-                // flip normal of new face as needed TODO
-                // internal edge
-                if (!selectedFaces.IsSupersetOf(edgeLoop))
-                {
-
-                }
-
 
             }
 
@@ -232,6 +241,8 @@ namespace Meshes
             }
 
         }
+
+
 
     }
 }
