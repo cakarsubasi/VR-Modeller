@@ -31,6 +31,19 @@ public class MeshesTestScript
         return mesh;
     }
 
+    [Test]
+    public void TestEmpty()
+    {
+        UMesh mesh = EditableMeshEmpty();
+        mesh.WriteAllToMesh();
+        mesh.CreateVertex();
+        mesh.WriteAllToMesh();
+
+        mesh = EditableMeshEmpty();
+        mesh.AddFaceUnchecked(Face.Degenerate());
+        mesh.WriteAllToMesh();
+    }
+
     /// <summary>
     /// Create a quad from positions
     /// </summary>

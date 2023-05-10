@@ -415,7 +415,7 @@ namespace Meshes
         }
 
         /// <summary>
-        /// Add a presumably externally created vertex to the EditableMesh.
+        /// Add a presumably externally created vertex to the EditableMesh without any checks.
         /// </summary>
         /// <param name="vertex">vertex to add</param>
         /// <returns>the vertex</returns>
@@ -423,6 +423,17 @@ namespace Meshes
         {
             Vertices.Add(vertex);
             return vertex;
+        }
+
+        /// <summary>
+        /// Add a presumably externally created face to the EditableMesh without any checks.
+        /// </summary>
+        /// <param name="face">face to add</param>
+        /// <returns>the face</returns>
+        public Face AddFaceUnchecked(Face face)
+        {
+            Faces.Add(face);
+            return face;
         }
 
         /// <summary>

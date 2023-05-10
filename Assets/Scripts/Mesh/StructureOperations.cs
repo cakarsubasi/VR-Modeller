@@ -560,11 +560,20 @@ namespace Meshes
         /// <summary>
         /// Construct degenerate face
         /// </summary>
-        public Face()
+        private Face()
         {
             Normal = Position = Unity.Mathematics.float3.zero;
             vertices = new List<VertexCoordinate>(0);
             edges = new List<Edge>(0);
+        }
+
+        /// <summary>
+        /// Get a degenerate face. It is probably not what you need, but good for testing.
+        /// </summary>
+        /// <returns>A face with no vertices or edges</returns>
+        public static Face Degenerate()
+        {
+            return new Face();
         }
 
         /// <summary>
@@ -921,6 +930,10 @@ namespace Meshes
         public int WriteToStream(ref NativeArray<int3> array, int startIndex)
         {
             int triangles = TriangleCount;
+            if (triangles == 0)
+            {
+                return startIndex;
+            }
             var ind0 = vertices[0].vertex.GetIndex(this);
             for (int i = 0; i < triangles; i++)
             {

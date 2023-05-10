@@ -100,8 +100,9 @@ namespace Meshes
 
     public enum ShadingType
     {
-        Flat = 0,
-        Smooth = 1,
+        Inherited = 0,
+        Flat = 1,
+        Smooth = 2,
     }
 
     static class Triangle
@@ -122,7 +123,7 @@ namespace Meshes
             public float3 Position => vertex.Position;
         }
 
-        public ShadingType shading { get; set; } = ShadingType.Smooth;
+        public ShadingType shading { get; set; } = ShadingType.Inherited;
 
         internal List<VertexCoordinate> vertices;
         internal List<Edge> edges;
