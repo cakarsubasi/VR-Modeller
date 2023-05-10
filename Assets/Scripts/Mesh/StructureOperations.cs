@@ -772,20 +772,31 @@ namespace Meshes
 
         public bool IsOrderedClockwise(Vertex vert1, Vertex vert2)
         {
-            for (int i = 0; i < vertices.Count; ++i)
+            int vert1Index = GetVertexIndex(vert1);
+            if (vert1Index == -1)
             {
-                if (vertices[i].vertex == vert1)
-                {
-                    if (vertices[(i+1) % vertices.Count].vertex == vert2)
-                    {
-                        return true;
-                    } else if (vertices[Math.Abs((i - 1) % vertices.Count)].vertex == vert2)
-                    {
-                        return false;
-                    }
-                }
+                throw new ArgumentException("vert1 not in the face");
             }
-            throw new ArgumentException("vertices should be in the face");
+            int vert2Index = GetVertexIndex(vert2);
+            if (vert2Index == -1)
+            {
+                throw new ArgumentException("vert2 not in the face");
+            }
+
+            if (vert2Index == vert1Index + 1)
+            {
+                return true;
+            } else if (vert1Index == vert2Index + 1)
+            {
+                return false;
+            } else if (vert2Index == 0 && vert1Index == vertices.Count - 1)
+            {
+                return true;
+            } else if (vert1Index == 0 && vert2Index == vertices.Count - 1)
+            {
+                return false;
+            }
+            return false;
         }
         
 
@@ -968,6 +979,13 @@ namespace Meshes
             return -1;
         }
 
+        /// <summary>
+        /// Replace the current vertex with the replacement vertex at the same position.
+        /// Check if current vertex exists in the face but do not check if 
+        /// Do not check if these form a valid simple path.
+        /// </summary>
+        /// <param name="current"></param>
+        /// <param name="replacement"></param>
         internal void ExchangeVertexUnchecked(Vertex current, Vertex replacement)
         {
             int index = GetVertexIndex(current);

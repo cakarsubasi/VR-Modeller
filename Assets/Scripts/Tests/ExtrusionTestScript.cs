@@ -2,6 +2,8 @@
 using UnityEngine;
 using Unity.Mathematics;
 using System.Collections.Generic;
+using System.Linq;
+using System.Collections;
 
 using NUnit.Framework;
 
@@ -576,6 +578,65 @@ public class ExtrusionTestScript
         Assert.AreEqual(17, mesh.VertexCount);
         Assert.AreEqual(28, mesh.EdgeCount);
         Assert.AreEqual(12, mesh.FaceCount);
+    }
+
+    /// <summary>
+    /// Sometimes you just gotta do some random things and see if any errors are thrown
+    /// </summary>
+    [Test]
+    public void TestExtrudeStochastic2()
+    {
+        System.Random rng = new(0);
+        List<Vertex> verts = new();
+        for (int i = 0; i < 5; i++)
+        {
+            UMesh mesh = CreateCube();
+            for (int j = 0; j < 5; j++)
+            {
+                verts = new(mesh.Vertices);
+                mesh.Extrude(verts.OrderBy(index => rng.Next()).Take(5).ToList());
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// Sometimes you just gotta do some random things and see if any errors are thrown
+    /// </summary>
+    [Test]
+    public void TestExtrudeStochastic1()
+    {
+
+        for (int i = 0; i < 8; i++)
+        {
+            UMesh mesh = CreateCube();
+            List<Vertex> verts = new();
+            verts.Add(mesh.Vertices[i % mesh.Vertices.Count]);
+            verts.Add(mesh.Vertices[(i+1) % mesh.Vertices.Count]);
+            verts.Add(mesh.Vertices[(i+4) % mesh.Vertices.Count]);
+            verts.Add(mesh.Vertices[(i+5) % mesh.Vertices.Count]);
+            mesh.Extrude(verts);
+        }
+        for (int i = 0; i < 8; i++)
+        {
+            UMesh mesh = CreateCube();
+            List<Vertex> verts = new();
+            verts.Add(mesh.Vertices[i % mesh.Vertices.Count]);
+            verts.Add(mesh.Vertices[(i + 1) % mesh.Vertices.Count]);
+            verts.Add(mesh.Vertices[(i + 2) % mesh.Vertices.Count]);
+            verts.Add(mesh.Vertices[(i + 3) % mesh.Vertices.Count]);
+            mesh.Extrude(verts);
+        }
+        for (int i = 0; i < 8; i++)
+        {
+            UMesh mesh = CreateCube();
+            List<Vertex> verts = new();
+            verts.Add(mesh.Vertices[i % mesh.Vertices.Count]);
+            verts.Add(mesh.Vertices[(i + 2) % mesh.Vertices.Count]);
+            verts.Add(mesh.Vertices[(i + 5) % mesh.Vertices.Count]);
+            verts.Add(mesh.Vertices[(i + 7) % mesh.Vertices.Count]);
+            mesh.Extrude(verts);
+        }
     }
 
 }

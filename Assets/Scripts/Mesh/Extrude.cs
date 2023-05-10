@@ -169,6 +169,7 @@ namespace Meshes
 
                 Vertex created = CreateVertexConnectedTo(vertex, out Edge connection);
 
+                edgeList.Clear();
                 edgeList.AddRange(vertex.edges);
                 foreach (Edge edge in edgeList)
                 {
@@ -180,8 +181,8 @@ namespace Meshes
                         vertex.RemoveEdge(edge);
                     }
                 }
-                edgeList.Clear();
 
+                edgeLoop.Clear();
                 edgeLoop.AddRange(vertex.FacesIter);
                 foreach (Face face in edgeLoop)
                 {
@@ -191,7 +192,6 @@ namespace Meshes
                         facesToFixUp.Add(face);
                     }
                 }
-                edgeLoop.Clear();
             }
 
             foreach (Edge edge in selectedEdges)
