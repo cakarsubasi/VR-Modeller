@@ -4,10 +4,15 @@ using System;
 using System.Text.RegularExpressions;
 using Meshes;
 
+using Unity.Mathematics;
+
 namespace MeshesIO
 {
 
-
+    public struct SceneDescription
+    {
+        public List<UMesh> objects;
+    }
 
     public class WFGrammar
     {
@@ -31,6 +36,7 @@ namespace MeshesIO
             List<WFVertex> positions;
             List<WFTextureCoordinate> uvs;
             List<WFVertexNormal> normals;
+            List<WFFace> faces;
 
             static Regex rx = new Regex(@"o (.+)", RegexOptions.Compiled);
         }
@@ -41,6 +47,16 @@ namespace MeshesIO
             float y;
             float z;
             float? w;
+
+            public static WFVertex Create(Vertex vertex)
+            {
+                return new WFVertex
+                {
+                    x = vertex.Position.x,
+                    y = vertex.Position.y,
+                    z = vertex.Position.z
+                };
+            }
 
             static Regex rx = new Regex(@"v ((?<coor>-?\d\.\d*) ?)+", RegexOptions.Compiled);
         }
@@ -123,8 +139,47 @@ namespace MeshesIO
             return null;
         }
 
-        public static string Encode()
+        public static string Encode(ref SceneDescription objects)
         {
+            String str = "";
+            foreach (var obj in objects.objects)
+            {
+                str += EncodeOneObject(obj);
+            }
+            return str;
+        }
+
+        public static string EncodeOneObject(UMesh umesh)
+        {
+            List<WFGrammar.WFVertex> vertices = new();
+            // vertex positions
+            foreach (Vertex vertex in umesh.Vertices)
+            {
+                vertices.Add(WFGrammar.WFVertex.Create(vertex));
+            }
+            // texture coordinates
+            Dictionary<float2, int> coordinateDict = new();
+            // vertex normals
+            Dictionary<float3, int> normalDict = new();
+
+            int vtIndex = 0;
+            int vnIndex = 0;
+            foreach (Face face in umesh.Faces)
+            {
+
+                if (face.shading == ShadingType.Flat)
+                // one averaged value
+                {
+
+                } else
+                // all vertices separate
+                {
+
+                }
+            }
+
+            // actually do the faces
+
 
             throw new NotImplementedException { };
         }

@@ -14,15 +14,13 @@ public class MeshesTestScript
 
     public UMesh EditableMeshEmpty()
     {
-        UMesh mesh = default;
-        mesh.Setup(new Mesh());
+        UMesh mesh = UMesh.Create();
         return mesh;
     }
 
     public UMesh EditableMeshQuad()
     {
-        UMesh mesh = default;
-        mesh.Setup(new Mesh());
+        UMesh mesh = UMesh.Create();
         var vert1 = float3(0f, 0f, 0f);
         var vert2 = float3(1f, 0f, 0f);
         var vert3 = float3(1f, 1f, 0f);

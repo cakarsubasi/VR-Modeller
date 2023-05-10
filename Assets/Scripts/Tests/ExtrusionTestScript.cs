@@ -12,15 +12,13 @@ public class ExtrusionTestScript
 {
     public UMesh EditableMeshEmpty()
     {
-        UMesh mesh = default;
-        mesh.Setup(new Mesh());
+        UMesh mesh = UMesh.Create();
         return mesh;
     }
 
     public UMesh EditableMeshQuad()
     {
-        UMesh mesh = default;
-        mesh.Setup(new Mesh());
+        UMesh mesh = UMesh.Create();
         var vert1 = float3(0f, 0f, 0f);
         var vert2 = float3(1f, 0f, 0f);
         var vert3 = float3(1f, 1f, 0f);
@@ -28,6 +26,32 @@ public class ExtrusionTestScript
         mesh.CreateVerticesAndQuad(vert1, vert2, vert3, vert4);
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
+        return mesh;
+    }
+
+    public UMesh CreateCube()
+    {
+        UMesh mesh = UMesh.Create();
+
+        Vertex v1 = mesh.CreateVertex(float3(-1f, -1f, -1f));
+        Vertex v2 = mesh.CreateVertex(float3(1f, -1f, -1f));
+        Vertex v3 = mesh.CreateVertex(float3(1f, -1f, 1f));
+        Vertex v4 = mesh.CreateVertex(float3(-1f, -1f, 1f));
+
+        Vertex v5 = mesh.CreateVertex(float3(-1f, 1f, -1f));
+        Vertex v6 = mesh.CreateVertex(float3(1f, 1f, -1f));
+        Vertex v7 = mesh.CreateVertex(float3(1f, 1f, 1f));
+        Vertex v8 = mesh.CreateVertex(float3(-1f, 1f, 1f));
+
+        mesh.CreateQuad(new QuadElement<Vertex>(v1, v2, v3, v4));
+        mesh.CreateQuad(new QuadElement<Vertex>(v8, v7, v6, v5));
+
+        mesh.CreateQuad(new QuadElement<Vertex>(v1, v4, v8, v5));
+        mesh.CreateQuad(new QuadElement<Vertex>(v1, v5, v6, v2));
+
+        mesh.CreateQuad(new QuadElement<Vertex>(v2, v6, v7, v3));
+        mesh.CreateQuad(new QuadElement<Vertex>(v3, v7, v8, v4));
+
         return mesh;
     }
 
@@ -576,6 +600,20 @@ public class ExtrusionTestScript
         Assert.AreEqual(17, mesh.VertexCount);
         Assert.AreEqual(28, mesh.EdgeCount);
         Assert.AreEqual(12, mesh.FaceCount);
+    }
+
+    [Test]
+    public void TestExtrudeAFaceAndAnExtraEdge()
+    {
+        UMesh mesh = CreateCube();
+        List<Vertex> verts = new();
+        verts.Add(mesh.FindByPosition(float3(-1f, -1f, -1f)));
+        verts.Add(mesh.FindByPosition(float3(1f, -1f, -1f)));
+        verts.Add(mesh.FindByPosition(float3(1f, -1f, 1f)));
+        verts.Add(mesh.FindByPosition(float3(-1f, -1f, 1f)));
+        verts.Add(mesh.FindByPosition(float3(-1f, 1f, -1f)));
+
+        mesh.Extrude(verts);
     }
 
 }

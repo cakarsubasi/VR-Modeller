@@ -122,7 +122,7 @@ namespace Meshes
             public float3 Position => vertex.Position;
         }
 
-        //private ShadingType shading = ShadingType.Flat;
+        public ShadingType shading { get; set; } = ShadingType.Smooth;
 
         internal List<VertexCoordinate> vertices;
         internal List<Edge> edges;
