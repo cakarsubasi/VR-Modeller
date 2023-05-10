@@ -67,24 +67,27 @@ public class ObjectCreator : MonoBehaviour
 
     public void OnClickDeepCopyGameObject()
     {
-        GameObject gameobject = ObjectController.Instance.SelectedGameobject;
+        GameObject selectedGameObject = ObjectController.Instance.SelectedGameobject;
 
-        GameObject parent = new GameObject(gameobject.name + "Copy");
+        GameObject parent = new GameObject(selectedGameObject.name + "Copy");
 
         Vector3 screenCenter = Camera.main.ViewportToScreenPoint(Vector3.zero);
         Vector3 worldCenter = Camera.main.ScreenToWorldPoint(screenCenter);
         worldCenter += Camera.main.transform.forward * 4.0f;
 
         parent.transform.position = worldCenter;
-        parent.transform.localScale = gameobject.transform.localScale;
+        parent.transform.localScale = selectedGameObject.transform.parent.localScale;
 
-        GameObject go = Instantiate(gameobject, parent.transform);
-        go.transform.localScale = Vector3.one;
+        GameObject go = Instantiate(selectedGameObject, parent.transform);
         go.name = go.name.Replace("(Clone)", "");
+        go.transform.localScale = selectedGameObject.transform.localScale;
+
+        Destroy(go.transform.Find("VerticesParent").gameObject);
+
 
         MeshController meshController = go.GetComponent<MeshController>();
 
-        meshController.SetupMeshController(gameobject.GetComponent<MeshController>().editableMesh.DeepCopy);
+        meshController.SetupMeshController(selectedGameObject.GetComponent<MeshController>().EditableMesh.DeepCopy);
 
         GameObject pos = Instantiate(GizmoPosition, parent.transform);
         pos.name = pos.name.Replace("(Clone)", "");

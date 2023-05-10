@@ -294,6 +294,40 @@ namespace Meshes
             }
         }
 
+        public UMesh CopySelectionToNewMesh(
+            in IEnumerable<Vertex> selectedVertices,
+            in IEnumerable<Edge> selectedEdges,
+            in IEnumerable<Face> selectedFaces)
+        {
+            UMesh separation = UMesh.Create();
+            separation.Name = new String(Name);
+
+            int index = 0;
+            foreach (Vertex vert in selectedVertices)
+            {
+                vert.Index = index++;
+                separation.CreateVertex(vert);
+            }
+
+            foreach (Edge edge in selectedEdges)
+            {
+                separation.CreateEdge(separation.Vertices[edge.one.Index], separation.Vertices[edge.two.Index]);
+            }
+
+            List<Vertex> tempVerts = new(4);
+            foreach (Face face in selectedFaces)
+            {
+                tempVerts.Clear();
+                foreach (Vertex vert in face.VerticesIter)
+                {
+                    tempVerts.Add(separation.Vertices[vert.Index]);
+                }
+                separation.CreateNGon(tempVerts);
+            }
+
+            return separation;
+        }
+
 
         /// <summary>
         /// Separate the given vertices, edges, and faces to their own UMesh.
@@ -316,7 +350,7 @@ namespace Meshes
             out List<Face> createdFaces)
         {
             UMesh separation = UMesh.Create();
-            separation.Name = Name;
+            separation.Name = new String(Name);
 
             throw new NotImplementedException { };
         }
@@ -328,7 +362,7 @@ namespace Meshes
         public UMesh DeepCopy()
         {
             UMesh copy = UMesh.Create();
-            copy.Name = Name;
+            copy.Name = new String(Name);
 
             int index = 0;
             foreach (Vertex vert in Vertices)
@@ -345,10 +379,10 @@ namespace Meshes
             List<Vertex> tempVerts = new(4);
             foreach (Face face in Faces)
             {
+                tempVerts.Clear();
                 foreach (Vertex vert in face.VerticesIter)
                 {
                     tempVerts.Add(copy.Vertices[vert.Index]);
-                    tempVerts.Clear();
                 }
                 copy.CreateNGon(tempVerts);
             }

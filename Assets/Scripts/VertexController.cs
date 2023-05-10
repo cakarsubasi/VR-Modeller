@@ -5,7 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public class VertexController : MonoBehaviour
 {
-    public Material normalMaterial, activeMaterial;
+    public Material normalMaterial, activeMaterial, selectedMaterial;
 
     MeshController meshController;
     bool isSelected, isActivated = false;
@@ -34,12 +34,20 @@ public class VertexController : MonoBehaviour
             //meshController.Mesh.vertices = meshController.Vertices.ToArray();
 
             Vertex.Position = (float3)targetMesh.transform.InverseTransformPoint(transform.position);
-            meshController.editableMesh.WriteAllToMesh();
+            meshController.EditableMesh.WriteAllToMesh();
 
             if (parentCollider != null)
             {
-                parentCollider.sharedMesh = meshController.editableMesh.Mesh;
+                parentCollider.sharedMesh = meshController.EditableMesh.Mesh;
             }
+        }
+        else
+        {
+            float distance = Vector3.Distance(transform.position, Camera.main.transform.position);
+            float minValue = 0.1f;
+            float maxValue = 0.25f;
+            float scaleFactor = 0.05f;
+            transform.localScale = Vector3.one * Mathf.Clamp(distance * scaleFactor, minValue, maxValue);
         }
     }
 
@@ -58,6 +66,26 @@ public class VertexController : MonoBehaviour
         {
             GetComponent<MeshRenderer>().material = normalMaterial;
             meshController.ActiveVertices.Remove(gameObject);
+        }
+        //meshController.CreateObjectInActiatedVertices();
+    }
+
+    public void SetSelectState()
+    {
+        if (IsSelected)
+        {
+            GetComponent<MeshRenderer>().material = selectedMaterial;
+        }
+        else
+        {
+            if (isActivated)
+            {
+                GetComponent<MeshRenderer>().material = activeMaterial;
+            }
+            else
+            {
+                GetComponent<MeshRenderer>().material = normalMaterial;
+            }
         }
     }
 }

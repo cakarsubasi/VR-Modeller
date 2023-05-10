@@ -9,15 +9,16 @@ using UnityEngine.InputSystem;
 
 public class MeshController : MonoBehaviour
 {
-    public GameObject vertexHighlight;
+    public GameObject vertexHighlight, activeVerticesObject;
     public InputActionProperty openOrCloseAction;
 
     List<Vector3> vertices = new List<Vector3>();
     List<GameObject> vertexObjects = new List<GameObject>();
     bool isSelected;
-    public UMesh editableMesh;
+    UMesh editableMesh;
     GameObject verticesParent;
     List<GameObject> activeVertices = new List<GameObject>();
+    GameObject objectInActiveVertices;
 
     public delegate UMesh CreateMeshDelegate();
 
@@ -25,26 +26,27 @@ public class MeshController : MonoBehaviour
     public bool IsSelected { get => isSelected; set => isSelected = value; }
     public GameObject VerticesParent { get => verticesParent; set => verticesParent = value; }
     public List<GameObject> ActiveVertices { get => activeVertices; set => activeVertices = value; }
+    public UMesh EditableMesh { get => editableMesh; set => editableMesh = value; }
 
     public void SetupMeshController(CreateMeshDelegate createMeshFunction)
     {
-        openOrCloseAction.action.performed += OpenVertices;
+        openOrCloseAction.action.performed += ClearActivedVerticesOpenOrCloseVertices;
         ObjectController.Instance.AllObjects.Add(gameObject);
 
 
-        editableMesh = createMeshFunction();
-        GetComponent<MeshFilter>().mesh = editableMesh.Mesh;
-        editableMesh.WriteAllToMesh();
+        EditableMesh = createMeshFunction();
+        GetComponent<MeshFilter>().mesh = EditableMesh.Mesh;
+        EditableMesh.WriteAllToMesh();
 
-        Vertices = editableMesh.VertexLocations.ToList();
-
+        Vertices = EditableMesh.VertexLocations.ToList();
         verticesParent = new GameObject("VerticesParent");
         verticesParent.transform.parent = this.transform;
         verticesParent.transform.localPosition = Vector3.zero;
         verticesParent.transform.localScale = Vector3.one;
+        verticesParent.transform.localRotation = Quaternion.identity;
 
         StartCoroutine(InitVertexObjects(Vertices, 0, false));
-        StartCoroutine(Extrude());
+        StartCoroutine(MoveMultpleVertices());
     }
 
     IEnumerator InitVertexObjects(List<Vector3> vertices, int startIndex, bool showVertices)
@@ -56,7 +58,7 @@ public class MeshController : MonoBehaviour
             GameObject vertex = Instantiate(vertexHighlight, verticesParent.transform);
             vertex.transform.localPosition = vertices[i];
             vertex.transform.localScale = transform.lossyScale / (Mathf.Pow(transform.lossyScale.x, 2) * 20);
-            vertex.GetComponent<VertexController>().Vertex = editableMesh.Vertices[i];
+            vertex.GetComponent<VertexController>().Vertex = EditableMesh.Vertices[i];
             vertexObjects.Add(vertex);
 
             i++;
@@ -65,11 +67,25 @@ public class MeshController : MonoBehaviour
     }
 
 
-    public void OpenVertices(InputAction.CallbackContext context)
+    public void ClearActivedVerticesOpenOrCloseVertices(InputAction.CallbackContext context)
     {
+        bool isOpen = verticesParent.gameObject.activeInHierarchy;
+
+        if (activeVertices.Count != 0)
+        {
+            foreach (var vertex in activeVertices)
+            {
+                vertex.GetComponent<MeshRenderer>().material = vertex.GetComponent<VertexController>().normalMaterial;
+                vertex.GetComponent<VertexController>().IsActivated = false;
+            }
+
+            activeVertices.Clear();
+
+            if (isOpen) return;
+        }
+
         if (IsSelected)
         {
-            bool isOpen = verticesParent.gameObject.activeInHierarchy;
             verticesParent.SetActive(!isOpen);
         }
     }
@@ -91,7 +107,7 @@ public class MeshController : MonoBehaviour
         }
     }
 
-    IEnumerator Extrude()
+    IEnumerator MoveMultpleVertices()
     {
         yield return new WaitUntil(() => activeVertices.Count != 0);
         yield return new WaitUntil(() => IsMovingVertex());
@@ -99,27 +115,31 @@ public class MeshController : MonoBehaviour
         GameObject movedVertex = MovedVertex();
         Vector3 currentVertexPos = transform.InverseTransformPoint(movedVertex.transform.position);
 
-        int activeVertexCount = activeVertices.Count;
-        List<Vertex> vertices = new List<Vertex>();
-
-        int startVertexIndex = editableMesh.VertexCount;
-
-        foreach (var vertex in activeVertices)
+        if (GameManager.Instance.Extrude)
         {
-            vertices.Add(vertex.GetComponent<VertexController>().Vertex);
-        }
 
-        try
-        {
-            editableMesh.Extrude(vertices);
-        }
-        catch (Exception err)
-        {
-            Debug.LogError(err);
-        }
+            int activeVertexCount = activeVertices.Count;
+            List<Vertex> vertices = new List<Vertex>();
 
-        Vertices = editableMesh.VertexLocations.ToList();
-        StartCoroutine(InitVertexObjects(Vertices, startVertexIndex, true));
+            int startVertexIndex = EditableMesh.VertexCount;
+
+            foreach (var vertex in activeVertices)
+            {
+                vertices.Add(vertex.GetComponent<VertexController>().Vertex);
+            }
+
+            try
+            {
+                EditableMesh.Extrude(vertices);
+            }
+            catch (Exception err)
+            {
+                Debug.LogError(err);
+            }
+
+            Vertices = EditableMesh.VertexLocations.ToList();
+            StartCoroutine(InitVertexObjects(Vertices, startVertexIndex, true));
+        }
 
         while (IsMovingVertex())
         {
@@ -129,26 +149,19 @@ public class MeshController : MonoBehaviour
 
                 vertex.transform.localPosition += (transform.InverseTransformPoint(movedVertex.transform.position) - currentVertexPos);
                 vertex.GetComponent<VertexController>().Vertex.Position = (float3)vertex.transform.localPosition;
-                editableMesh.WriteAllToMesh();
+                EditableMesh.WriteAllToMesh();
 
                 if (GetComponent<MeshCollider>() != null)
                 {
-                    GetComponent<MeshCollider>().sharedMesh = editableMesh.Mesh;
+                    GetComponent<MeshCollider>().sharedMesh = EditableMesh.Mesh;
                 }
             }
             currentVertexPos = transform.InverseTransformPoint(movedVertex.transform.position);
             yield return null;
         }
 
-        foreach (var vertex in activeVertices)
-        {
-            vertex.GetComponent<MeshRenderer>().material = vertex.GetComponent<VertexController>().normalMaterial;
-            vertex.GetComponent<VertexController>().IsActivated = false;
-        }
 
-        activeVertices.Clear();
-
-        StartCoroutine(Extrude());
+        StartCoroutine(MoveMultpleVertices());
     }
 
     private bool IsMovingVertex()
@@ -173,5 +186,50 @@ public class MeshController : MonoBehaviour
             }
         }
         return null;
+    }
+
+    public void CreateObjectInActiatedVertices()
+    {
+
+        if (objectInActiveVertices != null)
+        {
+            Destroy(objectInActiveVertices);
+        }
+
+        if (activeVertices.Count < 3) { return; }
+
+        Vector3 avaragePosition = Vector3.zero;
+
+        foreach (var vertex in activeVertices)
+        {
+            avaragePosition += vertex.transform.position;
+        }
+        avaragePosition /= activeVertices.Count;
+
+
+        objectInActiveVertices = Instantiate(activeVerticesObject, gameObject.transform);
+        objectInActiveVertices.transform.position = avaragePosition;
+
+        HashSet<Face> faces = new();
+        HashSet<Edge> edges = new();
+        HashSet<Vertex> vertices = new();
+
+        foreach (var vertex in activeVertices)
+        {
+            vertices.Add(vertex.GetComponent<VertexController>().Vertex);
+        }
+
+        editableMesh.SelectFacesFromVertices(vertices, faces);
+        editableMesh.SelectEdgesFromVertices(vertices, edges);
+
+
+        UMesh mesh = editableMesh.CopySelectionToNewMesh(vertices, edges, faces);
+
+        objectInActiveVertices.GetComponent<MeshFilter>().mesh = mesh.Mesh;
+        objectInActiveVertices.GetComponent<MeshCollider>().sharedMesh = mesh.Mesh;
+        mesh.WriteAllToMesh();
+
+        objectInActiveVertices.transform.localScale *= 0.5f;
+
     }
 }

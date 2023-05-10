@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace Meshes
 {
@@ -166,9 +169,7 @@ namespace Meshes
 
                 Vertex created = CreateVertexConnectedTo(vertex, out Edge connection);
 
-                edgeLoop.Clear();
                 edgeList.Clear();
-
                 edgeList.AddRange(vertex.edges);
                 foreach (Edge edge in edgeList)
                 {
@@ -181,6 +182,7 @@ namespace Meshes
                     }
                 }
 
+                edgeLoop.Clear();
                 edgeLoop.AddRange(vertex.FacesIter);
                 foreach (Face face in edgeLoop)
                 {
@@ -190,7 +192,6 @@ namespace Meshes
                         facesToFixUp.Add(face);
                     }
                 }
-
             }
 
             foreach (Edge edge in selectedEdges)
@@ -199,11 +200,9 @@ namespace Meshes
                 edge.GetEdgeLoops(edgeLoop);
 
                 // connect the new vertices
-                if (edgeLoop.Count >= 2 && selectedFaces.IsSupersetOf(edgeLoop))
-                {
+                if (edgeLoop.Count >= 2 && selectedFaces.IsSupersetOf(edgeLoop)) {
                     continue;
-                }
-                else
+                } else
                 {
                     // get the new vertices
                     Vertex vert1 = edge.one;
@@ -217,14 +216,12 @@ namespace Meshes
                     if (edgeLoop.Count == 0)
                     {
                         Face newFace = CreateQuad(new QuadElement<Vertex>(vert2, vert1, vert3, vert4));
-                    }
-                    else
+                    } else
                     {
                         if (edgeLoop[0].IsOrderedClockwise(vert1, vert2))
                         {
                             Face newFace = CreateQuad(new QuadElement<Vertex>(vert2, vert1, vert3, vert4));
-                        }
-                        else
+                        } else
                         {
                             Face newFace = CreateQuad(new QuadElement<Vertex>(vert2, vert4, vert3, vert1));
                         }
@@ -242,7 +239,7 @@ namespace Meshes
 
         }
 
-
+        
 
     }
 }
