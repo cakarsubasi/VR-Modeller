@@ -123,7 +123,7 @@ namespace Meshes
             public float3 Position => vertex.Position;
         }
 
-        public ShadingType shading { get; set; } = ShadingType.Inherited;
+        public ShadingType Shading { get; set; } = ShadingType.Inherited;
 
         internal List<VertexCoordinate> vertices;
         internal List<Edge> edges;
@@ -149,10 +149,9 @@ namespace Meshes
         public int EdgeCount => edges.Count;
         public int TriangleCount => GetTriangleCount();
 
-        private static readonly int3[] empty = new int3[0];
-        private static readonly int3[] degenerate = { int3(0, 0, 0) };
+        private static readonly int3[] emptyTriangle = new int3[0];
 
-        public static int3[] Empty => empty;
+        public static int3[] DegenerateTriangle => emptyTriangle;
 
     }
 }

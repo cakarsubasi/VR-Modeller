@@ -166,8 +166,8 @@ namespace Meshes
         /// <returns>reference to the created vertex</returns>
         public Vertex CreateVertexConnectedTo(Vertex other, out Edge edge)
         {
-            Vertex vertex = Vertex.FromOtherVertexUnconnected(other);
-            Vertices.Add(vertex);
+            Vertex vertex = Vertex.Copy(other);
+            AddVertexUnchecked(vertex);
             edge = CreateEdgeUnchecked(vertex, other);
             return vertex;
         }
@@ -198,7 +198,7 @@ namespace Meshes
         /// <returns>edge between them</returns>
         public Edge CreateEdgeUnchecked(Vertex one, Vertex two)
         {
-            Edge edge = new Edge(one, two);
+            Edge edge = new(one, two);
             one.AddEdgeUnchecked(edge);
             two.AddEdgeUnchecked(edge);
             Edges.Add(edge);

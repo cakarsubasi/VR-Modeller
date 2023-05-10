@@ -294,6 +294,13 @@ namespace Meshes
             }
         }
 
+        /// <summary>
+        /// Create a new UMesh with the given selection by copying. The selection is assumed to be complete.
+        /// </summary>
+        /// <param name="selectedVertices">selected vertices</param>
+        /// <param name="selectedEdges">selected edges</param>
+        /// <param name="selectedFaces">selected faces</param>
+        /// <returns>New UMesh from the selection</returns>
         public UMesh CopySelectionToNewMesh(
             in IEnumerable<Vertex> selectedVertices,
             in IEnumerable<Edge> selectedEdges,
@@ -317,12 +324,13 @@ namespace Meshes
             List<Vertex> tempVerts = new(4);
             foreach (Face face in selectedFaces)
             {
-                tempVerts.Clear();
+                                tempVerts.Clear();
                 foreach (Vertex vert in face.VerticesIter)
                 {
                     tempVerts.Add(separation.Vertices[vert.Index]);
                 }
                 separation.CreateNGon(tempVerts);
+
             }
 
             return separation;

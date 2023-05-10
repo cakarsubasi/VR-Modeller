@@ -167,7 +167,7 @@ namespace MeshesIO
             foreach (Face face in umesh.Faces)
             {
 
-                if (face.shading == ShadingType.Flat)
+                if (face.Shading == ShadingType.Flat)
                 // one averaged value
                 {
 
