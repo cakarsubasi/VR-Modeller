@@ -328,7 +328,7 @@ namespace Meshes
         public UMesh DeepCopy()
         {
             UMesh copy = UMesh.Create();
-            copy.Name = Name;
+            copy.Name = new String(Name);
 
             int index = 0;
             foreach (Vertex vert in Vertices)
@@ -345,10 +345,10 @@ namespace Meshes
             List<Vertex> tempVerts = new(4);
             foreach (Face face in Faces)
             {
+                tempVerts.Clear();
                 foreach (Vertex vert in face.VerticesIter)
                 {
                     tempVerts.Add(copy.Vertices[vert.Index]);
-                    tempVerts.Clear();
                 }
                 copy.CreateNGon(tempVerts);
             }
