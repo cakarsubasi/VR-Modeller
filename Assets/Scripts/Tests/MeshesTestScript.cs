@@ -402,6 +402,20 @@ public class MeshesTestScript
         throw new NotImplementedException { };
     }
 
+    [Test]
+    public void TestDeepCopy()
+    {
+        UMesh mesh1 = EditableMeshQuad();
+        mesh1.WriteAllToMesh();
+
+        UMesh mesh2 = mesh1.DeepCopy();
+        mesh2.WriteAllToMesh();
+
+        Assert.AreEqual(mesh1.VertexCount, mesh2.VertexCount);
+        Assert.AreEqual(mesh1.EdgeCount, mesh2.EdgeCount);
+        Assert.AreEqual(mesh1.FaceCount, mesh2.FaceCount);
+    }
+
     // A UnityTest behaves like a coroutine in Play Mode. In Edit Mode you can use
     // `yield return null;` to skip a frame.
     //[UnityTest]
