@@ -28,6 +28,7 @@ public class MeshController : MonoBehaviour
     public List<GameObject> ActiveVertices { get => activeVertices; set => activeVertices = value; }
     public UMesh EditableMesh { get => editableMesh; set => editableMesh = value; }
 
+
     public void SetupMeshController(CreateMeshDelegate createMeshFunction)
     {
         openOrCloseAction.action.performed += ClearActivedVerticesOpenOrCloseVertices;
@@ -230,6 +231,10 @@ public class MeshController : MonoBehaviour
         mesh.WriteAllToMesh();
 
         objectInActiveVertices.transform.localScale *= 0.5f;
+    }
 
+    private void OnDestroy()
+    {
+        ObjectController.Instance.AllObjects.Remove(gameObject);
     }
 }

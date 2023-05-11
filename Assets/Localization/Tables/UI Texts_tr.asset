@@ -59,7 +59,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 24287043649536
-    m_Localized: "Aktar\u0131lm\u0131\u015F\nK\xFCp Yarat"
+    m_Localized: Kopyala
     m_Metadata:
       m_Items: []
   - m_Id: 24671552274432
@@ -74,6 +74,26 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 24881712070656
     m_Localized: "K\xFCre\nYarat"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5095607523606528
+    m_Localized: "Aray\xFCz Men\xFCs\xFC:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5096181136621568
+    m_Localized: Sol El
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5096251206664192
+    m_Localized: "Sa\u011F El"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7987750514634752
+    m_Localized: "\xC7\u0131karma"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7987932186718208
+    m_Localized: "K\xF6\u015Feleri\nSil"
     m_Metadata:
       m_Items: []
   references:

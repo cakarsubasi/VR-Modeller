@@ -80,6 +80,7 @@ public class GizmoScaleController : MonoBehaviour
         }
     }
 
+
     private void OnGrabX(SelectEnterEventArgs eventArgs)
     {
         previousPosition = eventArgs.interactorObject.transform.position;

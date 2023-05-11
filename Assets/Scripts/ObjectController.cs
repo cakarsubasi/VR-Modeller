@@ -1,3 +1,4 @@
+using Meshes;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,7 +8,7 @@ public class ObjectController : MonoBehaviour
 {
     public static ObjectController Instance;
 
-    public Button deepCopyButton;
+    public Button deepCopyButton, deleteButton;
 
     List<GameObject> allObjects = new();
     GameObject selectedGameobject;
@@ -32,6 +33,7 @@ public class ObjectController : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        UpdateButtonInteractability();
     }
 
     public void OnSelect()
@@ -108,10 +110,40 @@ public class ObjectController : MonoBehaviour
     }
 
 
-    private void UpdateButtonInteractability()
+    public void UpdateButtonInteractability()
     {
-        bool isInteractable = selectedGameobject != null;
+        bool isDeepCopyInteractable = selectedGameobject != null;
+        deepCopyButton.interactable = isDeepCopyInteractable;
 
-        deepCopyButton.interactable = isInteractable;
+        bool isDeleteInteractable = selectedGameobject != null && selectedGameobject.GetComponent<MeshController>().ActiveVertices.Count != 0;
+        deleteButton.interactable = isDeleteInteractable;
+    }
+
+    public void OnClickDelete()
+    {
+        List<Vertex> vertices = new List<Vertex>();
+
+        foreach (var vertex in selectedGameobject.GetComponent<MeshController>().ActiveVertices)
+        {
+            vertices.Add(vertex.GetComponent<VertexController>().Vertex);
+        }
+
+        selectedGameobject.GetComponent<MeshController>().EditableMesh.DeleteVertices(vertices);
+        selectedGameobject.GetComponent<MeshController>().EditableMesh.WriteAllToMesh();
+
+        foreach (var vertex in selectedGameobject.GetComponent<MeshController>().ActiveVertices)
+        {
+            Destroy(vertex);
+        }
+        selectedGameobject.GetComponent<MeshController>().ActiveVertices.Clear();
+
+        deleteButton.interactable = false;
+
+        Debug.Log(vertices.Count + " " + selectedGameobject.GetComponent<MeshController>().EditableMesh.VertexCount);
+
+        if (vertices.Count == selectedGameobject.GetComponent<MeshController>().EditableMesh.VertexCount)
+        {
+            //Destroy(selectedGameobject.transform.parent.gameObject);
+        }
     }
 }

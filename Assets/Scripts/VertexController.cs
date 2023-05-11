@@ -43,11 +43,13 @@ public class VertexController : MonoBehaviour
         }
         else
         {
-            float distance = Vector3.Distance(transform.position, Camera.main.transform.position);
-            float minValue = 0.1f;
-            float maxValue = 0.25f;
-            float scaleFactor = 0.05f;
-            transform.localScale = Vector3.one * Mathf.Clamp(distance * scaleFactor, minValue, maxValue);
+            //float distance = Vector3.Distance(transform.position, Camera.main.transform.position);
+            //float minValue = 0.1f;
+            //float maxValue = 0.25f;
+            //float scaleFactor = 0.05f;
+            //transform.localScale = Vector3.one * Mathf.Clamp(distance * scaleFactor, minValue, maxValue);
+
+            transform.localScale = Vector3.Scale(Vector3.one / 10, new Vector3(1f / gameObject.transform.parent.parent.localScale.x, 1f / gameObject.transform.parent.parent.localScale.y, 1f / gameObject.transform.parent.parent.localScale.z));
         }
     }
 
@@ -68,6 +70,8 @@ public class VertexController : MonoBehaviour
             meshController.ActiveVertices.Remove(gameObject);
         }
         //meshController.CreateObjectInActiatedVertices();
+
+        ObjectController.Instance.UpdateButtonInteractability();
     }
 
     public void SetSelectState()
