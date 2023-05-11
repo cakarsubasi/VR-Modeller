@@ -10,7 +10,7 @@ public class GizmoScaleController : MonoBehaviour
     public GameObject zHandle;
     public GameObject centerHandle;
 
-    public float scaleSpeed = 0.01f;
+    public float scaleSpeed;
 
     GameObject selectedHandle;
     Vector3 previousPosition;

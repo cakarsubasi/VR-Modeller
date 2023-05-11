@@ -129,6 +129,7 @@ public class ObjectController : MonoBehaviour
         }
 
         selectedGameobject.GetComponent<MeshController>().EditableMesh.DeleteVertices(vertices);
+        selectedGameobject.GetComponent<MeshController>().EditableMesh.OptimizeRendering();
         selectedGameobject.GetComponent<MeshController>().EditableMesh.WriteAllToMesh();
 
         foreach (var vertex in selectedGameobject.GetComponent<MeshController>().ActiveVertices)

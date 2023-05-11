@@ -11,7 +11,7 @@ public class GizmoRotationController : MonoBehaviour
 
     public bool snapping = true; //Get it from GameSettings
     public int snapAngle;
-    public float rotationSpeed = 1.0f;
+    public float rotationSpeed;
 
     GameObject selectedCircle;
     Vector3 previousPosition;
