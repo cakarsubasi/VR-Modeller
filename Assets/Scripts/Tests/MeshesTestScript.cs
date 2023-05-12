@@ -400,6 +400,10 @@ public class MeshesTestScript
         Assert.IsTrue(vert4.Alive);
         Assert.IsTrue(vert5.Alive);
         Assert.IsTrue(vert6.Alive);
+        Assert.IsFalse(vert1.IsConnected(face1));
+        Assert.IsFalse(vert2.IsConnected(face1));
+        Assert.IsFalse(vert3.IsConnected(face1));
+        Assert.IsFalse(vert4.IsConnected(face1));
         Assert.AreEqual(2, vert5.EdgeCount);
         Assert.AreEqual(2, vert6.EdgeCount);
         Assert.AreEqual(1, vert5.FaceCount);

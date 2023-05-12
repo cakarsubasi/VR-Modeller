@@ -663,4 +663,20 @@ public class ExtrusionTestScript
         }
     }
 
+    [Test]
+    public void TestExtrudeHole()
+    {
+        UMesh mesh = CreateCube();
+        Face face = mesh.Faces.First();
+        List<Vertex> verts = face.Vertices;
+
+        mesh.DeleteFace(face);
+        mesh.Extrude(verts);
+
+        Assert.AreEqual(12, mesh.VertexCount);
+        Assert.AreEqual(20, mesh.EdgeCount);
+        Assert.AreEqual(9, mesh.FaceCount);
+
+    }
+
 }
