@@ -370,11 +370,13 @@ namespace Meshes
                 edge.Other(this).RemoveEdge(edge);
             }
             edges.Clear();
-
+            
             foreach (FaceIndex face in faces)
             {
                 face.face.Delete();
             }
+            faces.Clear();
+            edges.Clear();
             faces.Clear();
             Alive = false;
         }
@@ -568,10 +570,6 @@ namespace Meshes
         /// </summary>
         public void Delete()
         {
-            foreach (Face face in GetEdgeLoopsIter())
-            {
-                face.Delete();
-            }
             Alive = false;
         }
 

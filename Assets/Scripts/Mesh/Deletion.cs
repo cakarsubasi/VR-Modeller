@@ -81,9 +81,83 @@ namespace Meshes
             {
                 yield return verts[(begin + i) % length];
             }
-
         }
 
+        /// <summary>
+        /// Delete Vertex and its surrounding geometry
+        /// </summary>
+        /// <param name="vertex"></param>
+        public void DeleteGeometry(Vertex vertex)
+        {
+            DeleteVertexSingle(vertex);
+            ExecuteDeletion();
+        }
+
+        /// <summary>
+        /// Delete given vertices and the surrounding geometry
+        /// </summary>
+        /// <param name="vertices"></param>
+        public void DeleteGeometry(IEnumerable<Vertex> vertices)
+        {
+            foreach (Vertex vertex in vertices)
+            {
+                DeleteVertexSingle(vertex);
+            }
+            ExecuteDeletion();
+        }
+
+        public void DeleteGeometry(params Vertex[] vertices)
+        {
+            DeleteGeometry((IEnumerable<Vertex>) vertices);
+        }
+
+        /// <summary>
+        /// Delete Edge and the faces it comprises
+        /// </summary>
+        /// <param name="edge"></param>
+        public void DeleteGeometry(Edge edge)
+        {
+            DeleteEdgeSingle(edge);
+            ExecuteDeletion();
+        }
+
+        /// <summary>
+        /// Delete edges and the faces they comprise
+        /// </summary>
+        /// <param name="edges"></param>
+        public void DeleteGeometry(IEnumerable<Edge> edges)
+        {
+            foreach (Edge edge in edges)
+            {
+                DeleteEdgeSingle(edge);
+            }
+            ExecuteDeletion();
+        }
+
+        /// <summary>
+        /// Delete the face
+        /// </summary>
+        /// <param name="face"></param>
+        public void DeleteGeometry(Face face)
+        {
+            DeleteFaceSingle(face);
+            ExecuteDeletion();
+        }
+
+        /// <summary>
+        /// Delete the faces
+        /// </summary>
+        /// <param name="faces"></param>
+        public void DeleteGeometry(IEnumerable<Face> faces)
+        {
+            foreach (Face face in faces)
+            {
+                DeleteFaceSingle(face);
+            }
+            ExecuteDeletion();
+        }
+
+        [Obsolete("Use DeleteGeometry family of functions")]
         /// <summary>
         /// Delete a vertex and also delete its connecting faces.
         /// </summary>
@@ -94,6 +168,7 @@ namespace Meshes
             ExecuteDeletion();
         }
 
+        [Obsolete("Use DeleteGeometry family of functions")]
         /// <summary>
         /// Delete 
         /// </summary>
@@ -132,16 +207,18 @@ namespace Meshes
             throw new NotImplementedException { };
         }
 
+        [Obsolete("Use DeleteGeometry family of functions")]
         /// <summary>
         /// Delete a face but leave the surrounding vertices intact.
         /// </summary>
         /// <param name="face">Face to delete</param>
         public void DeleteFace(Face face)
         {
-            face.Delete();
+            DeleteFaceSingle(face);
             ExecuteDeletion();
         }
 
+        [Obsolete("Use DeleteGeometry family of functions")]
         /// <summary>
         /// Delete multiple faces but leave surrounding vertices intact
         /// </summary>
@@ -150,11 +227,12 @@ namespace Meshes
         {
             foreach (Face face in faces)
             {
-                face.Delete();
+                DeleteFaceSingle(face);
             }
             ExecuteDeletion();
         }
 
+        [Obsolete("Use DeleteGeometry family of functions")]
         /// <summary>
         /// Delete multiple faces leaving surrounding vertices intact.
         /// Only faces that are fully selected by surrounding vertices will be deleted.
@@ -177,6 +255,43 @@ namespace Meshes
                 }
             }
             ExecuteDeletion();
+        }
+
+        /// <summary>
+        /// Delete surrounding faces, delete surrounding edges, delete the vertex
+        /// </summary>
+        /// <param name="vertex"></param>
+        private void DeleteVertexSingle(Vertex vertex)
+        {
+            vertex.Delete();
+        }
+
+        /// <summary>
+        /// Remove the edge from both vertices, delete surrounding faces, then delete the edge
+        /// </summary>
+        /// <param name="edge"></param>
+        private void DeleteEdgeSingle(Edge edge)
+        {
+            foreach (Face face in edge.GetEdgeLoopsIter())
+            {
+                DeleteFaceSingle(face);
+            }
+            edge.one.RemoveEdge(edge);
+            edge.two.RemoveEdge(edge);
+            edge.Delete();
+        }
+
+        /// <summary>
+        /// Remove the face from the surrounding vertices, then delete the face
+        /// </summary>
+        /// <param name="face"></param>
+        private void DeleteFaceSingle(Face face)
+        {
+            foreach (Vertex vert in face.VerticesIter)
+            {
+                vert.RemoveFaceUnchecked(face);
+            }
+            face.Delete();
         }
 
         /// <summary>
