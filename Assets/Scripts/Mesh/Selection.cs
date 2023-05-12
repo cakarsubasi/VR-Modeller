@@ -60,6 +60,24 @@ namespace Meshes
             throw new NotImplementedException { };
         }
 
+        public void SelectEdgesFromVertices(IEnumerable<Vertex> vertices, ICollection<Edge> selection)
+        {
+            selection.Clear();
+            foreach (Vertex vertex in vertices)
+            {
+                foreach (Edge edge in vertex.Edges)
+                {
+                    if (vertices.Contains(edge.Other(vertex)))
+                    {
+                        if (!selection.Contains(edge))
+                        {
+                            selection.Add(edge);
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Find selected faces from vertices, careful with this operation as it is V*F on mesh size
         /// (not input size)

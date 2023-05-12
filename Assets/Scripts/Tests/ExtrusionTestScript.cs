@@ -1,26 +1,25 @@
-﻿using UnityEditor;
-using UnityEngine;
-using Unity.Mathematics;
-using System.Collections.Generic;
+﻿using System.Linq;
 
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Collections;
 
 using Meshes;
 using static Unity.Mathematics.math;
+using Unity.Mathematics;
+using UnityEngine;
 
 public class ExtrusionTestScript
 {
     public UMesh EditableMeshEmpty()
     {
-        UMesh mesh = default;
-        mesh.Setup(new Mesh());
+        UMesh mesh = UMesh.Create();
         return mesh;
     }
 
     public UMesh EditableMeshQuad()
     {
-        UMesh mesh = default;
-        mesh.Setup(new Mesh());
+        UMesh mesh = UMesh.Create();
         var vert1 = float3(0f, 0f, 0f);
         var vert2 = float3(1f, 0f, 0f);
         var vert3 = float3(1f, 1f, 0f);
@@ -28,6 +27,32 @@ public class ExtrusionTestScript
         mesh.CreateVerticesAndQuad(vert1, vert2, vert3, vert4);
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
+        return mesh;
+    }
+
+    public UMesh CreateCube()
+    {
+        UMesh mesh = UMesh.Create();
+
+        Vertex v1 = mesh.CreateVertex(float3(-1f, -1f, -1f));
+        Vertex v2 = mesh.CreateVertex(float3(1f, -1f, -1f));
+        Vertex v3 = mesh.CreateVertex(float3(1f, -1f, 1f));
+        Vertex v4 = mesh.CreateVertex(float3(-1f, -1f, 1f));
+
+        Vertex v5 = mesh.CreateVertex(float3(-1f, 1f, -1f));
+        Vertex v6 = mesh.CreateVertex(float3(1f, 1f, -1f));
+        Vertex v7 = mesh.CreateVertex(float3(1f, 1f, 1f));
+        Vertex v8 = mesh.CreateVertex(float3(-1f, 1f, 1f));
+
+        mesh.CreateQuad(new QuadElement<Vertex>(v1, v2, v3, v4));
+        mesh.CreateQuad(new QuadElement<Vertex>(v8, v7, v6, v5));
+
+        mesh.CreateQuad(new QuadElement<Vertex>(v1, v4, v8, v5));
+        mesh.CreateQuad(new QuadElement<Vertex>(v1, v5, v6, v2));
+
+        mesh.CreateQuad(new QuadElement<Vertex>(v2, v6, v7, v3));
+        mesh.CreateQuad(new QuadElement<Vertex>(v3, v7, v8, v4));
+
         return mesh;
     }
 
@@ -74,8 +99,10 @@ public class ExtrusionTestScript
         Vertex extrudedVertex = vert1.GetConnectedVertices()[0];
 
         Assert.AreEqual(3, mesh.VertexCount);
-        Assert.AreEqual(1, vert1.EdgeCount);
+        Assert.AreEqual(2, mesh.EdgeCount);
         Assert.AreEqual(0, mesh.FaceCount);
+
+        Assert.AreEqual(1, vert1.EdgeCount);
 
         Assert.AreEqual(float3(2f, 0f, 0f), vert1.Position);
         Assert.AreEqual(float3(1f, 0f, 0f), extrudedVertex.Position);
@@ -99,7 +126,7 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(4, mesh.VertexCount);
-        // Assert.AreEqual(4, mesh.EdgeCount);
+        Assert.AreEqual(4, mesh.EdgeCount);
         Assert.AreEqual(2, vert1.EdgeCount);
         Assert.AreEqual(2, vert2.EdgeCount);
         Assert.AreEqual(1, mesh.FaceCount);
@@ -133,7 +160,7 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(4, mesh.VertexCount);
-        // Assert.AreEqual(4, mesh.EdgeCount);
+        Assert.AreEqual(4, mesh.EdgeCount);
         Assert.AreEqual(2, vert1.EdgeCount);
         Assert.AreEqual(2, vert2.EdgeCount);
         Assert.AreEqual(1, mesh.FaceCount);
@@ -167,7 +194,7 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(6, mesh.VertexCount);
-        // Assert.AreEqual(7, mesh.EdgeCount);
+        Assert.AreEqual(7, mesh.EdgeCount);
         Assert.AreEqual(2, mesh.FaceCount);
 
         Assert.AreEqual(2, vert1.EdgeCount);
@@ -211,7 +238,7 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(6, mesh.VertexCount);
-        // Assert.AreEqual(7, mesh.EdgeCount);
+        Assert.AreEqual(7, mesh.EdgeCount);
         Assert.AreEqual(2, mesh.FaceCount);
 
         Assert.AreEqual(2, vert1.EdgeCount);
@@ -256,7 +283,7 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(7, mesh.VertexCount);
-        // Assert.AreEqual(9, mesh.EdgeCount);
+        Assert.AreEqual(9, mesh.EdgeCount);
         Assert.AreEqual(3, vert1.EdgeCount);
         Assert.AreEqual(2, vert1.FaceCount);
         Assert.AreEqual(3, mesh.FaceCount);
@@ -300,7 +327,7 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(7, mesh.VertexCount);
-        // Assert.AreEqual(9, mesh.EdgeCount);
+        Assert.AreEqual(9, mesh.EdgeCount);
         Assert.AreEqual(3, vert1.EdgeCount);
         Assert.AreEqual(2, vert1.FaceCount);
         Assert.AreEqual(3, mesh.FaceCount);
@@ -345,7 +372,7 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(8, mesh.VertexCount);
-        // Assert.AreEqual(12, mesh.EdgeCount);
+        Assert.AreEqual(12, mesh.EdgeCount);
         Assert.AreEqual(5, mesh.FaceCount);
 
         // stability tests
@@ -399,7 +426,7 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(8, mesh.VertexCount);
-        // Assert.AreEqual(12, mesh.EdgeCount);
+        Assert.AreEqual(12, mesh.EdgeCount);
         Assert.AreEqual(5, mesh.FaceCount);
 
         // stability tests
@@ -454,7 +481,7 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(8, mesh.VertexCount);
-        // Assert.AreEqual(12, mesh.EdgeCount);
+        Assert.AreEqual(12, mesh.EdgeCount);
         Assert.AreEqual(5, mesh.FaceCount);
 
         // stability tests
@@ -512,7 +539,7 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(12, mesh.VertexCount);
-        // Assert.AreEqual(19, mesh.EdgeCount);
+        Assert.AreEqual(19, mesh.EdgeCount);
         Assert.AreEqual(8, mesh.FaceCount);
 
         Vertex keyVertex1 = mesh.FindByPosition(float3(0f, 0f, 1f));
@@ -572,8 +599,83 @@ public class ExtrusionTestScript
         mesh.RecalculateNormals();
 
         Assert.AreEqual(17, mesh.VertexCount);
-        // Assert.AreEqual(28, mesh.EdgeCount);
+        Assert.AreEqual(28, mesh.EdgeCount);
         Assert.AreEqual(12, mesh.FaceCount);
+    }
+
+    /// <summary>
+    /// Sometimes you just gotta do some random things and see if any errors are thrown
+    /// </summary>
+    [Test]
+    public void TestExtrudeStochastic2()
+    {
+        System.Random rng = new(0);
+        List<Vertex> verts = new();
+        for (int i = 0; i < 5; i++)
+        {
+            UMesh mesh = CreateCube();
+            for (int j = 0; j < 5; j++)
+            {
+                verts = new(mesh.Vertices);
+                mesh.Extrude(verts.OrderBy(index => rng.Next()).Take(5).ToList());
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// Sometimes you just gotta do some random things and see if any errors are thrown
+    /// </summary>
+    [Test]
+    public void TestExtrudeStochastic1()
+    {
+
+        for (int i = 0; i < 8; i++)
+        {
+            UMesh mesh = CreateCube();
+            List<Vertex> verts = new();
+            verts.Add(mesh.Vertices[i % mesh.Vertices.Count]);
+            verts.Add(mesh.Vertices[(i+1) % mesh.Vertices.Count]);
+            verts.Add(mesh.Vertices[(i+4) % mesh.Vertices.Count]);
+            verts.Add(mesh.Vertices[(i+5) % mesh.Vertices.Count]);
+            mesh.Extrude(verts);
+        }
+        for (int i = 0; i < 8; i++)
+        {
+            UMesh mesh = CreateCube();
+            List<Vertex> verts = new();
+            verts.Add(mesh.Vertices[i % mesh.Vertices.Count]);
+            verts.Add(mesh.Vertices[(i + 1) % mesh.Vertices.Count]);
+            verts.Add(mesh.Vertices[(i + 2) % mesh.Vertices.Count]);
+            verts.Add(mesh.Vertices[(i + 3) % mesh.Vertices.Count]);
+            mesh.Extrude(verts);
+        }
+        for (int i = 0; i < 8; i++)
+        {
+            UMesh mesh = CreateCube();
+            List<Vertex> verts = new();
+            verts.Add(mesh.Vertices[i % mesh.Vertices.Count]);
+            verts.Add(mesh.Vertices[(i + 2) % mesh.Vertices.Count]);
+            verts.Add(mesh.Vertices[(i + 5) % mesh.Vertices.Count]);
+            verts.Add(mesh.Vertices[(i + 7) % mesh.Vertices.Count]);
+            mesh.Extrude(verts);
+        }
+    }
+
+    [Test]
+    public void TestExtrudeHole()
+    {
+        UMesh mesh = CreateCube();
+        Face face = mesh.Faces.First();
+        List<Vertex> verts = face.Vertices;
+
+        mesh.DeleteFace(face);
+        mesh.Extrude(verts);
+
+        Assert.AreEqual(12, mesh.VertexCount);
+        Assert.AreEqual(20, mesh.EdgeCount);
+        Assert.AreEqual(9, mesh.FaceCount);
+
     }
 
 }

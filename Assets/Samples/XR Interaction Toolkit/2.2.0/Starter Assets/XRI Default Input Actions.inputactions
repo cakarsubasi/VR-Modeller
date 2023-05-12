@@ -790,7 +790,7 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "OpenVertices",
+                    "name": "OpenOrCloseVertices",
                     "type": "Button",
                     "id": "12f6d95b-1d43-47ff-8c0d-5de5bf42c27c",
                     "expectedControlType": "Button",
@@ -799,9 +799,9 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "CloseVertices",
+                    "name": "Primary Button (Menu)",
                     "type": "Button",
-                    "id": "362aa707-e246-4046-a3d1-41caafe176ca",
+                    "id": "cf87e0f9-da78-4a8d-9a0a-dfef99fc4402",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -901,21 +901,21 @@
                     "name": "",
                     "id": "f1976c10-6719-4ef6-b228-23b80b60d4a9",
                     "path": "<XRController>{RightHand}/primaryButton",
-                    "interactions": "Press(pressPoint=1,behavior=2)",
+                    "interactions": "",
                     "processors": "",
-                    "groups": "Generic XR Controller",
-                    "action": "OpenVertices",
+                    "groups": "",
+                    "action": "OpenOrCloseVertices",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
-                    "id": "fde71c49-b6c7-46c0-bbd6-01a8530795d4",
-                    "path": "<XRController>{RightHand}/secondaryButton",
+                    "id": "b24eeb9e-f280-422e-bac5-3e0100e5313c",
+                    "path": "<XRController>{RightHand}/primaryButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "CloseVertices",
+                    "action": "Primary Button (Menu)",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

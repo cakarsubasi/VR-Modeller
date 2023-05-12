@@ -14,15 +14,13 @@ public class MeshesTestScript
 
     public UMesh EditableMeshEmpty()
     {
-        UMesh mesh = default;
-        mesh.Setup(new Mesh());
+        UMesh mesh = UMesh.Create();
         return mesh;
     }
 
     public UMesh EditableMeshQuad()
     {
-        UMesh mesh = default;
-        mesh.Setup(new Mesh());
+        UMesh mesh = UMesh.Create();
         var vert1 = float3(0f, 0f, 0f);
         var vert2 = float3(1f, 0f, 0f);
         var vert3 = float3(1f, 1f, 0f);
@@ -31,6 +29,19 @@ public class MeshesTestScript
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
         return mesh;
+    }
+
+    [Test]
+    public void TestEmpty()
+    {
+        UMesh mesh = EditableMeshEmpty();
+        mesh.WriteAllToMesh();
+        mesh.CreateVertex();
+        mesh.WriteAllToMesh();
+
+        mesh = EditableMeshEmpty();
+        mesh.AddFaceUnchecked(Face.Degenerate());
+        mesh.WriteAllToMesh();
     }
 
     /// <summary>
@@ -73,7 +84,7 @@ public class MeshesTestScript
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
         Vertex vert4 = Vertex.Dangling(float3(0f, 1f, 0f));
         mesh.AddVerticesUnchecked(vert1, vert2, vert3, vert4);
-        Face face = mesh.CreateQuad(new QuadVerts(vert1, vert2, vert3, vert4));
+        Face face = mesh.CreateQuad(new QuadElement<Vertex>(vert1, vert2, vert3, vert4));
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
@@ -108,7 +119,7 @@ public class MeshesTestScript
         Vertex vert4 = mesh.CreateVertexConnectedTo(vert3, out _);
         vert4.Position = float3(0f, 1f, 0f);
 
-        mesh.CreateQuad(new QuadVerts(vert1, vert2, vert3, vert4));
+        mesh.CreateQuad(new QuadElement<Vertex>(vert1, vert2, vert3, vert4));
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
@@ -136,8 +147,8 @@ public class MeshesTestScript
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
         Vertex vert4 = Vertex.Dangling(float3(0f, 1f, 0f));
         mesh.AddVerticesUnchecked(vert1, vert2, vert3, vert4);
-        Face face1 = mesh.CreateTriangle(new TriangleVerts(vert1, vert2, vert3));
-        Face face2 = mesh.CreateTriangle(new TriangleVerts(vert1, vert3, vert4));
+        Face face1 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert2, vert3));
+        Face face2 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert3, vert4));
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
@@ -229,8 +240,8 @@ public class MeshesTestScript
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
         Vertex vert4 = Vertex.Dangling(float3(0f, 1f, 0f));
         mesh.AddVerticesUnchecked(vert1, vert2, vert3, vert4);
-        Face face1 = mesh.CreateTriangle(new TriangleVerts(vert1, vert2, vert3));
-        Face face2 = mesh.CreateTriangle(new TriangleVerts(vert1, vert3, vert4));
+        Face face1 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert2, vert3));
+        Face face2 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert3, vert4));
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
@@ -264,8 +275,8 @@ public class MeshesTestScript
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
         Vertex vert4 = Vertex.Dangling(float3(0f, 1f, 0f));
         mesh.AddVerticesUnchecked(vert1, vert2, vert3, vert4);
-        Face face1 = mesh.CreateTriangle(new TriangleVerts(vert1, vert2, vert3));
-        Face face2 = mesh.CreateTriangle(new TriangleVerts(vert1, vert3, vert4));
+        Face face1 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert2, vert3));
+        Face face2 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert3, vert4));
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
@@ -292,8 +303,8 @@ public class MeshesTestScript
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
         Vertex vert4 = Vertex.Dangling(float3(0f, 1f, 0f));
         mesh.AddVerticesUnchecked(vert1, vert2, vert3, vert4);
-        Face face1 = mesh.CreateTriangle(new TriangleVerts(vert1, vert2, vert3));
-        Face face2 = mesh.CreateTriangle(new TriangleVerts(vert1, vert3, vert4));
+        Face face1 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert2, vert3));
+        Face face2 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert3, vert4));
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
@@ -320,8 +331,8 @@ public class MeshesTestScript
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
         Vertex vert4 = Vertex.Dangling(float3(0f, 1f, 0f));
         mesh.AddVerticesUnchecked(vert1, vert2, vert3, vert4);
-        Face face1 = mesh.CreateTriangle(new TriangleVerts(vert1, vert2, vert3));
-        Face face2 = mesh.CreateTriangle(new TriangleVerts(vert1, vert3, vert4));
+        Face face1 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert2, vert3));
+        Face face2 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert3, vert4));
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
@@ -348,8 +359,8 @@ public class MeshesTestScript
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
         Vertex vert4 = Vertex.Dangling(float3(0f, 1f, 0f));
         mesh.AddVerticesUnchecked(vert1, vert2, vert3, vert4);
-        Face face1 = mesh.CreateTriangle(new TriangleVerts(vert1, vert2, vert3));
-        Face face2 = mesh.CreateTriangle(new TriangleVerts(vert1, vert3, vert4));
+        Face face1 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert2, vert3));
+        Face face2 = mesh.CreateTriangle(new TriangleElement<Vertex>(vert1, vert3, vert4));
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
@@ -371,11 +382,11 @@ public class MeshesTestScript
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
         Vertex vert4 = Vertex.Dangling(float3(0f, 1f, 0f));
         mesh.AddVerticesUnchecked(vert1, vert2, vert3, vert4);
-        Face face1 = mesh.CreateQuad(new QuadVerts(vert1, vert2, vert3, vert4));
+        Face face1 = mesh.CreateQuad(new QuadElement<Vertex>(vert1, vert2, vert3, vert4));
         Vertex vert5 = Vertex.Dangling(float3(2f, 0f, 0f));
         Vertex vert6 = Vertex.Dangling(float3(2f, 1f, 0f));
         mesh.AddVerticesUnchecked(vert5, vert6);
-        Face face2 = mesh.CreateQuad(new QuadVerts(vert2, vert5, vert6, vert3));
+        Face face2 = mesh.CreateQuad(new QuadElement<Vertex>(vert2, vert5, vert6, vert3));
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
@@ -389,6 +400,10 @@ public class MeshesTestScript
         Assert.IsTrue(vert4.Alive);
         Assert.IsTrue(vert5.Alive);
         Assert.IsTrue(vert6.Alive);
+        Assert.IsFalse(vert1.IsConnected(face1));
+        Assert.IsFalse(vert2.IsConnected(face1));
+        Assert.IsFalse(vert3.IsConnected(face1));
+        Assert.IsFalse(vert4.IsConnected(face1));
         Assert.AreEqual(2, vert5.EdgeCount);
         Assert.AreEqual(2, vert6.EdgeCount);
         Assert.AreEqual(1, vert5.FaceCount);
@@ -400,6 +415,20 @@ public class MeshesTestScript
     public void TestMergeByDistance()
     {
         throw new NotImplementedException { };
+    }
+
+    [Test]
+    public void TestDeepCopy()
+    {
+        UMesh mesh1 = EditableMeshQuad();
+        mesh1.WriteAllToMesh();
+
+        UMesh mesh2 = mesh1.DeepCopy();
+        mesh2.WriteAllToMesh();
+
+        Assert.AreEqual(mesh1.VertexCount, mesh2.VertexCount);
+        Assert.AreEqual(mesh1.EdgeCount, mesh2.EdgeCount);
+        Assert.AreEqual(mesh1.FaceCount, mesh2.FaceCount);
     }
 
     // A UnityTest behaves like a coroutine in Play Mode. In Edit Mode you can use

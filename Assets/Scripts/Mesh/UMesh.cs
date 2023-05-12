@@ -17,13 +17,10 @@ namespace Meshes
 
         private Mesh mesh;
 
-        public Mesh Mesh { get => mesh; set => CopySetup(value); }
-        public string Name { get => mesh.name; set => mesh.name = value; }
+        public Mesh Mesh { get => mesh; set => SetupMesh(value); }
+        public string Name;
 
         public List<Vertex> Vertices;
-        /// <summary>
-        /// Currently unstable, do not rely on this
-        /// </summary>
         public List<Edge> Edges;
         public List<Face> Faces;
 
@@ -42,9 +39,6 @@ namespace Meshes
 
         public int VertexCount { get => Vertices.Count; }
         public int FaceCount { get => Faces.Count; }
-        /// <summary>
-        /// Currently unstable, do not rely on this
-        /// </summary>
         public int EdgeCount { get => Edges.Count; }
 
         private ExtrusionHelper extrusionHelper;
@@ -60,24 +54,62 @@ namespace Meshes
         }
 
         /// <summary>
+        /// Create a new UMesh and render into the given mesh filter
+        /// </summary>
+        /// <param name="mesh">mesh filter to render to</param>
+        /// <returns>The UMesh</returns>
+        public static UMesh Create(Mesh mesh, String name = "Mesh")
+        {
+            UMesh uMesh = default;
+            uMesh.Name = name;
+            uMesh.Setup(mesh);
+            return uMesh;
+        }
+
+        /// <summary>
+        /// Create a new UMesh, and render into a newly created mesh filter.
+        /// <br>You can get the mesh filter with the Mesh property</br>
+        /// </summary>
+        /// <returns>The UMesh</returns>
+        public static UMesh Create()
+        {
+            return UMesh.Create(new Mesh());
+        }
+
+        /// <summary>
         /// Create a new EditableMesh from scratch
         /// </summary>
         /// <param name="mesh">Container mesh to write to</param>
         public void Setup(Mesh mesh)
         {
+            InitializeMainStructures();
+            InitializeHelperStructures();
+            SetupMesh(mesh);
+        }
+
+        /// <summary>
+        /// Create a new EditableMesh from scratch but do not assign a mesh to write to
+        /// </summary>
+        public void Setup()
+        {
+            InitializeMainStructures();
+            InitializeHelperStructures();
+        }
+
+        /// <summary>
+        /// Set the correct vertex and intex buffer parameters for the given mesh
+        /// </summary>
+        /// <param name="mesh"></param>
+        public void SetupMesh(Mesh mesh)
+        {
             this.mesh = mesh;
             this.mesh.MarkDynamic();
-
-            // initialize safe garbage here
-            Vertices = new List<Vertex>(initialMaxVerts / 2);
-            Faces = new List<Face>(initialMaxVerts / 2);
-            Edges = new List<Edge>(initialMaxVerts);
 
             Mesh.MeshDataArray meshDataArray = Mesh.AllocateWritableMeshData(1);
             Mesh.MeshData meshData = meshDataArray[0];
             Setup(meshData, initialMaxVerts, initialMaxTriangles);
             Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, mesh);
-            InitializeHelperStructures();
+            
         }
 
         private void Setup(Mesh.MeshData meshData, int vertexCount, int triangleCount)
@@ -123,6 +155,14 @@ namespace Meshes
             {
                 triangles[i] = Triangle.degenerate;
             }
+        }
+
+        private void InitializeMainStructures()
+        {
+            // initialize safe garbage here
+            Vertices = new List<Vertex>(initialMaxVerts / 2);
+            Faces = new List<Face>(initialMaxVerts / 2);
+            Edges = new List<Edge>(initialMaxVerts);
         }
 
         private void InitializeHelperStructures()
@@ -184,8 +224,8 @@ namespace Meshes
             }
             for (int i = 0; i < triangles.Length; i += 3)
             {
-                TriangleVerts verts = new(vertexmap[triangles[i]], vertexmap[triangles[i + 1]], vertexmap[triangles[i + 2]]);
-                TriangleUVs uv0s = new(uvs[triangles[i]], uvs[triangles[i + 1]], uvs[triangles[i + 2]]);
+                TriangleElement<Vertex> verts = new(vertexmap[triangles[i]], vertexmap[triangles[i + 1]], vertexmap[triangles[i + 2]]);
+                TriangleElement<float2> uv0s = new(uvs[triangles[i]], uvs[triangles[i + 1]], uvs[triangles[i + 2]]);
                 CreateTriangle(verts, uv0s);
             }
             RecalculateNormals();
@@ -195,22 +235,167 @@ namespace Meshes
             return this.mesh;
         }
 
+        /// <summary>
+        /// Combine the other UMesh to this UMesh, consume the other UMesh
+        /// </summary>
+        /// <param name="other">other UMesh to combine</param>
         public void Combine(UMesh other)
         {
             Vertices.AddRange(other.Vertices);
             Faces.AddRange(other.Faces);
-            other.Vertices.Clear();
-            other.Faces.Clear();
+            Edges.AddRange(other.Edges);
+            other.Dispose();
         }
 
-        public UMesh Split(List<Vertex> vertices)
+        /// <summary>
+        /// Make a copy of the selected vertices, edges and faces and return them
+        /// Note that an assumption is made that all of the vertices comprising the
+        /// edges and faces are given to this method, otherwise the function will likely fail
+        /// </summary>
+        /// <param name="selectedVertices"></param>
+        /// <param name="selectedEdges"></param>
+        /// <param name="selectedFaces"></param>
+        /// <param name="createdVertices"></param>
+        /// <param name="createdEdges"></param>
+        /// <param name="createdFaces"></param>
+        public void CopySelected(
+            in IEnumerable<Vertex> selectedVertices, 
+            in IEnumerable<Edge> selectedEdges, 
+            in IEnumerable<Face> selectedFaces,
+            out List<Vertex> createdVertices,
+            out List<Edge> createdEdges,
+            out List<Face> createdFaces)
         {
+            createdVertices = new();
+            createdEdges = new();
+            createdFaces = new();
+            
+            int index = 0;
+            foreach (Vertex vert in selectedVertices)
+            {
+                vert.Index = index++;
+                createdVertices.Add(CreateVertex(vert));
+            }
+
+            foreach (Edge edge in selectedEdges)
+            {
+                createdEdges.Add(CreateEdge(createdVertices[edge.one.Index], createdVertices[edge.two.Index]));
+            }
+
+            List<Vertex> tempVerts = new(4);
+            foreach (Face face in selectedFaces)
+            {
+               foreach (Vertex vert in face.VerticesIter)
+               {
+                    tempVerts.Add(createdVertices[vert.Index]);
+               }
+                createdFaces.Add(CreateNGon(tempVerts));
+                tempVerts.Clear();
+            }
+        }
+
+        /// <summary>
+        /// Create a new UMesh with the given selection by copying. The selection is assumed to be complete.
+        /// </summary>
+        /// <param name="selectedVertices">selected vertices</param>
+        /// <param name="selectedEdges">selected edges</param>
+        /// <param name="selectedFaces">selected faces</param>
+        /// <returns>New UMesh from the selection</returns>
+        public UMesh CopySelectionToNewMesh(
+            in IEnumerable<Vertex> selectedVertices,
+            in IEnumerable<Edge> selectedEdges,
+            in IEnumerable<Face> selectedFaces)
+        {
+            UMesh separation = UMesh.Create();
+            separation.Name = new String(Name);
+
+            int index = 0;
+            foreach (Vertex vert in selectedVertices)
+            {
+                vert.Index = index++;
+                separation.CreateVertex(vert);
+            }
+
+            foreach (Edge edge in selectedEdges)
+            {
+                separation.CreateEdge(separation.Vertices[edge.one.Index], separation.Vertices[edge.two.Index]);
+            }
+
+            List<Vertex> tempVerts = new(4);
+            foreach (Face face in selectedFaces)
+            {
+                                tempVerts.Clear();
+                foreach (Vertex vert in face.VerticesIter)
+                {
+                    tempVerts.Add(separation.Vertices[vert.Index]);
+                }
+                separation.CreateNGon(tempVerts);
+
+            }
+
+            return separation;
+        }
+
+
+        /// <summary>
+        /// Separate the given vertices, edges, and faces to their own UMesh.
+        /// <br>The rule is that manifold geometry is moved while non-manifold
+        /// geometry is copied and will exist in both UMeshes</br>
+        /// </summary>
+        /// <param name="selectedVertices"></param>
+        /// <param name="selectedEdges"></param>
+        /// <param name="selectedFaces"></param>
+        /// <param name="createdVertices"></param>
+        /// <param name="createdEdges"></param>
+        /// <param name="createdFaces"></param>
+        /// <returns></returns>
+        public UMesh SeparateSelected(
+            in IEnumerable<Vertex> selectedVertices,
+            in IEnumerable<Edge> selectedEdges,
+            in IEnumerable<Face> selectedFaces,
+            out List<Vertex> createdVertices,
+            out List<Edge> createdEdges,
+            out List<Face> createdFaces)
+        {
+            UMesh separation = UMesh.Create();
+            separation.Name = new String(Name);
+
             throw new NotImplementedException { };
         }
 
+        /// <summary>
+        /// Create a complete copy of this mesh.
+        /// </summary>
+        /// <returns>A new UMesh with the same geometry</returns>
         public UMesh DeepCopy()
         {
-            throw new NotImplementedException { };
+            UMesh copy = UMesh.Create();
+            copy.Name = new String(Name);
+
+            int index = 0;
+            foreach (Vertex vert in Vertices)
+            {
+                vert.Index = index++;
+                copy.CreateVertex(vert);
+            }
+
+            foreach (Edge edge in Edges)
+            {
+                copy.CreateEdge(copy.Vertices[edge.one.Index], copy.Vertices[edge.two.Index]);
+            }
+
+            List<Vertex> tempVerts = new(4);
+            foreach (Face face in Faces)
+            {
+                tempVerts.Clear();
+                foreach (Vertex vert in face.VerticesIter)
+                {
+                    tempVerts.Add(copy.Vertices[vert.Index]);
+                }
+                copy.CreateNGon(tempVerts);
+            }
+
+            return copy;
         }
 
         /// <summary>

@@ -46,7 +46,6 @@ GameObject:
   - component: {fileID: 1792223186022373247}
   - component: {fileID: 3368316891401620976}
   - component: {fileID: 6440627655830714573}
-  - component: {fileID: -8983633050944547051}
   m_Layer: 0
   m_Name: Capsule
   m_TagString: MeshObject
@@ -134,32 +133,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   vertexHighlight: {fileID: 9164154604655469877, guid: d42f6a5a62be2c54586a60f7e15782b7,
     type: 3}
-  closeAction:
+  openOrCloseAction:
     m_UseReference: 1
     m_Action:
-      m_Name: Close
+      m_Name: Open Or Close
       m_Type: 0
       m_ExpectedControlType: 
-      m_Id: c282c115-e561-4e70-b3f8-7e10a14a16aa
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings: []
-      m_Flags: 0
-    m_Reference: {fileID: -8463826844095356590, guid: c348712bda248c246b8c49b3db54643f,
-      type: 3}
-  openAction:
-    m_UseReference: 1
-    m_Action:
-      m_Name: Open
-      m_Type: 0
-      m_ExpectedControlType: 
-      m_Id: 9318bbfb-3a15-4e50-b4fc-f942a4b61535
+      m_Id: 15746874-6872-4721-a2ec-fdbae278c674
       m_Processors: 
       m_Interactions: 
       m_SingletonActionBindings: []
       m_Flags: 0
     m_Reference: {fileID: 109764013769571655, guid: c348712bda248c246b8c49b3db54643f,
       type: 3}
+  copiedMesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!64 &1792223186022373247
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -283,16 +270,3 @@ MonoBehaviour:
   m_OnDeactivate:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &-8983633050944547051
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6029265292443060219}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb4d4d8b0a553c14496f62b3bbc821e6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  CopyFromMesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}

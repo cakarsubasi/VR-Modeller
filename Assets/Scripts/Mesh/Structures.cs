@@ -100,8 +100,9 @@ namespace Meshes
 
     public enum ShadingType
     {
-        Flat = 0,
-        Smooth = 1,
+        Inherited = 0,
+        Flat = 1,
+        Smooth = 2,
     }
 
     static class Triangle
@@ -122,7 +123,7 @@ namespace Meshes
             public float3 Position => vertex.Position;
         }
 
-        //private ShadingType shading = ShadingType.Flat;
+        public ShadingType Shading { get; set; } = ShadingType.Inherited;
 
         internal List<VertexCoordinate> vertices;
         internal List<Edge> edges;
@@ -131,6 +132,8 @@ namespace Meshes
         /// Get a copy to the list of vertices
         /// </summary>
         public List<Vertex> Vertices => vertices.Select(item => item.vertex).ToList();
+
+        internal IEnumerable<Vertex> VerticesIter => GetVerticesIter();
 
         /// <summary>
         /// Get a copy to the list of edges
@@ -146,10 +149,9 @@ namespace Meshes
         public int EdgeCount => edges.Count;
         public int TriangleCount => GetTriangleCount();
 
-        private static readonly int3[] empty = new int3[0];
-        private static readonly int3[] degenerate = { int3(0, 0, 0) };
+        private static readonly int3[] emptyTriangle = new int3[0];
 
-        public static int3[] Empty => empty;
+        public static int3[] DegenerateTriangle => emptyTriangle;
 
     }
 }

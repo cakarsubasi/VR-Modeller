@@ -169,6 +169,7 @@ namespace Meshes
 
                 Vertex created = CreateVertexConnectedTo(vertex, out Edge connection);
 
+                edgeList.Clear();
                 edgeList.AddRange(vertex.edges);
                 foreach (Edge edge in edgeList)
                 {
@@ -180,8 +181,8 @@ namespace Meshes
                         vertex.RemoveEdge(edge);
                     }
                 }
-                edgeList.Clear();
 
+                edgeLoop.Clear();
                 edgeLoop.AddRange(vertex.FacesIter);
                 foreach (Face face in edgeLoop)
                 {
@@ -191,7 +192,6 @@ namespace Meshes
                         facesToFixUp.Add(face);
                     }
                 }
-                edgeLoop.Clear();
             }
 
             foreach (Edge edge in selectedEdges)
@@ -211,19 +211,19 @@ namespace Meshes
                     Vertex vert3 = vert1.edges[^1].Other(vert1);
                     Vertex vert4 = vert2.edges[^1].Other(vert2);
 
-                    Edge newEdge = CreateEdge(vert3, vert4);
+                    Edge newEdge = CreateEdgeUnchecked(vert3, vert4);
 
                     if (edgeLoop.Count == 0)
                     {
-                        Face newFace = CreateQuad(new QuadVerts(vert2, vert1, vert3, vert4));
+                        Face newFace = CreateQuad(new QuadElement<Vertex>(vert2, vert1, vert3, vert4));
                     } else
                     {
                         if (edgeLoop[0].IsOrderedClockwise(vert1, vert2))
                         {
-                            Face newFace = CreateQuad(new QuadVerts(vert2, vert1, vert3, vert4));
+                            Face newFace = CreateQuad(new QuadElement<Vertex>(vert2, vert1, vert3, vert4));
                         } else
                         {
-                            Face newFace = CreateQuad(new QuadVerts(vert2, vert4, vert3, vert1));
+                            Face newFace = CreateQuad(new QuadElement<Vertex>(vert2, vert4, vert3, vert1));
                         }
                     }
 
