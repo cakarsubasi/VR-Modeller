@@ -25,7 +25,7 @@ public class MeshController : MonoBehaviour
     {
         ObjectController.Instance.AllObjects.Add(gameObject);
 
-        editableMesh = GetComponent<EditableMesh>().MeshInternal;
+        editableMesh = GetComponent<CopySetupTestComponent>().MeshInternal;
         meshFilter = GetComponent<MeshFilter>();
         mesh = meshFilter.mesh;
         //Vertices = mesh.vertices.ToList();

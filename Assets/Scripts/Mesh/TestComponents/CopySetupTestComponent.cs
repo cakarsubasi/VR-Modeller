@@ -1,11 +1,14 @@
 ﻿using UnityEngine;
 using Meshes;
+using System;
 #nullable enable
 
 using static Unity.Mathematics.math;
 
+[Obsolete("This is a test component for the CopySetup method in UMesh." +
+    " It should not be used externally.")]
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
-public class EditableMesh : MonoBehaviour
+public class CopySetupTestComponent : MonoBehaviour
 {
     UMesh meshInternal;
 
@@ -41,7 +44,7 @@ public class EditableMesh : MonoBehaviour
         Debug.Log($"{meshInternal}");
         
     }
-
+    
     private void Update()
     {
         meshInternal.WriteAllToMesh();

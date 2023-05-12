@@ -50,6 +50,7 @@ public class ExtrusionTestComponent : MonoBehaviour
 
         meshInternal.OptimizeIndices();
         meshInternal.RecalculateNormals();
+        meshInternal.RecalculateTangents();
 
         meshInternal.WriteAllToMesh();
 

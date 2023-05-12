@@ -166,8 +166,8 @@ namespace Meshes
         /// <returns>reference to the created vertex</returns>
         public Vertex CreateVertexConnectedTo(Vertex other, out Edge edge)
         {
-            Vertex vertex = Vertex.FromOtherVertexUnconnected(other);
-            Vertices.Add(vertex);
+            Vertex vertex = Vertex.Copy(other);
+            AddVertexUnchecked(vertex);
             edge = CreateEdgeUnchecked(vertex, other);
             return vertex;
         }
@@ -198,7 +198,7 @@ namespace Meshes
         /// <returns>edge between them</returns>
         public Edge CreateEdgeUnchecked(Vertex one, Vertex two)
         {
-            Edge edge = new Edge(one, two);
+            Edge edge = new(one, two);
             one.AddEdgeUnchecked(edge);
             two.AddEdgeUnchecked(edge);
             Edges.Add(edge);
@@ -415,7 +415,7 @@ namespace Meshes
         }
 
         /// <summary>
-        /// Add a presumably externally created vertex to the EditableMesh.
+        /// Add a presumably externally created vertex to the EditableMesh without any checks.
         /// </summary>
         /// <param name="vertex">vertex to add</param>
         /// <returns>the vertex</returns>
@@ -423,6 +423,17 @@ namespace Meshes
         {
             Vertices.Add(vertex);
             return vertex;
+        }
+
+        /// <summary>
+        /// Add a presumably externally created face to the EditableMesh without any checks.
+        /// </summary>
+        /// <param name="face">face to add</param>
+        /// <returns>the face</returns>
+        public Face AddFaceUnchecked(Face face)
+        {
+            Faces.Add(face);
+            return face;
         }
 
         /// <summary>

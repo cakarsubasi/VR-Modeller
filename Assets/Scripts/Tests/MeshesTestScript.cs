@@ -14,15 +14,13 @@ public class MeshesTestScript
 
     public UMesh EditableMeshEmpty()
     {
-        UMesh mesh = default;
-        mesh.Setup(new Mesh());
+        UMesh mesh = UMesh.Create();
         return mesh;
     }
 
     public UMesh EditableMeshQuad()
     {
-        UMesh mesh = default;
-        mesh.Setup(new Mesh());
+        UMesh mesh = UMesh.Create();
         var vert1 = float3(0f, 0f, 0f);
         var vert2 = float3(1f, 0f, 0f);
         var vert3 = float3(1f, 1f, 0f);
@@ -31,6 +29,19 @@ public class MeshesTestScript
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
         return mesh;
+    }
+
+    [Test]
+    public void TestEmpty()
+    {
+        UMesh mesh = EditableMeshEmpty();
+        mesh.WriteAllToMesh();
+        mesh.CreateVertex();
+        mesh.WriteAllToMesh();
+
+        mesh = EditableMeshEmpty();
+        mesh.AddFaceUnchecked(Face.Degenerate());
+        mesh.WriteAllToMesh();
     }
 
     /// <summary>
@@ -389,6 +400,10 @@ public class MeshesTestScript
         Assert.IsTrue(vert4.Alive);
         Assert.IsTrue(vert5.Alive);
         Assert.IsTrue(vert6.Alive);
+        Assert.IsFalse(vert1.IsConnected(face1));
+        Assert.IsFalse(vert2.IsConnected(face1));
+        Assert.IsFalse(vert3.IsConnected(face1));
+        Assert.IsFalse(vert4.IsConnected(face1));
         Assert.AreEqual(2, vert5.EdgeCount);
         Assert.AreEqual(2, vert6.EdgeCount);
         Assert.AreEqual(1, vert5.FaceCount);

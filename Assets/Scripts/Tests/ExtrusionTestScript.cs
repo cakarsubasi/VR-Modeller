@@ -14,15 +14,13 @@ public class ExtrusionTestScript
 {
     public UMesh EditableMeshEmpty()
     {
-        UMesh mesh = default;
-        mesh.Setup(new Mesh());
+        UMesh mesh = UMesh.Create();
         return mesh;
     }
 
     public UMesh EditableMeshQuad()
     {
-        UMesh mesh = default;
-        mesh.Setup(new Mesh());
+        UMesh mesh = UMesh.Create();
         var vert1 = float3(0f, 0f, 0f);
         var vert2 = float3(1f, 0f, 0f);
         var vert3 = float3(1f, 1f, 0f);
@@ -663,6 +661,22 @@ public class ExtrusionTestScript
             verts.Add(mesh.Vertices[(i + 7) % mesh.Vertices.Count]);
             mesh.Extrude(verts);
         }
+    }
+
+    [Test]
+    public void TestExtrudeHole()
+    {
+        UMesh mesh = CreateCube();
+        Face face = mesh.Faces.First();
+        List<Vertex> verts = face.Vertices;
+
+        mesh.DeleteFace(face);
+        mesh.Extrude(verts);
+
+        Assert.AreEqual(12, mesh.VertexCount);
+        Assert.AreEqual(20, mesh.EdgeCount);
+        Assert.AreEqual(9, mesh.FaceCount);
+
     }
 
 }

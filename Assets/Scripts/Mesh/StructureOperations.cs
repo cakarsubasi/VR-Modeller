@@ -33,33 +33,11 @@ namespace Meshes
         }
 
         /// <summary>
-        /// Create a vertex at the position of the other vertex with an edge
-        /// that connects to that vertex
+        /// Create an unconnected Vertex by copying the parameters of another Vertex
         /// </summary>
-        /// <param name="other">other vertex</param>
-        /// <returns>newly created vertex</returns>
-        private static Vertex FromOtherVertexConnected(Vertex other, out Edge connection)
-        {
-            Vertex self = new Vertex
-            {
-                Position = other.Position,
-                Normal = other.Normal,
-                Tangent = other.Tangent,
-            };
-
-            connection = new Edge(other, self);
-            self.edges.Add(connection);
-            other.edges.Add(connection);
-
-            return self;
-        }
-
+        /// <param name="other">Vertex to copy from</param>
+        /// <returns>The new Vertex</returns>
         public static Vertex Copy(Vertex other)
-        {
-            return Vertex.FromOtherVertexUnconnected(other);
-        }
-
-        public static Vertex FromOtherVertexUnconnected(Vertex other)
         {
             Vertex self = new Vertex
             {
@@ -77,7 +55,7 @@ namespace Meshes
         /// <item>All of its edges are manifold geometry</item>
         /// </list>
         /// </summary>
-        /// <returns></returns>
+        /// <returns>True if vertex is manifold geometry</returns>
         internal bool IsManifold()
         {
             if (edges.Count < 2)
@@ -91,24 +69,57 @@ namespace Meshes
             return true;
         }
 
+        /// <summary>
+        /// Create a new list of faces shared by this vertex. 
+        /// If you need an iterator use FacesIter
+        /// </summary>
+        /// <returns>List of faces</returns>
         public List<Face> GetFaces()
         {
-            List<Face> faces = new List<Face>(this.faces.Count);
-            foreach (FaceIndex faceIndex in this.faces)
-            {
-                faces.Add(faceIndex.face);
-            }
+            List<Face> faces = new(FaceCount);
+            GetFaces(faces);
             return faces;
         }
 
+        /// <summary>
+        /// Get a list of faces without allocations. The list is cleared first.
+        /// </summary>
+        /// <param name="faces">out list of faces</param>
+        public void GetFaces(in List<Face> faces)
+        {
+            faces.Clear();
+            foreach (Face face in FacesIter)
+            {
+                faces.Add(face);
+            }
+        }
+
+        /// <summary>
+        /// Get a list of vertices connected to this vertex.
+        /// </summary>
+        /// <returns>list of vertices</returns>
         public List<Vertex> GetConnectedVertices()
         {
-            List<Vertex> vertices = new List<Vertex>(this.edges.Count);
+            List<Vertex> vertices = new(EdgeCount);
+            GetConnectedVertices(vertices);
+            return vertices;
+        }
+
+        /// <summary>
+        /// Get a list of vertices connected to this vertex without allocations.
+        /// </summary>
+        /// <param name="vertices">out list of vertices</param>
+        public void GetConnectedVertices(List<Vertex> vertices)
+        {
+            vertices.Clear();
             foreach (Edge edge in edges)
             {
-                vertices.Add(edge.Other(this));
+                Vertex other = edge.Other(this);
+                if (!vertices.Contains(other))
+                {
+                    vertices.Add(other);
+                }
             }
-            return vertices;
         }
 
         /// <summary>
@@ -128,16 +139,27 @@ namespace Meshes
             return false;
         }
 
+        /// <summary>
+        /// Returns true if this vertex is a part of the given edge. It is generally faster to check
+        /// this the other way around if the geometry is in a valid state.
+        /// </summary>
+        /// <param name="edge">Edge to check</param>
+        /// <returns>true if connected</returns>
         public bool IsConnected(Edge edge)
         {
             return edges.Contains(edge);
         }
 
+        /// <summary>
+        /// Returns true if this vertex is connected to the given face.
+        /// </summary>
+        /// <param name="face">Face to check</param>
+        /// <returns>true if connected</returns>
         public bool IsConnected(Face face)
         {
-            foreach (FaceIndex faceIndex in faces)
+            foreach (Face candidateFace in FacesIter)
             {
-                if (faceIndex.face == face)
+                if (candidateFace == face)
                 {
                     return true;
                 }
@@ -181,6 +203,16 @@ namespace Meshes
         }
 
         /// <summary>
+        /// Get the indices for this vertex's stream.
+        /// Use WriteToStream() to avoid allocations.
+        /// </summary>
+        /// <returns>The stream indices</returns>
+        public int[] Indices()
+        {
+            return faces.Select(props => props.index).ToArray();
+        }
+
+        /// <summary>
         /// Write the vertex to a vertex buffer without allocations
         /// </summary>
         /// <param name="stream">stream to write into</param>
@@ -190,16 +222,18 @@ namespace Meshes
             temp.position = Position;
             temp.normal = Normal;
             temp.tangent = Tangent;
-            for (int i = 0; i < faces.Count; ++i)
+            foreach (FaceIndex faceIndex in faces)
             {
-                temp.uv0 = faces[i].uv0;
-                stream[faces[i].index] = temp;
+                temp.uv0 = faceIndex.uv0;
+                if (faceIndex.face.Shading == ShadingType.Flat)
+                {
+                    temp.normal = faceIndex.face.Normal;
+                } else
+                {
+                    temp.normal = Normal;
+                }
+                stream[faceIndex.index] = temp;
             }
-        }
-
-        public int[] Indices()
-        {
-            return faces.Select(props => props.index).ToArray();
         }
 
         /// <summary>
@@ -225,7 +259,7 @@ namespace Meshes
             {
                 var prop = faces[i];
                 float2 uv0next = prop.face.GetUVof(this);
-                if (uv0next.Equals(uv0))
+                if (uv0next.Equals(uv0) || prop.face.Shading != ShadingType.Inherited)
                 {
                     prop.index = beginning;
                     prop.uv0 = uv0;
@@ -242,10 +276,10 @@ namespace Meshes
         }
 
         /// <summary>
-        /// Get the stream index associated with each face
+        /// Get the stream index associated with each face. Returns -1 if the face is not found.
         /// </summary>
-        /// <param name="face"></param>
-        /// <returns></returns>
+        /// <param name="face">Face to check</param>
+        /// <returns>Stream index or -1 if the face is not connected</returns>
         public int GetIndex(Face face)
         {
             foreach (FaceIndex faceIndex in faces)
@@ -272,8 +306,17 @@ namespace Meshes
                 {
                     Normal += faceIndex.face.Normal;
                 }
-                Normal /= faces.Count;
+                Normal /= (float) faces.Count;
             }
+        }
+
+        /// <summary>
+        /// Recalculate the tangents based on the normal in the laziest possible way.
+        /// The normal should be calculated before this is called.
+        /// </summary>
+        public void RecalculateTangent()
+        {
+            Tangent = float4(-Normal.y, Normal.x, Normal.z, 0f);
         }
 
         /// <summary>
@@ -283,7 +326,7 @@ namespace Meshes
         /// <param name="face">face to add</param>
         internal void AddFaceChecked(Face face)
         {
-            if (!faces.Select(structure => structure.face).Contains(face))
+            if (!IsConnected(face))
             {
                 faces.Add(new FaceIndex { face = face });
             }
@@ -294,59 +337,28 @@ namespace Meshes
         }
 
         /// <summary>
-        /// Check if there is an Edge between this vertex and the other vertex. 
-        /// Return the edge. If a new edge is created
-        /// </summary>
-        /// <param name="vertex">vertex to connect to</param>
-        /// <returns></returns>
-        internal bool AddEdgeCheckedFromVertex(Vertex other, out Edge edgeBetween)
-        {
-            foreach (Edge edge in edges)
-            {
-                if (edge.IsBetween(this, other))
-                {
-                    edgeBetween = edge;
-                    return false;
-                }
-            }
-
-            edgeBetween = AddEdgeUncheckedFromVertex(other);
-            return false;
-        }
-
-        /// <summary>
         /// Add an edge to the internal edges list, but check
         /// if the edge is already in the list first.
         /// </summary>
-        /// <param name="edge"></param>
+        /// <param name="edge">edge to add</param>
         internal void AddEdgeChecked(Edge edge)
         {
-            foreach (Edge potentialDuplicate in edges)
+            if (IsConnected(edge))
             {
-                if (potentialDuplicate == edge)
-                {
-                    return;
-                }
+                return;
+            } else
+            {
+                AddEdgeUnchecked(edge);
             }
-            edges.Add(edge);
-        }
-
-        internal void AddEdgeUnchecked(Edge edge)
-        {
-            edges.Add(edge);
         }
 
         /// <summary>
-        /// Add 
+        /// Add an edge to the internal edges list, without performing any checks.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        internal Edge AddEdgeUncheckedFromVertex(Vertex other)
+        /// <param name="edge"></param>
+        internal void AddEdgeUnchecked(Edge edge)
         {
-            Edge newEdge = new Edge(this, other);
-            edges.Add(newEdge);
-            other.edges.Add(newEdge);
-            return newEdge;
+            edges.Add(edge);
         }
 
         internal void Delete()
@@ -390,18 +402,6 @@ namespace Meshes
             return false;
         }
 
-        public bool HasFace(Face face)
-        {
-            foreach (FaceIndex candidate in faces)
-            {
-                if (candidate.face == face)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
         IEnumerable<Face> GetFacesEnum()
         {
             foreach (FaceIndex face in faces)
@@ -412,11 +412,12 @@ namespace Meshes
 
         internal void CommonFaces(Vertex other, List<Face> common)
         {
-            foreach (FaceIndex face in faces)
+            common.Clear();
+            foreach (Face face in FacesIter)
             {
-                if (other.HasFace(face.face))
+                if (other.IsConnected(face))
                 {
-                    common.Add(face.face);
+                    common.Add(face);
                 }
             }
         }
@@ -429,7 +430,12 @@ namespace Meshes
 
     partial class Edge
     {
-        public Edge(Vertex one, Vertex two)
+        /// <summary>
+        /// Construct an edge between the two vertices.
+        /// </summary>
+        /// <param name="one"></param>
+        /// <param name="two"></param>
+        internal Edge(Vertex one, Vertex two)
         {
             if (one == two)
             {
@@ -439,16 +445,32 @@ namespace Meshes
             this.two = two;
         }
 
-        public Boolean IsBetween(Vertex vertex1, Vertex vertex2)
+        /// <summary>
+        /// Returns true if edge is between vertex1 and vertex2
+        /// </summary>
+        /// <param name="vertex1"></param>
+        /// <param name="vertex2"></param>
+        /// <returns></returns>
+        public bool IsBetween(Vertex vertex1, Vertex vertex2)
         {
             return ((one == vertex1 && two == vertex2) || (one == vertex2 && two == vertex1));
         }
 
-        public Boolean Contains(Vertex vertex)
+        /// <summary>
+        /// Returns true if vertex is a part of this edge.
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <returns></returns>
+        public bool Contains(Vertex vertex)
         {
             return ((one == vertex) || (two == vertex));
         }
 
+        /// <summary>
+        /// Pass one vertex, get the other vertex, throws if vertex is not part of this edge.
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <returns>The other vertex</returns>
         public Vertex Other(Vertex vertex)
         {
             if (one == vertex)
@@ -465,6 +487,11 @@ namespace Meshes
             }
         }
 
+        /// <summary>
+        /// Exchange one vertex in this edge with another vertex, without any other validation.
+        /// </summary>
+        /// <param name="current"></param>
+        /// <param name="replacement"></param>
         public void ExchangeVertex(Vertex current, Vertex replacement)
         {
             if (one == current)
@@ -482,6 +509,7 @@ namespace Meshes
         }
 
         /// <summary>
+        /// Get the faces that are shared by this edge without allocations.
         /// A manifold edge may only have one or two faces. Generally speaking, we
         /// are interested in avoiding non-manifold geometry. 
         /// </summary>
@@ -498,6 +526,10 @@ namespace Meshes
             }
         }
 
+        /// <summary>
+        /// Get the faces that are shared by this edge.
+        /// </summary>
+        /// <returns>Faces of this edge</returns>
         public List<Face> GetEdgeLoops()
         {
             List<Face> ret = new();
@@ -505,6 +537,10 @@ namespace Meshes
             return ret;
         }
 
+        /// <summary>
+        /// Get an iterator to the edge loop.
+        /// </summary>
+        /// <returns>Iterator to the edge loop</returns>
         public IEnumerable<Face> GetEdgeLoopsIter()
         {
             foreach (Face face in one.FacesIter)
@@ -516,6 +552,10 @@ namespace Meshes
             }
         }
 
+        /// <summary>
+        /// Move this edge by the relative offset
+        /// </summary>
+        /// <param name="relative">offset</param>
         public void MoveRelative(float3 relative)
         {
             // need a more robust API later
@@ -523,6 +563,9 @@ namespace Meshes
             two.Position += relative;
         }
 
+        /// <summary>
+        /// Delete the edge, also deletes the faces in the edge loop, but not the vertices.
+        /// </summary>
         public void Delete()
         {
             foreach (Face face in GetEdgeLoopsIter())
@@ -532,6 +575,10 @@ namespace Meshes
             Alive = false;
         }
 
+        /// <summary>
+        /// Get the number of faces shared by this edge.
+        /// </summary>
+        /// <returns></returns>
         internal int GetEdgeLoopCount()
         {
             int loops = 0;
@@ -551,7 +598,7 @@ namespace Meshes
         /// <returns></returns>
         internal bool IsManifold()
         {
-            return (EdgeLoopCount == 2);
+            return EdgeLoopCount == 2;
         }
     }
 
@@ -560,11 +607,20 @@ namespace Meshes
         /// <summary>
         /// Construct degenerate face
         /// </summary>
-        public Face()
+        private Face()
         {
             Normal = Position = Unity.Mathematics.float3.zero;
             vertices = new List<VertexCoordinate>(0);
             edges = new List<Edge>(0);
+        }
+
+        /// <summary>
+        /// Get a degenerate face. It is probably not what you need, but good for testing.
+        /// </summary>
+        /// <returns>A face with no vertices or edges</returns>
+        public static Face Degenerate()
+        {
+            return new Face();
         }
 
         /// <summary>
@@ -682,7 +738,7 @@ namespace Meshes
         /// </summary>
         private void FinalizeSetup()
         {
-            RecalculateNormal();
+            RecalculateNormalFast();
             RecalculatePosition();
         }
 
@@ -699,18 +755,9 @@ namespace Meshes
         }
 
         /// <summary>
-        /// Add vertices to a collection without temporary allocations
+        /// Recalculate the normals, only check three vertices to save time.
         /// </summary>
-        /// <param name="collection">the collection</param>
-        public void AddVerticesTo(ICollection<Vertex> collection)
-        {
-            foreach (VertexCoordinate vertex in vertices)
-            {
-                collection.Add(vertex.vertex);
-            }
-        }
-
-        public void RecalculateNormal()
+        public void RecalculateNormalFast()
         {
             if (vertices.Count < 3)
             {
@@ -724,6 +771,9 @@ namespace Meshes
             }
         }
 
+        /// <summary>
+        /// Recalculate the position based on averaging the position of the other vertices.
+        /// </summary>
         public void RecalculatePosition()
         {
             Position = 0f;
@@ -734,6 +784,10 @@ namespace Meshes
             Position /= vertices.Count;
         }
 
+        /// <summary>
+        /// Get an iterator to the vertices
+        /// </summary>
+        /// <returns>An iterator to the vertices</returns>
         internal IEnumerable<Vertex> GetVerticesIter()
         {
             foreach (var vertexIndex in vertices)
@@ -758,19 +812,25 @@ namespace Meshes
             }
         }
 
+        /// <summary>
+        /// Return true if the vertex is part of this face.
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <returns></returns>
         public bool ContainsVertex(Vertex vertex)
         {
-            foreach (VertexCoordinate vertexCoordinate in vertices)
-            {
-                if (vertexCoordinate.vertex == vertex)
-                {
-                    return true;
-                }
-            }
-            return false;
+            return VerticesIter.Contains(vertex);
         }
 
-        public bool IsOrderedClockwise(Vertex vert1, Vertex vert2)
+        /// <summary>
+        /// This method returns true if vert2 is right after vert1 assuming
+        /// the vertices within this face form a circular list. This is useful
+        /// mainly for ensuring the normal face the correct direction.
+        /// </summary>
+        /// <param name="vert1"></param>
+        /// <param name="vert2"></param>
+        /// <returns></returns>
+        internal bool IsOrderedClockwise(Vertex vert1, Vertex vert2)
         {
             int vert1Index = GetVertexIndex(vert1);
             if (vert1Index == -1)
@@ -799,7 +859,10 @@ namespace Meshes
             return false;
         }
         
-
+        /// <summary>
+        /// Move the face with the given relative offset.
+        /// </summary>
+        /// <param name="relative">relative offset</param>
         public void MoveRelative(float3 relative)
         {
             // add a more robust transform API later
@@ -824,24 +887,6 @@ namespace Meshes
             }
         }
 
-        internal void AddVertex()
-        {
-            throw new NotImplementedException { };
-        }
-
-        internal bool RemoveVertexUnchecked(Vertex vertex)
-        {
-            for (int i = 0; i < vertices.Count; ++i)
-            {
-                if (vertices[i].vertex == vertex)
-                {
-                    vertices.RemoveAt(i);
-                    return true;
-                }
-            }
-            return false;
-        }
-
         /// <summary>
         /// Get uv0 associated with a certain vertex
         /// </summary>
@@ -859,41 +904,6 @@ namespace Meshes
             return float2(0f, 0f);
         }
 
-        public void InsertVertexBetweenUnchecked(Vertex toInsert, Vertex before, Vertex after)
-        {
-            int beforeIndex = -1;
-            int afterIndex = -1;
-            for (int i = 0; i < vertices.Count; i++)
-            {
-                if (vertices[i].vertex == before)
-                    beforeIndex = i;
-                else if (vertices[i].vertex == after)
-                    afterIndex = i;
-            }
-            if ((beforeIndex == -1) || afterIndex == -1)
-                throw new ArgumentException("before and after must be inside the face");
-
-            VertexCoordinate insertElement = new VertexCoordinate
-            {
-                vertex = toInsert,
-                uv0 = (vertices[beforeIndex].uv0 + vertices[afterIndex].uv0) / 2f,
-            };
-
-            if (afterIndex > beforeIndex)
-            {
-                vertices.Insert(afterIndex, insertElement);
-            }
-            else if (beforeIndex > afterIndex)
-            {
-                vertices.Insert(beforeIndex, insertElement);
-            }
-            else
-            {
-                throw new ArgumentException("before and after must not be the same");
-            }
-
-        }
-
         public List<Face> GetAdjacentFaces()
         {
             throw new NotImplementedException { };
@@ -904,7 +914,9 @@ namespace Meshes
             throw new NotImplementedException { };
         }
 
-
+        /// <summary>
+        /// Delete this face, but not the edges or the vertices that comprise it.
+        /// </summary>
         internal void Delete()
         {
             edges.Clear();
@@ -921,6 +933,10 @@ namespace Meshes
         public int WriteToStream(ref NativeArray<int3> array, int startIndex)
         {
             int triangles = TriangleCount;
+            if (triangles == 0)
+            {
+                return startIndex;
+            }
             var ind0 = vertices[0].vertex.GetIndex(this);
             for (int i = 0; i < triangles; i++)
             {
@@ -937,34 +953,6 @@ namespace Meshes
                 str = $"{str} {vertex.vertex.GetIndex(this)}";
             }
             return str;
-        }
-
-        internal Vertex GetOtherVertexToTheSideOf(Vertex middle, Vertex oneSide)
-        {
-            if (vertices.Count < 3)
-            {
-                throw new ArgumentException("Not enough vertices");
-            }
-            for (int i = 0; i < vertices.Count; i++)
-            {
-                if (vertices[i].vertex == middle && vertices[(i + 1) % vertices.Count].vertex == oneSide)
-                {
-                    if (i == 0)
-                    {
-                        return vertices[vertices.Count - 1].vertex;
-                    }
-                    else
-                    {
-                        return vertices[i - 1].vertex;
-                    }
-                }
-                else if (vertices[i].vertex == oneSide && vertices[(i + 1) % vertices.Count].vertex == middle)
-                {
-                    return vertices[(i + 2) % vertices.Count].vertex;
-                }
-
-            }
-            throw new ArgumentException("Can't find either vertex");
         }
 
         private int GetVertexIndex(Vertex vertex)
