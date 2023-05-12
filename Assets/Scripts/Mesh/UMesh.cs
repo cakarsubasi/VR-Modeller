@@ -426,7 +426,7 @@ namespace Meshes
         public void WriteAllToMesh()
         {
             int previousVertexCount = internalVertexCount;
-            int previousIndexCount = internalIndexCount;
+            int previousTriangleCount = internalTriangleCount;
             // figure out the indices
             OptimizeIndices();
             // resize the vertex and index buffers if needed
@@ -453,7 +453,7 @@ namespace Meshes
                 flags: MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds);
 
             // If any deletions have occurred, zero out the remainder
-            DeletePadding(internalVertexCount, previousVertexCount, internalIndexCount, previousIndexCount);
+            DeletePadding(internalVertexCount, previousVertexCount, internalTriangleCount, previousTriangleCount);
         }
 
         public void UnsafeWriteVertexToMesh(Vertex vertex)

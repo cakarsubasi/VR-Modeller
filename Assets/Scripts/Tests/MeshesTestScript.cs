@@ -280,7 +280,7 @@ public class MeshesTestScript
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
-        mesh.DeleteVertex(vert2);
+        mesh.DeleteGeometry(vert2);
         Assert.AreEqual(1, mesh.FaceCount);
         Assert.AreEqual(3, mesh.VertexCount);
 
@@ -308,7 +308,7 @@ public class MeshesTestScript
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
-        mesh.DeleteVertex(vert1);
+        mesh.DeleteGeometry(vert1);
         Assert.AreEqual(0, mesh.FaceCount);
         Assert.AreEqual(3, mesh.VertexCount);
 
@@ -390,7 +390,7 @@ public class MeshesTestScript
         mesh.OptimizeIndices();
         mesh.RecalculateNormals();
 
-        mesh.DeleteFace(face1);
+        mesh.DeleteGeometry(face1);
 
         Assert.AreEqual(1, mesh.FaceCount);
         Assert.AreEqual(6, mesh.VertexCount);

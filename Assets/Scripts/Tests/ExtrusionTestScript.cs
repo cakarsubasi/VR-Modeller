@@ -669,7 +669,7 @@ public class ExtrusionTestScript
         Face face = mesh.Faces.First();
         List<Vertex> verts = face.Vertices;
 
-        mesh.DeleteFace(face);
+        mesh.DeleteGeometry(face);
         mesh.Extrude(verts);
 
         Assert.AreEqual(12, mesh.VertexCount);
