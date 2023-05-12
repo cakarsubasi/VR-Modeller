@@ -1,14 +1,13 @@
-﻿using UnityEditor;
-using UnityEngine;
-using Unity.Mathematics;
-using System.Collections.Generic;
-using System.Linq;
-using System.Collections;
+﻿using System.Linq;
 
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Collections;
 
 using Meshes;
 using static Unity.Mathematics.math;
+using Unity.Mathematics;
+using UnityEngine;
 
 public class ExtrusionTestScript
 {

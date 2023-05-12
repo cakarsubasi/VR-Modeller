@@ -46,7 +46,6 @@ GameObject:
   - component: {fileID: 1876197934038270050}
   - component: {fileID: -9010883979040055007}
   - component: {fileID: 2440558252627507923}
-  - component: {fileID: -3993911564064799891}
   m_Layer: 0
   m_Name: Cube
   m_TagString: MeshObject
@@ -134,26 +133,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   vertexHighlight: {fileID: 9164154604655469877, guid: d42f6a5a62be2c54586a60f7e15782b7,
     type: 3}
-  closeAction:
+  activeVerticesObject: {fileID: 4406452774151757562, guid: e74a46317b458454fa2db13b4b3e0870,
+    type: 3}
+  openOrCloseAction:
     m_UseReference: 1
     m_Action:
-      m_Name: Close
+      m_Name: Open Or Close
       m_Type: 0
       m_ExpectedControlType: 
-      m_Id: 57124b48-8e5d-41ab-8135-dc0304755468
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings: []
-      m_Flags: 0
-    m_Reference: {fileID: -8463826844095356590, guid: c348712bda248c246b8c49b3db54643f,
-      type: 3}
-  openAction:
-    m_UseReference: 1
-    m_Action:
-      m_Name: Open
-      m_Type: 0
-      m_ExpectedControlType: 
-      m_Id: a2eeb3c6-5931-43d3-83df-e052e5f5a8c6
+      m_Id: 15746874-6872-4721-a2ec-fdbae278c674
       m_Processors: 
       m_Interactions: 
       m_SingletonActionBindings: []
@@ -283,16 +271,3 @@ MonoBehaviour:
   m_OnDeactivate:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &-3993911564064799891
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7486790701133839520}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb4d4d8b0a553c14496f62b3bbc821e6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  CopyFromMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
