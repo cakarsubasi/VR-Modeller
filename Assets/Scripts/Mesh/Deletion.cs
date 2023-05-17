@@ -187,19 +187,142 @@ namespace Meshes
             throw new NotImplementedException { };
         }
 
-        public Vertex MergeVertices(Vertex vertex1, Vertex vertex2)
+        public Vertex MergeVertices(Vertex mergeOnVertex, Vertex otherVertex)
         {
-            throw new NotImplementedException { };
+            Vertex vert = MergeTwoVertices(mergeOnVertex, otherVertex);
+            ExecuteDeletion();
+            return vert;
         }
 
         public Vertex MergeVertices(params Vertex[] vertices)
         {
-            throw new NotImplementedException { };
+            if (vertices.Length < 2)
+            {
+                throw new ArgumentException("Need at least two vertices to merge");
+            }
+
+            Vertex first = vertices[0];
+            for (int i = 1; i < vertices.Length; ++i)
+            {
+                first = MergeTwoVertices(first, vertices[i]);
+            }
+            ExecuteDeletion();
+            return first;
         }
 
         public Vertex MergeVertices(List<Vertex> vertices)
         {
-            throw new NotImplementedException { };
+            if (vertices.Count < 2)
+            {
+                throw new ArgumentException("Need at least two vertices to merge");
+            }
+
+            Vertex first = vertices[0];
+            for (int i = 1; i < vertices.Count; ++i)
+            {
+                first = MergeTwoVertices(first, vertices[i]);
+            }
+            ExecuteDeletion();
+            return first;
+        }
+
+        public Vertex MergeVertices(IEnumerable<Vertex> vertices)
+        {
+            return MergeVertices(new List<Vertex>(vertices));
+        }
+
+        internal Vertex MergeTwoVertices(Vertex mergeOnVertex, Vertex otherVertex)
+        {
+            var sharedFaces = extrusionHelper.facesTemp;
+            mergeOnVertex.CommonFaces(otherVertex, sharedFaces);
+            var otherUniqueFaces = extrusionHelper.faceSetTemp;
+            otherVertex.UniqueFaces(mergeOnVertex, otherUniqueFaces);
+            // if there is an edge between, dissolve it
+            Edge edgeMaybe = mergeOnVertex.GetEdgeTo(otherVertex);
+            if (edgeMaybe != null)
+            {
+                edgeMaybe.Delete();
+            }
+
+            foreach (Edge edge in otherVertex.edges)
+            {
+                edge.ExchangeVertex(otherVertex, mergeOnVertex);
+                mergeOnVertex.AddEdgeUnchecked(edge);
+            }
+            mergeOnVertex.RemoveDuplicateEdges();
+
+            foreach (Face face in otherUniqueFaces)
+            {
+                face.ExchangeVertexUnchecked(otherVertex, mergeOnVertex);
+            }
+
+            foreach (Face face in sharedFaces)
+            {
+                face.RemoveVertexUnchecked(otherVertex);
+                if (face.VertexCount <= 2)
+                {
+                    face.Delete();
+                }
+            }
+
+            foreach (Face face in otherUniqueFaces)
+            {
+                face.DiscoverEdgesFromVertices();
+            }
+
+            foreach (Face face in sharedFaces)
+            {
+                face.DiscoverEdgesFromVertices();
+            }
+
+            otherVertex.Alive = false;
+
+            return mergeOnVertex;
+        }
+
+        /// <summary>
+        /// Merge vertices by distance, should run at O(V3) time.
+        /// </summary>
+        /// <param name="eps">Maximum distance to consider the same position</param>
+        public void MergeByDistance(float eps = 0.01f)
+        {
+            HashSet<Vertex> verts = extrusionHelper.vertices;
+            // in theory, iterating like this should be safe because we should never remove
+            for (int i = 0; i < Vertices.Count; i++)
+            {
+                FindAllByPosition(verts, Vertices[i].Position, eps);
+                MergeVertices(verts);
+            }
+        }
+
+        private Edge DeleteDuplicateEdge(Edge edge1, Edge edge2)
+        {
+            // same edge, done
+            if (edge1 == edge2)
+            {
+                return edge1;
+            }
+            //
+            if (!edge1.Equals(edge2))
+            {
+                throw new ArgumentException("Edges must be between the same vertices");
+            }
+
+            edge1.one.RemoveEdge(edge2);
+            edge1.two.RemoveEdge(edge2);
+
+            foreach (Face face in edge1.one.FacesIter)
+            {
+                face.DiscoverEdgesFromVertices();
+            }
+            foreach (Face face in edge1.two.FacesIter)
+            {
+                face.DiscoverEdgesFromVertices();
+            }
+
+            edge2.Delete();
+
+            return edge1;
         }
 
         public Face MergeFaces(Edge edge)

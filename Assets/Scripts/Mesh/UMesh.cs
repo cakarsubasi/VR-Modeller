@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 #nullable enable
 
-using static Unity.Mathematics.math;
-
 namespace Meshes
 {
     public partial struct UMesh

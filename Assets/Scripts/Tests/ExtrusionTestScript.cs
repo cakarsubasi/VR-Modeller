@@ -5,57 +5,13 @@ using System.Collections.Generic;
 using System.Collections;
 
 using Meshes;
+using Meshes.Test;
 using static Unity.Mathematics.math;
 using Unity.Mathematics;
 using UnityEngine;
 
 public class ExtrusionTestScript
 {
-    public UMesh EditableMeshEmpty()
-    {
-        UMesh mesh = UMesh.Create();
-        return mesh;
-    }
-
-    public UMesh EditableMeshQuad()
-    {
-        UMesh mesh = UMesh.Create();
-        var vert1 = float3(0f, 0f, 0f);
-        var vert2 = float3(1f, 0f, 0f);
-        var vert3 = float3(1f, 1f, 0f);
-        var vert4 = float3(0f, 1f, 0f);
-        mesh.CreateVerticesAndQuad(vert1, vert2, vert3, vert4);
-        mesh.OptimizeIndices();
-        mesh.RecalculateNormals();
-        return mesh;
-    }
-
-    public UMesh CreateCube()
-    {
-        UMesh mesh = UMesh.Create();
-
-        Vertex v1 = mesh.CreateVertex(float3(-1f, -1f, -1f));
-        Vertex v2 = mesh.CreateVertex(float3(1f, -1f, -1f));
-        Vertex v3 = mesh.CreateVertex(float3(1f, -1f, 1f));
-        Vertex v4 = mesh.CreateVertex(float3(-1f, -1f, 1f));
-
-        Vertex v5 = mesh.CreateVertex(float3(-1f, 1f, -1f));
-        Vertex v6 = mesh.CreateVertex(float3(1f, 1f, -1f));
-        Vertex v7 = mesh.CreateVertex(float3(1f, 1f, 1f));
-        Vertex v8 = mesh.CreateVertex(float3(-1f, 1f, 1f));
-
-        mesh.CreateQuad(new QuadElement<Vertex>(v1, v2, v3, v4));
-        mesh.CreateQuad(new QuadElement<Vertex>(v8, v7, v6, v5));
-
-        mesh.CreateQuad(new QuadElement<Vertex>(v1, v4, v8, v5));
-        mesh.CreateQuad(new QuadElement<Vertex>(v1, v5, v6, v2));
-
-        mesh.CreateQuad(new QuadElement<Vertex>(v2, v6, v7, v3));
-        mesh.CreateQuad(new QuadElement<Vertex>(v3, v7, v8, v4));
-
-        return mesh;
-    }
-
     /// <summary>
     /// From one vertex, extrude a single vertex
     /// Should end with 2 vertices, 1 edge, 0 faces
@@ -63,7 +19,7 @@ public class ExtrusionTestScript
     [Test]
     public void TestExtrudeSingleVertex()
     {
-        UMesh mesh = EditableMeshEmpty();
+        UMesh mesh = Creators.Empty;
 
         Vertex vert1 = mesh.CreateVertex();
         mesh.Extrude(vert1);
@@ -85,7 +41,7 @@ public class ExtrusionTestScript
     /// </summary>
     public void TestExtrudeSingleVertex2()
     {
-        UMesh mesh = EditableMeshEmpty();
+        UMesh mesh = Creators.Empty;
 
         Vertex vert1 = mesh.CreateVertex();
         Vertex vert2 = mesh.CreateVertexConnectedTo(vert1, out _);
@@ -112,7 +68,7 @@ public class ExtrusionTestScript
     [Test]
     public void TestExtrudeSingleEdge()
     {
-        UMesh mesh = EditableMeshEmpty();
+        UMesh mesh = Creators.Empty;
 
         Vertex vert1 = mesh.CreateVertex();
         Vertex vert2 = mesh.CreateVertexConnectedTo(vert1, out _);
@@ -146,7 +102,7 @@ public class ExtrusionTestScript
     [Test]
     public void TestExtrudeSingleEdge2()
     {
-        UMesh mesh = EditableMeshEmpty();
+        UMesh mesh = Creators.Empty;
 
         Vertex vert1 = mesh.CreateVertex();
         Vertex vert2 = mesh.CreateVertexConnectedTo(vert1, out _);
@@ -180,7 +136,7 @@ public class ExtrusionTestScript
     [Test]
     public void TestExtrudeSingleEdgeFromFace()
     {
-        UMesh mesh = EditableMeshQuad();
+        UMesh mesh = Creators.Quad;
         Vertex vert1 = mesh.FindByPosition(float3(0f, 1f, 0f));
         Vertex vert2 = mesh.FindByPosition(float3(1f, 1f, 0f));
         Face face = vert1.GetFaces()[0];
@@ -224,7 +180,7 @@ public class ExtrusionTestScript
     [Test]
     public void TestExtrudeSingleEdgeFromFace2()
     {
-        UMesh mesh = EditableMeshQuad();
+        UMesh mesh = Creators.Quad;
         Vertex vert1 = mesh.FindByPosition(float3(0f, 1f, 0f));
         Vertex vert2 = mesh.FindByPosition(float3(0f, 0f, 0f));
         Face face = vert1.GetFaces()[0];
@@ -268,7 +224,7 @@ public class ExtrusionTestScript
     [Test]
     public void TestExtrudeTwoEdges()
     {
-        UMesh mesh = EditableMeshQuad();
+        UMesh mesh = Creators.Quad;
         Vertex vert1 = mesh.FindByPosition(float3(0f, 1f, 0f));
         Face face = vert1.GetFaces()[0];
 
@@ -313,7 +269,7 @@ public class ExtrusionTestScript
     [Test]
     public void TestExtrudeTwoEdges2()
     {
-        UMesh mesh = EditableMeshQuad();
+        UMesh mesh = Creators.Quad;
         Vertex vert1 = mesh.FindByPosition(float3(0f, 1f, 0f));
         Face face = vert1.GetFaces()[0];
 
@@ -357,7 +313,7 @@ public class ExtrusionTestScript
     [Test]
     public void TestExtrudeOneFace()
     {
-        UMesh mesh = EditableMeshQuad();
+        UMesh mesh = Creators.Quad;
         Face face = mesh.Faces[0];
         var verts = face.Vertices;
         Vertex vert1 = verts[0];
@@ -411,7 +367,7 @@ public class ExtrusionTestScript
     [Test]
     public void TestExtrudeOneFace2()
     {
-        UMesh mesh = EditableMeshQuad();
+        UMesh mesh = Creators.Quad;
         Face face = mesh.Faces[0];
         var verts = face.Vertices;
         Vertex vert1 = verts[0];
@@ -465,7 +421,7 @@ public class ExtrusionTestScript
     [Test]
     public void TestExtrudeOneFace3()
     {
-        UMesh mesh = EditableMeshQuad();
+        UMesh mesh = Creators.Quad;
         Face face = mesh.Faces[0];
         var verts = face.Vertices;
         Vertex vert1 = verts[0];
@@ -523,7 +479,7 @@ public class ExtrusionTestScript
     [Test]
     public void TestExtrudeTwoFaces()
     {
-        UMesh mesh = EditableMeshQuad();
+        UMesh mesh = Creators.Quad;
         Vertex vert1 = mesh.FindByPosition(float3(0f, 0f, 0f));
         Vertex vert2 = mesh.FindByPosition(float3(0f, 1f, 0f));
         Edge edge = vert1.GetEdgeTo(vert2);
@@ -566,7 +522,7 @@ public class ExtrusionTestScript
     [Test]
     public void TestExtrudeFourFaces()
     {
-        UMesh mesh = EditableMeshEmpty();
+        UMesh mesh = Creators.Empty;
         // .
         Vertex vertex1 = mesh.CreateVertex(float3(-1f, 1f, 0f));
 
@@ -613,7 +569,7 @@ public class ExtrusionTestScript
         List<Vertex> verts = new();
         for (int i = 0; i < 5; i++)
         {
-            UMesh mesh = CreateCube();
+            UMesh mesh = Creators.Cube;
             for (int j = 0; j < 5; j++)
             {
                 verts = new(mesh.Vertices);
@@ -632,7 +588,7 @@ public class ExtrusionTestScript
 
         for (int i = 0; i < 8; i++)
         {
-            UMesh mesh = CreateCube();
+            UMesh mesh = Creators.Cube;
             List<Vertex> verts = new();
             verts.Add(mesh.Vertices[i % mesh.Vertices.Count]);
             verts.Add(mesh.Vertices[(i+1) % mesh.Vertices.Count]);
@@ -642,7 +598,7 @@ public class ExtrusionTestScript
         }
         for (int i = 0; i < 8; i++)
         {
-            UMesh mesh = CreateCube();
+            UMesh mesh = Creators.Cube;
             List<Vertex> verts = new();
             verts.Add(mesh.Vertices[i % mesh.Vertices.Count]);
             verts.Add(mesh.Vertices[(i + 1) % mesh.Vertices.Count]);
@@ -652,7 +608,7 @@ public class ExtrusionTestScript
         }
         for (int i = 0; i < 8; i++)
         {
-            UMesh mesh = CreateCube();
+            UMesh mesh = Creators.Cube;
             List<Vertex> verts = new();
             verts.Add(mesh.Vertices[i % mesh.Vertices.Count]);
             verts.Add(mesh.Vertices[(i + 2) % mesh.Vertices.Count]);
@@ -665,7 +621,7 @@ public class ExtrusionTestScript
     [Test]
     public void TestExtrudeHole()
     {
-        UMesh mesh = CreateCube();
+        UMesh mesh = Creators.Cube;
         Face face = mesh.Faces.First();
         List<Vertex> verts = face.Vertices;
 

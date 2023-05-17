@@ -391,6 +391,26 @@ namespace Meshes
             edges.RemoveAll(edge => !edge.Contains(this));
         }
 
+        internal void RemoveDuplicateEdges()
+        {
+            if (edges.Count < 2)
+            {
+                return;
+            }
+            for (int i = 0; i < edges.Count - 1; i++)
+            {
+                for (int j = i + 1;  j < edges.Count; j++)
+                {
+                    if (edges[i].Equals(edges[j]))
+                    {
+                        edges.RemoveAt(j);
+                        j--;
+                    }
+                        
+                }
+            }
+        }
+
         internal bool RemoveFaceUnchecked(Face face)
         {
             for (int i = 0; i < faces.Count; i++)
@@ -412,7 +432,13 @@ namespace Meshes
             }
         }
 
-        internal void CommonFaces(Vertex other, List<Face> common)
+        /// <summary>
+        /// Fill the collection common with faces that exist in both this vertex and other vertex.
+        /// The collection is cleared before it is filled.
+        /// </summary>
+        /// <param name="other">other vertex</param>
+        /// <param name="common">collection to fill</param>
+        internal void CommonFaces(Vertex other, ICollection<Face> common)
         {
             common.Clear();
             foreach (Face face in FacesIter)
@@ -420,6 +446,24 @@ namespace Meshes
                 if (other.IsConnected(face))
                 {
                     common.Add(face);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Fill the collection unique with faces of this vertex that are not in the other vertex.
+        /// The collection is cleared before it is filled.
+        /// </summary>
+        /// <param name="other">other vertex</param>
+        /// <param name="unique">collection to fill</param>
+        internal void UniqueFaces(Vertex other, ICollection<Face> unique)
+        {
+            unique.Clear();
+            foreach (Face face in FacesIter)
+            {
+                if (!other.IsConnected(face))
+                {
+                    unique.Add(face);
                 }
             }
         }
@@ -487,6 +531,22 @@ namespace Meshes
             {
                 throw new ArgumentException("Given vertex must be in the edge");
             }
+        }
+
+        /// <summary>
+        /// Elementwise comparison. Two edges are equal if they are between the same vertices.
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            Edge? otherEdge = obj as Edge;
+            if (otherEdge == null)
+            {
+                return false;
+            }
+
+            return otherEdge.Contains(one) && otherEdge.Contains(two);
         }
 
         /// <summary>
@@ -902,14 +962,13 @@ namespace Meshes
             return float2(0f, 0f);
         }
 
-        public List<Face> GetAdjacentFaces()
+        internal void RemoveVertexUnchecked(Vertex vertex)
         {
-            throw new NotImplementedException { };
-        }
-
-        public void GetAdjacentFaces(List<Face> faces)
-        {
-            throw new NotImplementedException { };
+            int index = GetVertexIndex(vertex);
+            if (index != -1)
+            {
+                vertices.RemoveAt(index);
+            }
         }
 
         /// <summary>
@@ -967,12 +1026,12 @@ namespace Meshes
 
         /// <summary>
         /// Replace the current vertex with the replacement vertex at the same position.
-        /// Check if current vertex exists in the face but do not check if 
-        /// Do not check if these form a valid simple path.
+        /// Check if current vertex exists in the face but do not check if these form a valid simple path.
+        /// <br>Also update the vertices if updateVertices is set</br>
         /// </summary>
         /// <param name="current"></param>
         /// <param name="replacement"></param>
-        internal void ExchangeVertexUnchecked(Vertex current, Vertex replacement)
+        internal void ExchangeVertexUnchecked(Vertex current, Vertex replacement, bool updateVertices = true)
         {
             int index = GetVertexIndex(current);
             if (index == -1)
@@ -984,9 +1043,12 @@ namespace Meshes
                 vertex = replacement,
                 uv0 = vertices[index].uv0
             };
-
-            current.RemoveFaceUnchecked(this);
-            replacement.AddFaceChecked(this);
+            // if we are iterating over the faces in one vertex, updating them will throw
+            if (updateVertices)
+            {
+                current.RemoveFaceUnchecked(this);
+                replacement.AddFaceChecked(this);
+            }
         }
     }
 }

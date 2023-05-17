@@ -464,10 +464,5 @@ namespace Meshes
             }
             return vertices;
         }
-
-        public Vertex MergeVertex(Vertex vert1, Vertex vert2)
-        {
-            throw new NotImplementedException { };
-        }
     }
 }
