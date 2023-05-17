@@ -91,6 +91,10 @@ MonoBehaviour:
     m_Key: Delete Vertices
     m_Metadata:
       m_Items: []
+  - m_Id: 10178422426566656
+    m_Key: Object List
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
