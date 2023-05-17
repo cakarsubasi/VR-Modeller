@@ -63,7 +63,7 @@ public class GizmoScaleController : MonoBehaviour
             }
             else if (selectedHandle == centerHandle)
             {
-                float scaleDelta = (controllerDelta.x * scaleSpeed + controllerDelta.y * scaleSpeed + controllerDelta.z * scaleSpeed) / 3;
+                float scaleDelta = (controllerDelta.x * scaleSpeed + controllerDelta.y * scaleSpeed + controllerDelta.z * scaleSpeed) / 3f;
                 targetObject.localScale = new Vector3(targetObject.localScale.x + scaleDelta, targetObject.localScale.y + scaleDelta, targetObject.localScale.z + scaleDelta);
                 centerHandle.transform.localScale += new Vector3(scaleDelta, scaleDelta, scaleDelta);
             }

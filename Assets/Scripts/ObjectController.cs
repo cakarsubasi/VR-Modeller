@@ -122,6 +122,7 @@ public class ObjectController : MonoBehaviour
     public void OnClickDelete()
     {
         List<Vertex> vertices = new List<Vertex>();
+        int vertxCount = selectedGameobject.GetComponent<MeshController>().EditableMesh.VertexCount;
 
         foreach (var vertex in selectedGameobject.GetComponent<MeshController>().ActiveVertices)
         {
@@ -140,11 +141,11 @@ public class ObjectController : MonoBehaviour
 
         deleteButton.interactable = false;
 
-        Debug.Log(vertices.Count + " " + selectedGameobject.GetComponent<MeshController>().EditableMesh.VertexCount);
+        //Debug.Log(vertices.Count + " " + selectedGameobject.GetComponent<MeshController>().EditableMesh.VertexCount);
 
-        if (vertices.Count == selectedGameobject.GetComponent<MeshController>().EditableMesh.VertexCount)
+        if (vertices.Count == vertxCount)
         {
-            //Destroy(selectedGameobject.transform.parent.gameObject);
+            Destroy(selectedGameobject.transform.parent.gameObject);
         }
     }
 }

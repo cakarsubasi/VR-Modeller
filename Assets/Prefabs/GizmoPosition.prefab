@@ -1355,7 +1355,7 @@ MonoBehaviour:
   xSquare: {fileID: 225569334306935339}
   ySquare: {fileID: 5592571927998044639}
   zSquare: {fileID: 5220034906294991186}
-  moveSpeed: 3
+  moveSpeed: 1
 --- !u!1 &8373380867964088694
 GameObject:
   m_ObjectHideFlags: 0

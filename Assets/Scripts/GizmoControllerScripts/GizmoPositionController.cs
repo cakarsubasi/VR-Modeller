@@ -40,8 +40,10 @@ public class GizmoPositionController : MonoBehaviour
     {
         if (selectedHandle != null)
         {
+            float distance = Vector3.Distance(transform.position, Camera.main.transform.position);
             Vector3 controllerPosition = selectedHandle.GetComponent<XRSimpleInteractable>().firstInteractorSelecting.transform.position;
             Vector3 controllerDelta = controllerPosition - previousPosition;
+            controllerDelta *= distance;
 
             if (selectedHandle == xArrow)
             {
@@ -81,9 +83,9 @@ public class GizmoPositionController : MonoBehaviour
         else
         {
             float distance = Vector3.Distance(transform.position, Camera.main.transform.position);
-            float minValue = 0.35f;
+            float minValue = 0.5f;
             float maxValue = 1000f;
-            float scaleFactor = 0.25f;
+            float scaleFactor = 0.35f;
             transform.localScale = Vector3.one * Mathf.Clamp(distance * scaleFactor, minValue, maxValue);
         }
     }
