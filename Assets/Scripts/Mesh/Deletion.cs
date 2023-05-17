@@ -249,7 +249,7 @@ namespace Meshes
                 edge.ExchangeVertex(otherVertex, mergeOnVertex);
                 mergeOnVertex.AddEdgeUnchecked(edge);
             }
-            mergeOnVertex.RemoveDuplicateEdges();
+            mergeOnVertex.RemoveDuplicateEdges(true);
 
             foreach (Face face in otherUniqueFaces)
             {
@@ -291,7 +291,10 @@ namespace Meshes
             for (int i = 0; i < Vertices.Count; i++)
             {
                 FindAllByPosition(verts, Vertices[i].Position, eps);
-                MergeVertices(verts);
+                if (verts.Count >= 2)
+                {
+                    MergeVertices(verts);
+                }
             }
         }
 
@@ -325,6 +328,11 @@ namespace Meshes
             return edge1;
         }
 
+        /// <summary>
+        /// Unimplemented
+        /// </summary>
+        /// <param name="edge"></param>
+        /// <returns></returns>
         public Face MergeFaces(Edge edge)
         {
             throw new NotImplementedException { };

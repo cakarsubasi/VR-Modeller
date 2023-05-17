@@ -391,7 +391,7 @@ namespace Meshes
             edges.RemoveAll(edge => !edge.Contains(this));
         }
 
-        internal void RemoveDuplicateEdges()
+        internal void RemoveDuplicateEdges(bool delete = false)
         {
             if (edges.Count < 2)
             {
@@ -401,10 +401,15 @@ namespace Meshes
             {
                 for (int j = i + 1;  j < edges.Count; j++)
                 {
-                    if (edges[i].Equals(edges[j]))
+                    Edge edge = edges[j];
+                    if (edges[i].Equals(edge))
                     {
                         edges.RemoveAt(j);
                         j--;
+                        if (delete)
+                        {
+                            edge.Delete();
+                        }
                     }
                         
                 }

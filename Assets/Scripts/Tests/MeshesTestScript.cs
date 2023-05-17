@@ -392,11 +392,38 @@ public class MeshesTestScript
         Assert.AreEqual(1, vert6.FaceCount);
     }
 
-    [Ignore("Merge not implemented yet")]
     [Test]
     public void TestMergeByDistance()
     {
-        throw new NotImplementedException { };
+        UMesh mesh = Creators.Empty;
+
+        Vertex vertex1 = mesh.CreateVertex(float3(-1f, -1f, -1f));
+
+        Vertex vertex2 = mesh.CreateVertexConnectedTo(vertex1, out Edge edge1);
+        vertex2.Position = float3(1f, -1f, -1f);
+        // . - .
+
+        mesh.Extrude(edge1);
+        edge1.MoveRelative(float3(0f, 2f, 0f));
+        // . - .
+        // |   |
+        // . - .
+
+        List<Vertex> all = new(mesh.Vertices);
+        mesh.Extrude(all);
+        mesh.MoveSelectionRelative(all, float3(0f, 0f, 2f));
+        mesh.FlipNormals();
+
+        Vertex vert1 = mesh.FindByPosition(float3(-1f, -1f, -1f));
+        Vertex vert2 = mesh.FindByPosition(float3(1f, -1f, -1f));
+        Edge edge2 = vert1.GetEdgeTo(vert2);
+        mesh.Extrude(edge2);
+        edge2.MoveRelative(float3(0f, 2f, 0f));
+        mesh.MergeByDistance();
+
+        Assert.AreEqual(6, mesh.FaceCount);
+        Assert.AreEqual(12, mesh.EdgeCount);
+        Assert.AreEqual(8, mesh.VertexCount);
     }
 
     [Test]

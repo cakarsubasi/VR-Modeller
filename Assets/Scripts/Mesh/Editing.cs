@@ -161,11 +161,17 @@ namespace Meshes
             }
         }
 
+        /// <summary>
+        /// Unimplemented
+        /// </summary>
         public void Triangulate()
         {
             throw new NotImplementedException { };
         }
 
+        /// <summary>
+        /// Unimplemented
+        /// </summary>
         public void TrianglesToQuads()
         {
             throw new NotImplementedException { };
