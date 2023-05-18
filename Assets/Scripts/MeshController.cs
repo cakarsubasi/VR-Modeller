@@ -11,7 +11,6 @@ public class MeshController : MonoBehaviour
 {
     public GameObject vertexHighlight, activeVerticesObject;
     public InputActionProperty openOrCloseAction;
-
     List<Vector3> vertices = new List<Vector3>();
     List<GameObject> vertexObjects = new List<GameObject>();
     bool isSelected;
@@ -23,9 +22,9 @@ public class MeshController : MonoBehaviour
     public delegate UMesh CreateMeshDelegate();
 
     public List<Vector3> Vertices { get => vertices; set => vertices = value; }
-    public bool IsSelected { get => isSelected; set => isSelected = value; }
     public GameObject VerticesParent { get => verticesParent; set => verticesParent = value; }
     public List<GameObject> ActiveVertices { get => activeVertices; set => activeVertices = value; }
+    public bool IsSelected { get => isSelected; set => isSelected = value; }
     public UMesh EditableMesh { get => editableMesh; set => editableMesh = value; }
 
 
@@ -237,4 +236,5 @@ public class MeshController : MonoBehaviour
     {
         ObjectController.Instance.AllObjects.Remove(gameObject);
     }
+
 }

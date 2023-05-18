@@ -30,6 +30,11 @@ namespace Meshes
             buffer.Dispose();
         }
 
+        /// <summary>
+        /// Move the given vertices in the selection by the relative offset in position
+        /// </summary>
+        /// <param name="selection">vertices to move</param>
+        /// <param name="position">relative offset</param>
         public void MoveSelectionRelative(IEnumerable<Vertex> selection, float3 position)
         {
             foreach (Vertex vert in selection)
@@ -38,13 +43,38 @@ namespace Meshes
             }
         }
 
+        /// <summary>
+        /// Move the given vertices in the selection by the relative offset in position
+        /// </summary>
+        /// <param name="selection">vertices to move</param>
+        /// <param name="position">relative offset</param>
         public void MoveSelectionRelative(IEnumerable<Edge> selection, float3 position)
         {
-            HashSet<Vertex> vertices = new HashSet<Vertex>();
+            HashSet<Vertex> vertices = extrusionHelper.vertices;
+            vertices.Clear();
             foreach (Edge edge in selection)
             {
                 vertices.Add(edge.one);
                 vertices.Add(edge.two);
+            }
+            MoveSelectionRelative(vertices, position);
+        }
+
+        /// <summary>
+        /// Move the given vertices in the selection by the relative offset in position
+        /// </summary>
+        /// <param name="selection">vertices to move</param>
+        /// <param name="position">relative offset</param>
+        public void MoveSelectionRelative(IEnumerable<Face> selection, float3 position)
+        {
+            HashSet<Vertex> vertices = extrusionHelper.vertices;
+            vertices.Clear();
+            foreach (Face face in selection)
+            {
+                foreach (Vertex vertex in face.VerticesIter)
+                {
+                    vertices.Add(vertex);
+                }
             }
             MoveSelectionRelative(vertices, position);
         }
@@ -83,7 +113,7 @@ namespace Meshes
         {
             foreach (Face face in Faces)
             {
-                face.RecalculateNormal();
+                face.RecalculateNormalFast();
             }
             // vertices derive their normals from the faces
             // so their normals have to be calculated after
@@ -91,6 +121,29 @@ namespace Meshes
             {
                 vertex.RecalculateNormal();
             }
+        }
+
+        /// <summary>
+        /// Recalculate tangents, RecalculateNormals should be called before this for tangents
+        /// to be correct.
+        /// </summary>
+        public void RecalculateTangents()
+        {
+            foreach (Vertex vertex in Vertices)
+            {
+                vertex.RecalculateTangent();
+            }
+        }
+
+        /// <summary>
+        /// Execute all relevant tasks and write to the mesh renderer
+        /// </summary>
+        public void RecalculateAllAndWriteToMesh()
+        {
+            OptimizeIndices();
+            RecalculateNormals();
+            RecalculateTangents();
+            WriteAllToMesh();
         }
 
         /// <summary>
@@ -108,17 +161,17 @@ namespace Meshes
             }
         }
 
-
-        public void RecalculateTangents()
-        {
-            throw new NotImplementedException { };
-        }
-
+        /// <summary>
+        /// Unimplemented
+        /// </summary>
         public void Triangulate()
         {
             throw new NotImplementedException { };
         }
 
+        /// <summary>
+        /// Unimplemented
+        /// </summary>
         public void TrianglesToQuads()
         {
             throw new NotImplementedException { };
