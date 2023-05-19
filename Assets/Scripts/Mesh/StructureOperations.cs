@@ -392,17 +392,21 @@ namespace Meshes
         internal void Delete()
         {
             // clear edges first
-            foreach (Edge edge in edges)
-            {
-                edge.Delete();
-                edge.Other(this).RemoveEdge(edge);
-            }
-            edges.Clear();
+
             
             foreach (FaceIndex face in faces)
             {
                 face.face.Delete();
             }
+
+
+            foreach (Edge edge in edges)
+            {
+                edge.Delete();
+                edge.Other(this).RemoveDeadFaces();
+                edge.Other(this).RemoveEdge(edge);
+            }
+            edges.Clear();
             faces.Clear();
             edges.Clear();
             faces.Clear();
@@ -417,6 +421,11 @@ namespace Meshes
         internal void RemoveUnconnectedEdges()
         {
             edges.RemoveAll(edge => !edge.Contains(this));
+        }
+
+        internal void RemoveDeadFaces()
+        {
+            faces.RemoveAll(faceInd => !faceInd.face.Alive);
         }
 
         internal void RemoveDuplicateEdges(bool delete = false)
