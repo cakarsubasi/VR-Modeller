@@ -17,7 +17,8 @@ namespace Meshes
 
         public Mesh Mesh { get => mesh; set => SetupMesh(value); }
         public string Name;
-        public ShadingType Shading;
+        public ShadingType Shading { get => shading; set => SetShading(value); }
+        private ShadingType shading;
 
         public List<Vertex> Vertices;
         public List<Edge> Edges;
@@ -61,7 +62,7 @@ namespace Meshes
         {
             UMesh uMesh = default;
             uMesh.Name = name;
-            uMesh.Shading = ShadingType.Flat;
+            uMesh.shading = ShadingType.Flat;
             uMesh.Setup(mesh);
             return uMesh;
         }
