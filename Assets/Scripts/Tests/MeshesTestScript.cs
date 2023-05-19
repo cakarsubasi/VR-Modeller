@@ -421,9 +421,9 @@ public class MeshesTestScript
         edge2.MoveRelative(float3(0f, 2f, 0f));
         mesh.MergeByDistance();
 
+        Assert.AreEqual(8, mesh.VertexCount);
         Assert.AreEqual(6, mesh.FaceCount);
         Assert.AreEqual(12, mesh.EdgeCount);
-        Assert.AreEqual(8, mesh.VertexCount);
     }
 
     [Test]
@@ -431,12 +431,16 @@ public class MeshesTestScript
     {
         UMesh mesh = Creators.Cube;
 
+        Assert.AreEqual(8, mesh.VertexCount);
+        Assert.AreEqual(6, mesh.FaceCount);
+        Assert.AreEqual(12, mesh.EdgeCount);
+
         mesh.MergeVertices(mesh.FindByPosition(float3(-1f, -1f, -1f)),
             mesh.FindByPosition(float3(-1f, -1f, 1f)));
 
+        Assert.AreEqual(7, mesh.VertexCount);
         Assert.AreEqual(6, mesh.FaceCount);
         Assert.AreEqual(11, mesh.EdgeCount);
-        Assert.AreEqual(7, mesh.VertexCount);
     }
 
     [Test]
