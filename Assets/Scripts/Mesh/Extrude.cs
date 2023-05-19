@@ -153,6 +153,14 @@ namespace Meshes
             }
         }
 
+        /// <summary>
+        /// Perform an extrusion with the given sets. An extrusion is a complicated operation
+        /// that generates new geometry underneath the selected geometry as if the selected geometry
+        /// is "pulled out" of the topology.
+        /// </summary>
+        /// <param name="selectedVertices"></param>
+        /// <param name="selectedEdges"></param>
+        /// <param name="selectedFaces"></param>
         public void Extrude(HashSet<Vertex> selectedVertices, HashSet<Edge> selectedEdges, HashSet<Face> selectedFaces)
         {
 

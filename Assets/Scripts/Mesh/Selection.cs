@@ -145,7 +145,21 @@ namespace Meshes
         /// <returns>List of vertices</returns>
         public List<Vertex> FindAllByPosition(float3 position, float eps = 0.01f)
         {
-            return Vertices.FindAll(vert => math.length(vert.Position - position) < eps).ToList();
+            List<Vertex> output = new();
+            FindAllByPosition(output, position, eps);
+            return output;
+        }
+
+        public void FindAllByPosition(ICollection<Vertex> output, float3 position, float eps = 0.01f)
+        {
+            output.Clear();
+            foreach (Vertex vert in Vertices)
+            {
+                if (math.length(vert.Position - position) < eps)
+                {
+                    output.Add(vert);
+                }
+            }
         }
 
 

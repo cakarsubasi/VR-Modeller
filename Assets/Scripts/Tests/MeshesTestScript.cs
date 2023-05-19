@@ -7,39 +7,21 @@ using Unity.Mathematics;
 using System;
 
 using Meshes;
+using Meshes.Test;
 using static Unity.Mathematics.math;
 
 public class MeshesTestScript
 {
 
-    public UMesh EditableMeshEmpty()
-    {
-        UMesh mesh = UMesh.Create();
-        return mesh;
-    }
-
-    public UMesh EditableMeshQuad()
-    {
-        UMesh mesh = UMesh.Create();
-        var vert1 = float3(0f, 0f, 0f);
-        var vert2 = float3(1f, 0f, 0f);
-        var vert3 = float3(1f, 1f, 0f);
-        var vert4 = float3(0f, 1f, 0f);
-        mesh.CreateVerticesAndQuad(vert1, vert2, vert3, vert4);
-        mesh.OptimizeIndices();
-        mesh.RecalculateNormals();
-        return mesh;
-    }
-
     [Test]
     public void TestEmpty()
     {
-        UMesh mesh = EditableMeshEmpty();
+        UMesh mesh = Creators.Empty;
         mesh.WriteAllToMesh();
         mesh.CreateVertex();
         mesh.WriteAllToMesh();
 
-        mesh = EditableMeshEmpty();
+        mesh = Creators.Empty;
         mesh.AddFaceUnchecked(Face.Degenerate());
         mesh.WriteAllToMesh();
     }
@@ -50,7 +32,7 @@ public class MeshesTestScript
     [Test]
     public void TestCreateQuad()
     {
-        UMesh mesh = EditableMeshEmpty();
+        UMesh mesh = Creators.Empty;
         var vert1 = float3(0f, 0f, 0f);
         var vert2 = float3(1f, 0f, 0f);
         var vert3 = float3(1f, 1f, 0f);
@@ -78,7 +60,7 @@ public class MeshesTestScript
     [Test]
     public void TestCreateQuad2()
     {
-        UMesh mesh = EditableMeshEmpty();
+        UMesh mesh = Creators.Empty;
         Vertex vert1 = Vertex.Dangling(float3(0f, 0f, 0f));
         Vertex vert2 = Vertex.Dangling(float3(1f, 0f, 0f));
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
@@ -108,7 +90,7 @@ public class MeshesTestScript
     [Test]
     public void TestCreateQuad3()
     {
-        UMesh mesh = EditableMeshEmpty();
+        UMesh mesh = Creators.Empty;
         Vertex vert1 = Vertex.Dangling(float3(0f, 0f, 0f));
         mesh.AddVertexUnchecked(vert1);
 
@@ -141,7 +123,7 @@ public class MeshesTestScript
     [Test]
     public void TestCreateTwoTris()
     {
-        UMesh mesh = EditableMeshEmpty();
+        UMesh mesh = Creators.Empty;
         Vertex vert1 = Vertex.Dangling(float3(0f, 0f, 0f));
         Vertex vert2 = Vertex.Dangling(float3(1f, 0f, 0f));
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
@@ -172,7 +154,7 @@ public class MeshesTestScript
     [Test]
     public void TestCreateNGon()
     {
-        UMesh mesh = EditableMeshEmpty();
+        UMesh mesh = Creators.Empty;
         Vertex vert1 = Vertex.Dangling(float3(0f, 0f, 0f));
         Vertex vert2 = Vertex.Dangling(float3(1f, 0f, 0f));
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
@@ -201,7 +183,7 @@ public class MeshesTestScript
     [Test]
     public void TestCreateCircle()
     {
-        UMesh mesh = EditableMeshEmpty();
+        UMesh mesh = Creators.Empty;
         int points = 16;
         List<Vertex> vertices = new(16);
         for (int i = 0; i < points; ++i)
@@ -234,7 +216,7 @@ public class MeshesTestScript
     [Test]
     public void TestTriangleToQuad()
     {
-        UMesh mesh = EditableMeshEmpty();
+        UMesh mesh = Creators.Empty;
         Vertex vert1 = Vertex.Dangling(float3(0f, 0f, 0f));
         Vertex vert2 = Vertex.Dangling(float3(1f, 0f, 0f));
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
@@ -269,7 +251,7 @@ public class MeshesTestScript
     [Test]
     public void TestDeleteOneVertex1()
     {
-        UMesh mesh = EditableMeshEmpty();
+        UMesh mesh = Creators.Empty;
         Vertex vert1 = Vertex.Dangling(float3(0f, 0f, 0f));
         Vertex vert2 = Vertex.Dangling(float3(1f, 0f, 0f));
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
@@ -297,7 +279,7 @@ public class MeshesTestScript
     [Test]
     public void TestDeleteOneVertex2()
     {
-        UMesh mesh = EditableMeshEmpty();
+        UMesh mesh = Creators.Empty;
         Vertex vert1 = Vertex.Dangling(float3(0f, 0f, 0f));
         Vertex vert2 = Vertex.Dangling(float3(1f, 0f, 0f));
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
@@ -325,7 +307,7 @@ public class MeshesTestScript
     [Test]
     public void TestDissolveOneVertex1()
     {
-        UMesh mesh = EditableMeshEmpty();
+        UMesh mesh = Creators.Empty;
         Vertex vert1 = Vertex.Dangling(float3(0f, 0f, 0f));
         Vertex vert2 = Vertex.Dangling(float3(1f, 0f, 0f));
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
@@ -353,7 +335,7 @@ public class MeshesTestScript
     [Test]
     public void TestDissolveOneVertex2()
     {
-        UMesh mesh = EditableMeshEmpty();
+        UMesh mesh = Creators.Empty;
         Vertex vert1 = Vertex.Dangling(float3(0f, 0f, 0f));
         Vertex vert2 = Vertex.Dangling(float3(1f, 0f, 0f));
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
@@ -376,7 +358,7 @@ public class MeshesTestScript
     [Test]
     public void TestDeleteOneFace()
     {
-        UMesh mesh = EditableMeshEmpty();
+        UMesh mesh = Creators.Empty;
         Vertex vert1 = Vertex.Dangling(float3(0f, 0f, 0f));
         Vertex vert2 = Vertex.Dangling(float3(1f, 0f, 0f));
         Vertex vert3 = Vertex.Dangling(float3(1f, 1f, 0f));
@@ -410,17 +392,61 @@ public class MeshesTestScript
         Assert.AreEqual(1, vert6.FaceCount);
     }
 
-    [Ignore("Merge not implemented yet")]
     [Test]
     public void TestMergeByDistance()
     {
-        throw new NotImplementedException { };
+        UMesh mesh = Creators.Empty;
+
+        Vertex vertex1 = mesh.CreateVertex(float3(-1f, -1f, -1f));
+
+        Vertex vertex2 = mesh.CreateVertexConnectedTo(vertex1, out Edge edge1);
+        vertex2.Position = float3(1f, -1f, -1f);
+        // . - .
+
+        mesh.Extrude(edge1);
+        edge1.MoveRelative(float3(0f, 2f, 0f));
+        // . - .
+        // |   |
+        // . - .
+
+        List<Vertex> all = new(mesh.Vertices);
+        mesh.Extrude(all);
+        mesh.MoveSelectionRelative(all, float3(0f, 0f, 2f));
+        mesh.FlipNormals();
+
+        Vertex vert1 = mesh.FindByPosition(float3(-1f, -1f, -1f));
+        Vertex vert2 = mesh.FindByPosition(float3(1f, -1f, -1f));
+        Edge edge2 = vert1.GetEdgeTo(vert2);
+        mesh.Extrude(edge2);
+        edge2.MoveRelative(float3(0f, 2f, 0f));
+        mesh.MergeByDistance();
+
+        Assert.AreEqual(8, mesh.VertexCount);
+        Assert.AreEqual(6, mesh.FaceCount);
+        Assert.AreEqual(12, mesh.EdgeCount);
+    }
+
+    [Test]
+    public void TestMergeTwoVertices()
+    {
+        UMesh mesh = Creators.Cube;
+
+        Assert.AreEqual(8, mesh.VertexCount);
+        Assert.AreEqual(6, mesh.FaceCount);
+        Assert.AreEqual(12, mesh.EdgeCount);
+
+        mesh.MergeVertices(mesh.FindByPosition(float3(-1f, -1f, -1f)),
+            mesh.FindByPosition(float3(-1f, -1f, 1f)));
+
+        Assert.AreEqual(7, mesh.VertexCount);
+        Assert.AreEqual(6, mesh.FaceCount);
+        Assert.AreEqual(11, mesh.EdgeCount);
     }
 
     [Test]
     public void TestDeepCopy()
     {
-        UMesh mesh1 = EditableMeshQuad();
+        UMesh mesh1 = Creators.Quad;
         mesh1.WriteAllToMesh();
 
         UMesh mesh2 = mesh1.DeepCopy();
