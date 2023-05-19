@@ -145,6 +145,8 @@ namespace Meshes
         public float3 Position { get; internal set; }
         public float3 Normal { get; internal set; }
 
+        public float4 Tangent { get; internal set; }
+
         public int VertexCount => vertices.Count;
         public int EdgeCount => edges.Count;
         public int TriangleCount => GetTriangleCount();

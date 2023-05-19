@@ -408,7 +408,7 @@ namespace Meshes
             int i = 0;
             foreach (Vertex vertex in Vertices)
             {
-                i = vertex.OptimizeIndices(i);
+                i = vertex.OptimizeIndicesAlt(i);
             }
             internalVertexCount = i;
 
@@ -438,7 +438,7 @@ namespace Meshes
             NativeArray<Stream0> vertexStream = new NativeArray<Stream0>(internalVertexCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             foreach (Vertex vertex in Vertices)
             {
-                vertex.WriteToStream(ref vertexStream);
+                vertex.WriteToStream(ref vertexStream, Shading);
             }
             mesh.SetVertexBufferData<Stream0>(vertexStream, 0, 0, internalVertexCount,
                 flags: MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds);

@@ -133,6 +133,11 @@ namespace Meshes
             {
                 vertex.RecalculateTangent();
             }
+
+            foreach (Face face in Faces)
+            {
+                face.RecalculateTangent();
+            }
         }
 
         /// <summary>
