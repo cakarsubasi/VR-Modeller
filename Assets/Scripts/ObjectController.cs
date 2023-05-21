@@ -8,7 +8,7 @@ public class ObjectController : MonoBehaviour
 {
     public static ObjectController Instance;
 
-    public Button deepCopyButton, deleteButton;
+    public Button deepCopyButton, deleteVerticesButton, mergeVerticesButton;
 
     List<GameObject> allObjects = new();
     GameObject selectedGameobject;
@@ -116,10 +116,10 @@ public class ObjectController : MonoBehaviour
         deepCopyButton.interactable = isDeepCopyInteractable;
 
         bool isDeleteInteractable = selectedGameobject != null && selectedGameobject.GetComponent<MeshController>().ActiveVertices.Count != 0;
-        deleteButton.interactable = isDeleteInteractable;
+        deleteVerticesButton.interactable = mergeVerticesButton.interactable = isDeleteInteractable;
     }
 
-    public void OnClickDelete()
+    public void OnClickDeleteVertices()
     {
         List<Vertex> vertices = new List<Vertex>();
         int vertxCount = selectedGameobject.GetComponent<MeshController>().EditableMesh.VertexCount;
@@ -129,8 +129,7 @@ public class ObjectController : MonoBehaviour
             vertices.Add(vertex.GetComponent<VertexController>().Vertex);
         }
 
-        selectedGameobject.GetComponent<MeshController>().EditableMesh.DeleteVertices(vertices);
-        selectedGameobject.GetComponent<MeshController>().EditableMesh.OptimizeRendering();
+        selectedGameobject.GetComponent<MeshController>().EditableMesh.DeleteGeometry(vertices);
         selectedGameobject.GetComponent<MeshController>().EditableMesh.WriteAllToMesh();
 
         foreach (var vertex in selectedGameobject.GetComponent<MeshController>().ActiveVertices)
@@ -139,13 +138,31 @@ public class ObjectController : MonoBehaviour
         }
         selectedGameobject.GetComponent<MeshController>().ActiveVertices.Clear();
 
-        deleteButton.interactable = false;
+        UpdateButtonInteractability();
 
         //Debug.Log(vertices.Count + " " + selectedGameobject.GetComponent<MeshController>().EditableMesh.VertexCount);
 
         if (vertices.Count == vertxCount)
         {
             Destroy(selectedGameobject.transform.parent.gameObject);
+        }
+    }
+
+    public void OnClickMergeVertices()
+    {
+        List<Vertex> vertices = new List<Vertex>();
+
+        foreach (var vertex in selectedGameobject.GetComponent<MeshController>().ActiveVertices)
+        {
+            vertices.Add(vertex.GetComponent<VertexController>().Vertex);
+        }
+
+        selectedGameobject.GetComponent<MeshController>().EditableMesh.MergeVertices(vertices);
+        selectedGameobject.GetComponent<MeshController>().EditableMesh.WriteAllToMesh();
+
+        for (int i = 1; i < selectedGameobject.GetComponent<MeshController>().ActiveVertices.Count; i++)
+        {
+            Destroy(selectedGameobject.GetComponent<MeshController>().ActiveVertices[i]);
         }
     }
 }

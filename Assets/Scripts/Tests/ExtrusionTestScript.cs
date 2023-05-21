@@ -634,4 +634,46 @@ public class ExtrusionTestScript
 
     }
 
+    [Test]
+    public void TestExtrudeAndDeleteAndExtrude()
+    {
+        UMesh mesh = Creators.Cube;
+
+        List<Vertex> verts = new(); // = mesh.Faces.First().Vertices;
+        float3 pos0 = float3(-1f, -1f, -1f);
+        float3 pos1 = float3(-1f, -1f, 1f);
+        float3 pos2 = float3(-1f, 1f, -1f);
+        float3 pos3 = float3(-1f, 1f, 1f);
+        verts.Add(mesh.FindByPosition(pos0));
+        verts.Add(mesh.FindByPosition(pos1));
+        verts.Add(mesh.FindByPosition(pos2));
+        verts.Add(mesh.FindByPosition(pos3));
+
+        mesh.Extrude(verts);
+        mesh.MoveSelectionRelative(verts, float3(-1f, 0f, 0f));
+
+        Assert.AreEqual(12, mesh.VertexCount);
+        Assert.AreEqual(20, mesh.EdgeCount);
+        Assert.AreEqual(10, mesh.FaceCount);
+
+        mesh.DeleteGeometry(verts);
+        verts.Clear();
+
+        Assert.AreEqual(8, mesh.VertexCount);
+        Assert.AreEqual(12, mesh.EdgeCount);
+        Assert.AreEqual(5, mesh.FaceCount);
+
+        verts.Add(mesh.FindByPosition(pos0));
+        verts.Add(mesh.FindByPosition(pos1));
+        verts.Add(mesh.FindByPosition(pos2));
+        verts.Add(mesh.FindByPosition(pos3));
+
+        mesh.Extrude(verts);
+        mesh.MoveSelectionRelative(verts, float3(-1f, 0f, 0f));
+
+        Assert.AreEqual(12, mesh.VertexCount);
+        Assert.AreEqual(20, mesh.EdgeCount);
+        Assert.AreEqual(9, mesh.FaceCount);
+    }
+
 }

@@ -17,7 +17,8 @@ namespace Meshes
 
         public Mesh Mesh { get => mesh; set => SetupMesh(value); }
         public string Name;
-        public ShadingType Shading;
+        public ShadingType Shading { get => shading; set => SetShading(value); }
+        private ShadingType shading;
 
         public List<Vertex> Vertices;
         public List<Edge> Edges;
@@ -61,7 +62,7 @@ namespace Meshes
         {
             UMesh uMesh = default;
             uMesh.Name = name;
-            uMesh.Shading = ShadingType.Flat;
+            uMesh.shading = ShadingType.Flat;
             uMesh.Setup(mesh);
             return uMesh;
         }
@@ -408,7 +409,7 @@ namespace Meshes
             int i = 0;
             foreach (Vertex vertex in Vertices)
             {
-                i = vertex.OptimizeIndices(i);
+                i = vertex.OptimizeIndicesAlt(i);
             }
             internalVertexCount = i;
 
@@ -438,7 +439,7 @@ namespace Meshes
             NativeArray<Stream0> vertexStream = new NativeArray<Stream0>(internalVertexCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             foreach (Vertex vertex in Vertices)
             {
-                vertex.WriteToStream(ref vertexStream);
+                vertex.WriteToStream(ref vertexStream, Shading);
             }
             mesh.SetVertexBufferData<Stream0>(vertexStream, 0, 0, internalVertexCount,
                 flags: MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds);
