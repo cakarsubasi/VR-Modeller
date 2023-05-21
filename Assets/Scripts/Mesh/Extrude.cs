@@ -221,19 +221,23 @@ namespace Meshes
 
                     Edge newEdge = CreateEdgeUnchecked(vert3, vert4);
 
-                    if (edgeLoop.Count == 0)
-                    {
-                        Face newFace = CreateQuad(new QuadElement<Vertex>(vert2, vert1, vert3, vert4));
-                    } else
-                    {
-                        if (edgeLoop[0].IsOrderedClockwise(vert1, vert2))
-                        {
-                            Face newFace = CreateQuad(new QuadElement<Vertex>(vert2, vert1, vert3, vert4));
-                        } else
-                        {
-                            Face newFace = CreateQuad(new QuadElement<Vertex>(vert2, vert4, vert3, vert1));
-                        }
-                    }
+                    Face newFace = CreateQuadFromEdges(new QuadElement<Vertex>(vert1, vert2, vert3, vert4));
+
+                    //if (edgeLoop.Count == 0)
+                    //{
+                    //    
+                    //    Face newFace = CreateQuadOld(new QuadElement<Vertex>(vert2, vert4, vert3, vert1));
+                    //} else
+                    //{
+                    //    if (edgeLoop[0].IsOrderedClockwise(vert1, vert2))
+                    //    //if (edgeLoop[0].IsOrderedClockwise(vert3, vert4))
+                    //    {
+                    //        Face newFace = CreateQuadOld(new QuadElement<Vertex>(vert2, vert1, vert3, vert4));
+                    //    } else
+                    //    {
+                    //        Face newFace = CreateQuadOld(new QuadElement<Vertex>(vert2, vert4, vert3, vert1));
+                    //    }
+                    //}
 
                 }
 

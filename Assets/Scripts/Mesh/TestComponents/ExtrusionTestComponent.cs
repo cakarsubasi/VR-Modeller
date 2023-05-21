@@ -14,11 +14,7 @@ public class ExtrusionTestComponent : MonoBehaviour
 
     private void OnEnable()
     {
-        var unityMesh = new Mesh
-        {
-            name = "Extrusion test"
-        };
-        meshInternal.Setup(unityMesh);
+        meshInternal = UMesh.Create();
 
         Vertex vertex1 = meshInternal.CreateVertex(float3(-1f, 1f, 0f));
 
@@ -54,7 +50,7 @@ public class ExtrusionTestComponent : MonoBehaviour
 
         meshInternal.WriteAllToMesh();
 
-        GetComponent<MeshFilter>().mesh = unityMesh;
+        GetComponent<MeshFilter>().mesh = meshInternal.Mesh;
 
     }
 

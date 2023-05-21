@@ -185,7 +185,7 @@ public class MeshesTestScript
     {
         UMesh mesh = Creators.Empty;
         int points = 16;
-        List<Vertex> vertices = new(16);
+        List<Vertex> vertices = new(points);
         for (int i = 0; i < points; ++i)
         {
             float angle = ((float)i / 16.0f);

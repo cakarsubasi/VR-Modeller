@@ -222,9 +222,11 @@ namespace Meshes
             temp.position = Position;
             temp.normal = Normal;
             temp.tangent = Tangent;
+            //temp.selected = Selected ? 1.0f : 0.0f;
             foreach (FaceIndex faceIndex in faces)
             {
-                temp.uv0 = faceIndex.uv0;
+                //temp.uv0 = faceIndex.uv0;
+                faceIndex.face.GetUVandSelection(this, out temp.uv0, out temp.selected);
                 ShadingType faceShading = faceIndex.face.Shading;
                 temp.normal = Normal;
                 if (faceShading == ShadingType.Smooth)
@@ -996,7 +998,7 @@ namespace Meshes
         /// Flip the face by reversing the order of vertices
         /// </summary>
         /// <param name="flipNormal">Whether to also flip the normal immediately</param>
-        public void FlipFace(bool flipNormal)
+        public void FlipFace(bool flipNormal = true)
         {
             vertices.Reverse();
             if (flipNormal)
@@ -1020,6 +1022,28 @@ namespace Meshes
                 }
             }
             return float2(0f, 0f);
+        }
+
+        public void GetUVandSelection(in Vertex vertex, out float2 uv0, out float3 selection)
+        {
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                if (ReferenceEquals(vertex, vertices[i].vertex))
+                {
+                    uv0 = vertices[i].uv0;
+                    int prev = (i - 1) < 0 ? vertices.Count - 1 : i -1;
+                    int next = (i + 1) % vertices.Count;
+                    
+                    selection = float3(
+                        vertices[prev].vertex.Selected ? 1f : 0f,
+                        vertex.Selected ? 1f : 0f,
+                        vertices[next].vertex.Selected ? 1f : 0f
+                        );
+                    return;
+                }
+            }
+            uv0 = float2(0f, 0f);
+            selection = float3(0f,0f,0f);
         }
 
         internal void RemoveVertexUnchecked(Vertex vertex)
