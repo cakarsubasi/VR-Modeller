@@ -574,7 +574,7 @@ namespace Meshes
             }
             else
             {
-                throw new ArgumentException("Given vertex must be in the edge");
+                throw new VertexNotInEdgeException("ExchangeVertex", vertex, this);
             }
         }
 
@@ -618,7 +618,7 @@ namespace Meshes
             }
             else
             {
-                throw new ArgumentException("current must be a part of the edge");
+                throw new VertexNotInEdgeException("ExchangeVertex", current, this);
             }
         }
 
@@ -955,12 +955,12 @@ namespace Meshes
             int vert1Index = GetVertexIndex(vert1);
             if (vert1Index == -1)
             {
-                throw new ArgumentException("vert1 not in the face");
+                throw new VertexNotInFaceException("IsOrderedClockwise()", vert1, this);
             }
             int vert2Index = GetVertexIndex(vert2);
             if (vert2Index == -1)
             {
-                throw new ArgumentException("vert2 not in the face");
+                throw new VertexNotInFaceException("IsOrderedClockwise()", vert2, this);
             }
 
             if (vert2Index == vert1Index + 1)
@@ -1120,7 +1120,7 @@ namespace Meshes
             int index = GetVertexIndex(current);
             if (index == -1)
             {
-                throw new ArgumentException("vertex is not inside the face");
+                throw new VertexNotInFaceException("ExchangeVertexUnchecked()", current, this);
             }
             vertices[index] = new VertexCoordinate
             {

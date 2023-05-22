@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -61,8 +62,7 @@ public class CubeTestComponent : MonoBehaviour
             float3 position = float3(x, h / 2f, y);
             verticesTop.Add(mesh.CreateVertex(position));
         }
-        Face faceTop = mesh.CreateNGon(verticesTop);
-        faceTop.FlipFace(true);
+        Face faceTop = mesh.CreateFace((ICollection<Vertex>) verticesTop);
 
         List<Vertex> verticesBottom = new(points);
         for (int i = 0; i < points; ++i)

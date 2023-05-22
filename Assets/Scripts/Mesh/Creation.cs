@@ -205,6 +205,27 @@ namespace Meshes
             return edge;
         }
 
+        /// <summary>
+        /// Create a Face from the given collection
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <returns></returns>
+        public Face CreateFace(ICollection<Vertex> vertices)
+        {
+            var verts = new List<Vertex>(vertices);
+            return CreateFace(verts);
+        }
+
+        /// <summary>
+        /// Create a Face from the given list, the list may be modified
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <returns></returns>
+        public Face CreateFace(List<Vertex> vertices)
+        {
+            return CreateNGonShortestDistance(ref vertices);
+        }
+
 
         internal void CreateFaceLoop(ICollection<Vertex> verticesIn, List<Edge> edgesOut)
         {
@@ -352,33 +373,33 @@ namespace Meshes
             float angle2 = Vector3.Angle(norm2, norm3);
             float angle3 = Vector3.Angle(norm3, norm1);
 
-            Debug.Log($"Angles: {angle1}, {angle2}, {angle3}");
-            if (angle1 == 0 && angle2 == 0 && angle3 == 0)
-            {
-                Debug.Log($"Norms: {norm1}, {norm2}, {norm3}");
-                Debug.Log($"Vecs: {vec1}, {vec2}, {vec3}");
-            }
-
-            if (angle1 > -45 && angle1 < 45)
+            if (angle1 > -90 && angle1 < 90)
             {
                 face = CreateQuadOld(verts, uv0s);
-            } else if (angle2 > -45 && angle2 < 45)
+            } else if (angle2 > -90 && angle2 < 90)
             {
                 face = CreateQuadOld(new QuadVerts(verts.f0, verts.f2, verts.f3, verts.f1), uv0s);
 
-            } else if (angle3 > -45 && angle3 < 45)
+            } else if (angle3 > -90 && angle3 < 90)
             {
                 face = CreateQuadOld(new QuadVerts(verts.f0, verts.f3, verts.f1, verts.f2), uv0s);
 
             } else
             {
-                throw new ArgumentException("Surprise result!");
+                throw new UMeshException(
+                    $"Cannot create quad: \n" +
+                    $"Angles: {angle1}, {angle2}, {angle3}\n" +
+                    $"Norms: {norm1}, {norm2}, {norm3}\n" +
+                    $"Vecs: { vec1 }, { vec2}, { vec3}");
             }
 
-            //FixFaceIfPossible(face);
             return face;
         }
 
+        /// <summary>
+        /// This flips a face to face the correct direction based on adjacent faces
+        /// </summary>
+        /// <param name="face"></param>
         private void FixFaceIfPossible(Face face)
         {
             foreach (Edge edge in face.edges)
@@ -389,8 +410,8 @@ namespace Meshes
                     {
                         if (face.IsOrderedClockwise(edge.one, edge.two) == otherFace.IsOrderedClockwise(edge.one, edge.two)) {
                             face.FlipFace(true);
-                            return;
                         }
+                        return;
                     }
                 }
             }
@@ -491,6 +512,62 @@ namespace Meshes
             CreateFaceLoop(vertices, faceLoop);
             Face face = new Face(vertices, uv0s, faceLoop);
             Faces.Add(face);
+            return face;
+        }
+
+        internal Face CreateNGonShortestDistance(ref List<Vertex> vertices)
+        {
+            List<Vertex> tempList = new();
+
+            Vertex ptr = vertices[^1];
+            vertices.RemoveAt(vertices.Count-1);
+            tempList.Add(ptr);
+
+            while (vertices.Count > 0)
+            {
+                // first, we will check edges to other vertices
+                int idx = -1;
+                foreach (Edge edge in ptr.edges)
+                {
+                    Vertex other = edge.Other(ptr);
+                    idx = vertices.IndexOf(other);
+                    if (idx != -1)
+                    {
+                        tempList.Add(other);
+                        vertices.RemoveAt(idx);
+                        ptr = other; break;
+                    }
+                }
+                // if we find an edge, we will look for more edges in the next vertex
+                if (idx != -1)
+                {
+                    continue;
+                }
+                // if we don't find an edge, we will look for the closest edge on the list
+                idx = -1;
+                float min = INFINITY;
+                for (int i = 0; i < vertices.Count; i++)
+                {
+                    float dist = distance(ptr.Position, vertices[i].Position);
+                    if (dist < min)
+                    {
+                        min = dist;
+                        idx = i;
+                    }
+                }
+                // guard just in case
+                if (idx != -1)
+                {
+                    ptr = vertices[idx];
+                    tempList.Add(ptr);
+                    vertices.RemoveAt(idx);
+                }
+
+            }
+            // swap lists 
+            vertices = tempList;
+            Face face = CreateNGon(vertices);
+            FixFaceIfPossible(face);
             return face;
         }
              
