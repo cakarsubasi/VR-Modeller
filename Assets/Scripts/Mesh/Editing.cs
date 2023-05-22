@@ -133,6 +133,11 @@ namespace Meshes
             {
                 vertex.RecalculateTangent();
             }
+
+            foreach (Face face in Faces)
+            {
+                face.RecalculateTangent();
+            }
         }
 
         /// <summary>
@@ -158,6 +163,23 @@ namespace Meshes
             foreach (Vertex vertex in Vertices)
             {
                 vertex.Normal = -vertex.Normal;
+            }
+        }
+
+        /// <summary>
+        /// Set the shading type of the UMesh, UMesh shading type cannot be "inherited" as there is
+        /// nothing to inherit from. 
+        /// </summary>
+        /// <param name="type"></param>
+        public void SetShading(ShadingType type)
+        {
+            switch (type)
+            {
+                case ShadingType.Inherited:
+                    throw new ArgumentException("UMesh shading type cannot be set to inherited");
+                default:
+                    shading = type;
+                    break;
             }
         }
 

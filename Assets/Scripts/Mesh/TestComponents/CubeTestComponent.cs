@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -15,7 +16,7 @@ public class CubeTestComponent : MonoBehaviour
 
     private void OnEnable()
     {
-        meshInternal = CreateCube();
+        meshInternal = CreateCylinder();
         meshInternal.RecalculateNormals();
         meshInternal.WriteAllToMesh();
 
@@ -44,6 +45,44 @@ public class CubeTestComponent : MonoBehaviour
 
         mesh.CreateQuad(new QuadElement<Vertex>(v2, v6, v7, v3));
         mesh.CreateQuad(new QuadElement<Vertex>(v3, v7, v8, v4));
+
+        return mesh;
+    }
+
+    public static UMesh CreateCylinder(int points = 16, float h = 2f, float r = 1f)
+    {
+        UMesh mesh = UMesh.Create();
+
+        List<Vertex> verticesTop = new(points);
+        for (int i = 0; i < points; ++i)
+        {
+            float angle = ((float)i / (float) points) * PI * 2f;
+            float x = math.cos(angle) * r;
+            float y = math.sin(angle) * r;
+            float3 position = float3(x, h / 2f, y);
+            verticesTop.Add(mesh.CreateVertex(position));
+        }
+        Face faceTop = mesh.CreateFace((ICollection<Vertex>) verticesTop);
+
+        List<Vertex> verticesBottom = new(points);
+        for (int i = 0; i < points; ++i)
+        {
+            float angle = ((float)i / (float) points) * PI * 2f;
+            float x = math.cos(angle) * r;
+            float y = math.sin(angle) * r;
+            float3 position = float3(x, - h / 2f, y);
+            verticesBottom.Add(mesh.CreateVertex(position));
+        }
+        Face faceBottom = mesh.CreateNGon(verticesBottom);
+
+        for (int i = 0; i < points; ++i)
+        {
+            Vertex vert1 = verticesTop[i];
+            Vertex vert3 = verticesTop[(i + 1) % points];
+            Vertex vert4 = verticesBottom[(i + 1) % points];
+            Vertex vert2 = verticesBottom[i];
+            mesh.CreateQuad(new QuadElement<Vertex>(vert1, vert2, vert3, vert4));
+        }
 
         return mesh;
     }
