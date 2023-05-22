@@ -6,15 +6,12 @@ using TMPro;
 public class MeshList : MonoBehaviour
 {
     private TextMeshPro tm;
-    private GameObject tmObject;
+    public GameObject tmObject;
     public GameObject menu;
     public void CreateTextMesh(GameObject gameObject)
-    {
-        
+    {   
         string objectName = gameObject.name;
-        tmObject = new GameObject(objectName);
-        tm = tmObject.AddComponent<TextMeshPro>();
-        tmObject.AddComponent<CanvasRenderer>();
+        tm = tmObject.GetComponent<TextMeshPro>();
 
         int children_num = menu.transform.childCount;
         tmObject.name = objectName + children_num;
@@ -29,6 +26,6 @@ public class MeshList : MonoBehaviour
         tmObject.transform.localScale = new Vector3(15, 15, 15);
         tmObject.transform.rotation = new Quaternion(0, 0, 0, 0);
 
-        //GameObject go = GameObject.Instantiate(tmObject);
+        tmObject.GetComponent<AssociatedObject>().SetAssociatedObject(gameObject);
     }
 }

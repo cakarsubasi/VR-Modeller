@@ -136,6 +136,7 @@ GameObject:
   - component: {fileID: 293168001}
   - component: {fileID: 293168000}
   - component: {fileID: 293168003}
+  - component: {fileID: 293168004}
   m_Layer: 5
   m_Name: Hierarchy Menu
   m_TagString: Untagged
@@ -237,6 +238,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e445a7971885dad41b9ee69ea5dded08, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &293168004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 293167998}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7951c64acb0fa62458bf30a60089fe2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreReversedGraphics: 1
+  m_CheckFor2DOcclusion: 0
+  m_CheckFor3DOcclusion: 0
+  m_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RaycastTriggerInteraction: 1
 --- !u!1 &343922557
 GameObject:
   m_ObjectHideFlags: 0
@@ -1104,6 +1124,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4259117276079603192, guid: 3df92861a1fabf9459958b4990a79f9a,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4259117276079603192, guid: 3df92861a1fabf9459958b4990a79f9a,
+        type: 3}
+      propertyPath: m_isRightToLeft
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6848379129127594616, guid: 3df92861a1fabf9459958b4990a79f9a,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
@@ -1443,6 +1473,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 870faccfd3415f742ab151b23c930caa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  tmObject: {fileID: 1723004603331805054, guid: e0df6a623d65c5545aa52e0442616150,
+    type: 3}
   menu: {fileID: 293167998}
 --- !u!114 &8264955898663479640 stripped
 MonoBehaviour:
