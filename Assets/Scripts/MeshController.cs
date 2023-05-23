@@ -97,14 +97,14 @@ public class MeshController : MonoBehaviour
         {
             IsSelected = false;
             ObjectController.Instance.SelectedGameobject = null;
-            GetComponent<MeshRenderer>().material.color = Color.white;
+            GetComponent<MeshRenderer>().sharedMaterial.color = Color.white;
         }
         else
         {
             ObjectController.Instance.ClearSelectedObject();
             IsSelected = true;
             ObjectController.Instance.SelectedGameobject = gameObject;
-            GetComponent<MeshRenderer>().material.color = Color.cyan;
+            GetComponent<MeshRenderer>().sharedMaterial.color = Color.cyan;
         }
     }
 

@@ -642,8 +642,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7d71193debc5fa4c8421643a9855444, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  deepCopyButton: {fileID: 0}
-  deleteButton: {fileID: 0}
+  deepCopyButton: {fileID: 2131387488}
+  deleteButton: {fileID: 1427655633}
 --- !u!4 &1322255241
 Transform:
   m_ObjectHideFlags: 0
@@ -659,6 +659,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1427655633 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8264955898203590519, guid: 3df92861a1fabf9459958b4990a79f9a,
+    type: 3}
+  m_PrefabInstance: {fileID: 8264955898663479632}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1546092213
 GameObject:
   m_ObjectHideFlags: 0
@@ -1117,6 +1129,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2131387488 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6848379129106968279, guid: 3df92861a1fabf9459958b4990a79f9a,
+    type: 3}
+  m_PrefabInstance: {fileID: 8264955898663479632}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &8264955898663479632
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1199,6 +1223,12 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_TargetAssemblyTypeName
       value: UnityEngine.GameObject, UnityEngine
       objectReference: {fileID: 0}
+    - target: {fileID: 6848379129127594616, guid: 3df92861a1fabf9459958b4990a79f9a,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgument
+      value: 
+      objectReference: {fileID: 4037101759264980829, guid: 445275639dd14c34e84183e46e85357a,
+        type: 3}
     - target: {fileID: 6848379129127594616, guid: 3df92861a1fabf9459958b4990a79f9a,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgument
@@ -1473,8 +1503,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 870faccfd3415f742ab151b23c930caa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tmObject: {fileID: 1723004603331805054, guid: e0df6a623d65c5545aa52e0442616150,
-    type: 3}
+  go: {fileID: 1723004603331805054, guid: e0df6a623d65c5545aa52e0442616150, type: 3}
   menu: {fileID: 293167998}
 --- !u!114 &8264955898663479640 stripped
 MonoBehaviour:

@@ -5,16 +5,17 @@ using TMPro;
 
 public class MeshList : MonoBehaviour
 {
-    private TextMeshPro tm;
-    public GameObject tmObject;
+    private TextMeshProUGUI tm;
+    public GameObject go;
     public GameObject menu;
     public void CreateTextMesh(GameObject gameObject)
     {   
-        string objectName = gameObject.name;
-        tm = tmObject.GetComponent<TextMeshPro>();
+        string objectName = "Cube";
+        GameObject tmObject = Instantiate(go, menu.transform);
+        tm = tmObject.GetComponent<TextMeshProUGUI>();
 
         int children_num = menu.transform.childCount;
-        tmObject.name = objectName + children_num;
+        tmObject.name = objectName + (children_num - 1);
 
         tm.text = tmObject.name;
         tm.fontSize = 12;
@@ -22,8 +23,8 @@ public class MeshList : MonoBehaviour
         tmObject.layer = 5;
 
         tmObject.transform.SetParent(menu.transform);
-        tmObject.transform.localPosition = new Vector3(35, 100 - 20 * (children_num - 1), -5);
-        tmObject.transform.localScale = new Vector3(15, 15, 15);
+        tmObject.transform.localPosition = new Vector3(80, 140 - 40 * (children_num - 1), -5);
+        tmObject.transform.localScale = new Vector3(2, 2, 2);
         tmObject.transform.rotation = new Quaternion(0, 0, 0, 0);
 
         tmObject.GetComponent<AssociatedObject>().SetAssociatedObject(gameObject);
