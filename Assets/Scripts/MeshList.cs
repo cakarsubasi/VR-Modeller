@@ -8,9 +8,9 @@ public class MeshList : MonoBehaviour
     private TextMeshProUGUI tm;
     public GameObject go;
     public GameObject menu;
-    public void CreateTextMesh(GameObject gameObject)
+    public void CreateTextMesh(GameObject obj)
     {   
-        string objectName = "Cube";
+        string objectName = obj.name;
         GameObject tmObject = Instantiate(go, menu.transform);
         tm = tmObject.GetComponent<TextMeshProUGUI>();
 
@@ -27,6 +27,7 @@ public class MeshList : MonoBehaviour
         tmObject.transform.localScale = new Vector3(2, 2, 2);
         tmObject.transform.rotation = new Quaternion(0, 0, 0, 0);
 
-        tmObject.GetComponent<AssociatedObject>().SetAssociatedObject(gameObject);
+        string asso_obj_name = objectName + " " + (children_num - 1);
+        tmObject.GetComponent<AssociatedObject>().SetAssociatedObject(GameObject.Find(asso_obj_name));
     }
 }

@@ -10,6 +10,8 @@ public class ObjectController : MonoBehaviour
 
     public Button deepCopyButton, deleteButton;
 
+    public int meshNum = 0;
+
     List<GameObject> allObjects = new();
     GameObject selectedGameobject;
     bool selecting, moving, rotating, scaling;
@@ -104,7 +106,7 @@ public class ObjectController : MonoBehaviour
         selectedGameobject.transform.parent.FindChildWithTag("GizmoScale").gameObject.SetActive(false);
 
         selectedGameobject.GetComponent<MeshController>().IsSelected = false;
-        selectedGameobject.GetComponent<MeshRenderer>().sharedMaterial.color = Color.white;
+        selectedGameobject.GetComponent<MeshRenderer>().material.color = Color.white;
         selectedGameobject.GetComponent<MeshController>().VerticesParent.SetActive(false);
         selectedGameobject = null;
     }
