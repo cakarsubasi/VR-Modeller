@@ -644,6 +644,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   deepCopyButton: {fileID: 2131387488}
   deleteButton: {fileID: 1427655633}
+  meshNum: 0
 --- !u!4 &1322255241
 Transform:
   m_ObjectHideFlags: 0
@@ -1177,12 +1178,12 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 8264955898663479636}
+      objectReference: {fileID: 8264955898663479640}
     - target: {fileID: 6848379129127594616, guid: 3df92861a1fabf9459958b4990a79f9a,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
-      objectReference: {fileID: 8264955898663479640}
+      objectReference: {fileID: 8264955898663479636}
     - target: {fileID: 6848379129127594616, guid: 3df92861a1fabf9459958b4990a79f9a,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_Target
@@ -1196,12 +1197,12 @@ PrefabInstance:
     - target: {fileID: 6848379129127594616, guid: 3df92861a1fabf9459958b4990a79f9a,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: CreateTextMesh
+      value: OnClickCreateGameObject
       objectReference: {fileID: 0}
     - target: {fileID: 6848379129127594616, guid: 3df92861a1fabf9459958b4990a79f9a,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
-      value: OnClickCreateGameObject
+      value: CreateTextMesh
       objectReference: {fileID: 0}
     - target: {fileID: 6848379129127594616, guid: 3df92861a1fabf9459958b4990a79f9a,
         type: 3}
@@ -1211,12 +1212,12 @@ PrefabInstance:
     - target: {fileID: 6848379129127594616, guid: 3df92861a1fabf9459958b4990a79f9a,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: MeshList, Assembly-CSharp
+      value: MeshCreater, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 6848379129127594616, guid: 3df92861a1fabf9459958b4990a79f9a,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
-      value: MeshCreater, Assembly-CSharp
+      value: MeshList, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 6848379129127594616, guid: 3df92861a1fabf9459958b4990a79f9a,
         type: 3}
@@ -1227,7 +1228,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgument
       value: 
-      objectReference: {fileID: 4037101759264980829, guid: 445275639dd14c34e84183e46e85357a,
+      objectReference: {fileID: 7486790701133839520, guid: 49589cc426309cd41bb42658640e0230,
         type: 3}
     - target: {fileID: 6848379129127594616, guid: 3df92861a1fabf9459958b4990a79f9a,
         type: 3}
