@@ -28,6 +28,12 @@ public class MeshList : MonoBehaviour
         tmObject.transform.rotation = new Quaternion(0, 0, 0, 0);
 
         string asso_obj_name = objectName + " " + (children_num - 1);
-        tmObject.GetComponent<AssociatedObject>().SetAssociatedObject(GameObject.Find(asso_obj_name));
+        GameObject asso_obj = GameObject.Find(asso_obj_name);
+        tmObject.GetComponent<AssociatedObject>().SetAssociatedObject(asso_obj);
+
+        if (asso_obj.transform.FindChildWithTag("MeshObject").gameObject.GetComponent<MeshController>().IsSelected)
+        {
+            tm.color = Color.cyan;
+        }
     }
 }
