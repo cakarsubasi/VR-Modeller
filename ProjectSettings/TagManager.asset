@@ -11,6 +11,7 @@ TagManager:
   - GizmoScale
   - LeftHand
   - RightHand
+  - HMenu
   layers:
   - Default
   - TransparentFX
