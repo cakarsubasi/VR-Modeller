@@ -3,6 +3,8 @@ using System;
 using Unity.Mathematics;
 using UnityEngine;
 
+using static Unity.Mathematics.math;
+
 public class ObjectCreator : MonoBehaviour
 {
     public GameObject GizmoPosition, GizmoRotation, GizmoScale;
@@ -113,7 +115,7 @@ public class ObjectCreator : MonoBehaviour
         ObjectController.Instance.OnScale();
     }
 
-    private UMesh CreateCube()
+    private static UMesh CreateCube()
     {
         UMesh mesh = UMesh.Create();
 
@@ -139,33 +141,35 @@ public class ObjectCreator : MonoBehaviour
         return mesh;
     }
 
-    /*private UMesh CreateCylinder()
+    private static UMesh CreateCylinder()
+    {
+        return CreateCylinder(default);
+    }
+
+    private static UMesh CreateCylinder(int points = 16, float radius = 0.5f, float height = 2f)
     {
         UMesh mesh = UMesh.Create();
-        int points = 16;
-        float h = 2f;
-        float r = 0.5f;
 
-        List<Vertex> verticesTop = new(points);
+        Vertex[] verticesTop = new Vertex[points];
         for (int i = 0; i < points; ++i)
         {
             float angle = ((float)i / (float)points) * Mathf.PI * 2f;
-            float x = math.cos(angle) * r;
-            float y = math.sin(angle) * r;
-            float3 position = new float3(x, h / 2f, y);
-            verticesTop.Add(mesh.CreateVertex(position));
+            float x = math.cos(angle) * radius;
+            float y = math.sin(angle) * radius;
+            float3 position = new float3(x, height / 2f, y);
+            verticesTop[i] = mesh.CreateVertex(position);
         }
         Face faceTop = mesh.CreateNGon(verticesTop);
         faceTop.FlipFace(true);
 
-        List<Vertex> verticesBottom = new(points);
+        Vertex[] verticesBottom = new Vertex[points];
         for (int i = 0; i < points; ++i)
         {
             float angle = ((float)i / (float)points) * Mathf.PI * 2f;
-            float x = math.cos(angle) * r;
-            float y = math.sin(angle) * r;
-            float3 position = new float3(x, -h / 2f, y);
-            verticesBottom.Add(mesh.CreateVertex(position));
+            float x = math.cos(angle) * radius;
+            float y = math.sin(angle) * radius;
+            float3 position = new float3(x, -height / 2f, y);
+            verticesBottom[i] = mesh.CreateVertex(position);
         }
         Face faceBottom = mesh.CreateNGon(verticesBottom);
 
@@ -179,15 +183,11 @@ public class ObjectCreator : MonoBehaviour
         }
 
         return mesh;
-    }*/
+    }
 
-    private UMesh CreateCylinder()
+    private static UMesh CreateCylinderWithCenterVertex(int points = 16, float radius = 0.5f, float height = 2f)
     {
         UMesh mesh = UMesh.Create();
-
-        int points = 16;
-        float radius = 0.5f;
-        float height = 2f;
 
         Vertex vBottomCenter = mesh.CreateVertex((float3)new Vector3(0, -height / 2, 0));
 
@@ -218,24 +218,80 @@ public class ObjectCreator : MonoBehaviour
         return mesh;
     }
 
-    private UMesh CreateSphere()
+    public static UMesh CreateQuad()
+    {
+        return CreateGrid(1, 1, 1f, 1f);
+    }
+
+    public static UMesh CreateGrid(int segmentsX = 1, int segmentsY = 1, float gridSizeX = 1f, float gridSizeY = 1f)
     {
         UMesh mesh = UMesh.Create();
+
+        for (int i = 0; i <= segmentsX; i++)
+        {
+            for (int j = 0; j <= segmentsY; j++)
+            {
+                float x = (float)i / segmentsX * gridSizeX - (gridSizeX / 2);
+                float y = 0;
+                float z = (float)j / segmentsY * gridSizeY - (gridSizeY / 2);
+                Vector3 position = new Vector3(x, y, z);
+                mesh.CreateVertex(position);
+            }
+        }
+
+        for (int i = 0; i < segmentsX; i++)
+        {
+            for (int j = 0; j < segmentsY; j++)
+            {
+                Vertex topLeft = mesh.Vertices[i * (segmentsY + 1) + j];
+                Vertex topRight = mesh.Vertices[i * (segmentsY + 1) + j + 1];
+                Vertex bottomLeft = mesh.Vertices[(i + 1) * (segmentsY + 1) + j];
+                Vertex bottomRight = mesh.Vertices[(i + 1) * (segmentsY + 1) + j + 1];
+                mesh.CreateQuad(new QuadElement<Vertex>(topLeft, topRight, bottomRight, bottomLeft));
+            }
+        }
 
         return mesh;
     }
 
-    private UMesh CreateDummy1() // baþka bir þey eklemek istersen diye
+    public static UMesh CreateSphere()
+    {
+        return CreateUVSphere(32, 16, 1f);
+    }
+
+    public static UMesh CreateUVSphere(int segments = 32, int rings = 16, float radius = 1f)
     {
         UMesh mesh = UMesh.Create();
 
+        for (int i = 0; i <= segments; i++)
+        {
+            for (int j = 0; j <= rings; j++)
+            {
+                float circleRadius = sin(PI * j / rings) * radius;
+                float2 circle;
+                circle.x = sin(2f * PI * i / segments);
+                circle.y = cos(2f * PI * i / segments);
+                float x = circle.x * circleRadius;
+                float y = cos(PI * j / rings) * radius;
+                float z = circle.y * circleRadius;
+                mesh.CreateVertex(new Vector3(x, y, z));
+            }
+        }
+
+        for (int i = 0; i < segments; i++)
+        {
+            for (int j = 0; j < rings; j++)
+            {
+                Vertex topLeft = mesh.Vertices[i * (rings + 1) + j];
+                Vertex topRight = mesh.Vertices[i * (rings + 1) + j + 1];
+                Vertex bottomLeft = mesh.Vertices[(i + 1) * (rings + 1) + j];
+                Vertex bottomRight = mesh.Vertices[(i + 1) * (rings + 1) + j + 1];
+                mesh.CreateQuad(new QuadElement<Vertex>(topLeft, topRight, bottomRight, bottomLeft));
+            }
+        }
+
+        mesh.MergeByDistance();
         return mesh;
     }
 
-    private UMesh CreateDummy2() // baþka bir þey eklemek istersen diye
-    {
-        UMesh mesh = UMesh.Create();
-
-        return mesh;
-    }
 }
