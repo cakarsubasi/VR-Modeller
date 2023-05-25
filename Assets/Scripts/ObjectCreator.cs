@@ -34,10 +34,12 @@ public class ObjectCreator : MonoBehaviour
                 throw new NotImplementedException { };
 
             case "Cylinder":
-                throw new NotImplementedException { };
+                meshController.SetupMeshController(CreateCylinder);
+                break;
 
             case "Sphere":
-                throw new NotImplementedException { };
+                meshController.SetupMeshController(CreateSphere);
+                break;
 
             default:
                 break;
@@ -133,6 +135,106 @@ public class ObjectCreator : MonoBehaviour
 
         mesh.CreateQuad(new QuadElement<Vertex>(v2, v6, v7, v3));
         mesh.CreateQuad(new QuadElement<Vertex>(v3, v7, v8, v4));
+
+        return mesh;
+    }
+
+    /*private UMesh CreateCylinder()
+    {
+        UMesh mesh = UMesh.Create();
+        int points = 16;
+        float h = 2f;
+        float r = 0.5f;
+
+        List<Vertex> verticesTop = new(points);
+        for (int i = 0; i < points; ++i)
+        {
+            float angle = ((float)i / (float)points) * Mathf.PI * 2f;
+            float x = math.cos(angle) * r;
+            float y = math.sin(angle) * r;
+            float3 position = new float3(x, h / 2f, y);
+            verticesTop.Add(mesh.CreateVertex(position));
+        }
+        Face faceTop = mesh.CreateNGon(verticesTop);
+        faceTop.FlipFace(true);
+
+        List<Vertex> verticesBottom = new(points);
+        for (int i = 0; i < points; ++i)
+        {
+            float angle = ((float)i / (float)points) * Mathf.PI * 2f;
+            float x = math.cos(angle) * r;
+            float y = math.sin(angle) * r;
+            float3 position = new float3(x, -h / 2f, y);
+            verticesBottom.Add(mesh.CreateVertex(position));
+        }
+        Face faceBottom = mesh.CreateNGon(verticesBottom);
+
+        for (int i = 0; i < points; ++i)
+        {
+            Vertex vert1 = verticesTop[i];
+            Vertex vert2 = verticesTop[(i + 1) % points];
+            Vertex vert3 = verticesBottom[(i + 1) % points];
+            Vertex vert4 = verticesBottom[i];
+            mesh.CreateQuad(new QuadElement<Vertex>(vert1, vert2, vert3, vert4));
+        }
+
+        return mesh;
+    }*/
+
+    private UMesh CreateCylinder()
+    {
+        UMesh mesh = UMesh.Create();
+
+        int points = 16;
+        float radius = 0.5f;
+        float height = 2f;
+
+        Vertex vBottomCenter = mesh.CreateVertex((float3)new Vector3(0, -height / 2, 0));
+
+        Vertex vTopCenter = mesh.CreateVertex((float3)new Vector3(0, height / 2, 0));
+
+        Vertex[] vBottom = new Vertex[points];
+        Vertex[] vTop = new Vertex[points];
+
+        for (int i = 0; i < points; i++)
+        {
+            float angle = (Mathf.PI * 2 * i) / points;
+
+            Vector3 vBottomPos = new Vector3(radius * Mathf.Cos(angle), -height / 2, radius * Mathf.Sin(angle));
+            vBottom[i] = mesh.CreateVertex((float3)vBottomPos);
+
+            Vector3 vTopPos = new Vector3(radius * Mathf.Cos(angle), height / 2, radius * Mathf.Sin(angle));
+            vTop[i] = mesh.CreateVertex((float3)vTopPos);
+        }
+
+        for (int i = 0; i < points; i++)
+        {
+            int nextI = (i + 1) % points;
+            mesh.CreateTriangle(new TriangleElement<Vertex>(vBottomCenter, vBottom[i], vBottom[nextI]));
+            mesh.CreateTriangle(new TriangleElement<Vertex>(vTopCenter, vTop[nextI], vTop[i]));
+            mesh.CreateQuad(new QuadElement<Vertex>(vTop[i], vTop[nextI], vBottom[nextI], vBottom[i]));
+        }
+
+        return mesh;
+    }
+
+    private UMesh CreateSphere()
+    {
+        UMesh mesh = UMesh.Create();
+
+        return mesh;
+    }
+
+    private UMesh CreateDummy1() // baþka bir þey eklemek istersen diye
+    {
+        UMesh mesh = UMesh.Create();
+
+        return mesh;
+    }
+
+    private UMesh CreateDummy2() // baþka bir þey eklemek istersen diye
+    {
+        UMesh mesh = UMesh.Create();
 
         return mesh;
     }
