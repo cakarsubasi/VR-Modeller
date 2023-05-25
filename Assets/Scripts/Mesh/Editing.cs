@@ -1,7 +1,6 @@
-﻿using System.Collections;
-using Unity.Collections;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -82,7 +81,7 @@ namespace Meshes
         public static float3 GetNormalVector(List<Vertex> vertices)
         {
             float3 norm = default;
-            foreach(Vertex vert in vertices)
+            foreach (Vertex vert in vertices)
             {
                 norm += vert.Normal;
             }
