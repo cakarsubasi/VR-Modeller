@@ -59,7 +59,9 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 24287043649536
-    m_Localized: Kopyala
+    m_Localized: 'Objeyi
+
+      Kopyala'
     m_Metadata:
       m_Items: []
   - m_Id: 24671552274432
@@ -124,6 +126,26 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 13389579910033408
     m_Localized: "K\xF6\u015Feleri\nBirle\u015Ftir"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13439105098231808
+    m_Localized: "Y\xFCz\nYarat"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13457349506936832
+    m_Localized: Kaydet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13457380238602240
+    m_Localized: "\u0130ptal"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13457597805539328
+    m_Localized: "Se\xE7ili Renk:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13458200640270336
+    m_Localized: "Rengi\nDe\u011Fi\u015Ftir"
     m_Metadata:
       m_Items: []
   references:

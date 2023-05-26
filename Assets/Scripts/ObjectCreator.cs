@@ -18,7 +18,7 @@ public class ObjectCreator : MonoBehaviour
         Vector3 worldCenter = Camera.main.ScreenToWorldPoint(screenCenter);
         worldCenter += Camera.main.transform.forward * 4.0f;
 
-        parent.transform.position = worldCenter;
+        parent.transform.position = new Vector3(worldCenter.x, Camera.main.transform.position.y, worldCenter.z);
         parent.transform.localScale = gameobject.transform.localScale;
 
         GameObject go = Instantiate(gameobject, parent.transform);

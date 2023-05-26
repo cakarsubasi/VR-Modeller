@@ -806,6 +806,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "ActivateExtrude",
+                    "type": "Button",
+                    "id": "dca48798-0523-403d-ab35-0c2462b51cf1",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -916,6 +925,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Primary Button (Menu)",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "531e0448-f3ce-410e-b076-a16099574a09",
+                    "path": "<XRController>{RightHand}/secondaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ActivateExtrude",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

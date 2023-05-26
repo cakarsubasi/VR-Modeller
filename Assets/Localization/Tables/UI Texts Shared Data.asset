@@ -119,6 +119,26 @@ MonoBehaviour:
     m_Key: MergeVertices
     m_Metadata:
       m_Items: []
+  - m_Id: 13439105098231808
+    m_Key: CreateFace
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13457349506936832
+    m_Key: Save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13457380238602240
+    m_Key: Cancel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13457597805539328
+    m_Key: SelectedColor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13458200640270336
+    m_Key: ChangeColor
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

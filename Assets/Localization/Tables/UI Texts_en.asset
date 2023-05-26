@@ -61,7 +61,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 24287043649536
-    m_Localized: Deep Copy
+    m_Localized: "Copy \nObject"
     m_Metadata:
       m_Items: []
   - m_Id: 24671552274432
@@ -132,6 +132,30 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 13389579910033408
     m_Localized: "Merge \nVertices"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13439105098231808
+    m_Localized: 'Create
+
+      Face'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13457349506936832
+    m_Localized: Save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13457380238602240
+    m_Localized: Cancel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13457597805539328
+    m_Localized: 'Selected Color:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13458200640270336
+    m_Localized: 'Change
+
+      Color'
     m_Metadata:
       m_Items: []
   references:

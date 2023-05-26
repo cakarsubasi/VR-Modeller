@@ -18,6 +18,7 @@ public class MeshController : MonoBehaviour
     GameObject verticesParent;
     List<GameObject> activeVertices = new List<GameObject>();
     GameObject objectInActiveVertices;
+    Color normalColor = Color.white;
 
     public delegate UMesh CreateMeshDelegate();
 
@@ -96,14 +97,14 @@ public class MeshController : MonoBehaviour
         {
             IsSelected = false;
             ObjectController.Instance.SelectedGameobject = null;
-            GetComponent<MeshRenderer>().material.color = Color.white;
+            GetComponent<MeshRenderer>().material.color = normalColor;
         }
         else
         {
             ObjectController.Instance.ClearSelectedObject();
             IsSelected = true;
             ObjectController.Instance.SelectedGameobject = gameObject;
-            GetComponent<MeshRenderer>().material.color = Color.cyan;
+            //GetComponent<MeshRenderer>().material.color = Color.cyan;
         }
     }
 
@@ -230,6 +231,12 @@ public class MeshController : MonoBehaviour
         mesh.WriteAllToMesh();
 
         objectInActiveVertices.transform.localScale *= 0.5f;
+    }
+
+    public void SetColor(Color color)
+    {
+        normalColor = color;
+        GetComponent<MeshRenderer>().material.color = normalColor;
     }
 
     private void OnDestroy()
