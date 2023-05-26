@@ -10,6 +10,8 @@ public class ObjectController : MonoBehaviour
 
     public Button deepCopyButton, deleteVerticesButton, mergeVerticesButton, flipAllButton, flipFacesButton;
 
+    public int meshNum = 0;
+
     List<GameObject> allObjects = new();
     GameObject selectedGameobject;
     bool selecting, moving, rotating, scaling;

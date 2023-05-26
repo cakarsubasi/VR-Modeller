@@ -63,7 +63,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 24671552274432
-    m_Localized: "Kaps\xFCl\nYarat"
+    m_Localized: "D\xF6rtgen\nYarat"
     m_Metadata:
       m_Items: []
   - m_Id: 24794936115200
@@ -96,7 +96,33 @@ MonoBehaviour:
     m_Localized: "K\xF6\u015Feleri\nSil"
     m_Metadata:
       m_Items: []
-  - m_Id: 10833497564033024
+  - m_Id: 10178422426566656
+    m_Localized: 'Obje
+
+      Listesi'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13388919332319232
+    m_Localized: "P\xFCr\xFCzs\xFCz"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13388996117442560
+    m_Localized: "D\xFCz"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13389042665828352
+    m_Localized: "G\xF6lgeleme:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13389219904532480
+    m_Localized: "Hepsini\n\xC7evir"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13389433121976320
+    m_Localized: "Y\xFCz\xFC \xC7evir"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13389579910033408
     m_Localized: "K\xF6\u015Feleri\nBirle\u015Ftir"
     m_Metadata:
       m_Items: []

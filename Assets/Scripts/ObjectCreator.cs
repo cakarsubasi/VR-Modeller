@@ -10,7 +10,9 @@ public class ObjectCreator : MonoBehaviour
 
     public void OnClickCreateGameObject(GameObject gameobject)
     {
-        GameObject parent = new GameObject(gameobject.name);
+        string name = gameobject.name + " " + (ObjectController.Instance.meshNum + 1);
+        GameObject parent = new GameObject(name);
+        ObjectController.Instance.meshNum++;
 
         Vector3 screenCenter = Camera.main.ViewportToScreenPoint(Vector3.zero);
         Vector3 worldCenter = Camera.main.ScreenToWorldPoint(screenCenter);
