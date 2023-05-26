@@ -1,55 +1,130 @@
 Shader "Custom/UMeshStandard"
 {
-    Properties
-    {
-        _Color ("Color", Color) = (1,1,1,1)
+
+    Properties{
+        _Tint("Color", Color) = (1, 1, 1, 1)
         _MainTex ("Albedo (RGB)", 2D) = "white" {}
-        _Glossiness ("Smoothness", Range(0,1)) = 0.5
-        _Metallic ("Metallic", Range(0,1)) = 0.0
+
+        [NoScaleOffset] _NormalMap ("Normals", 2D) = "bump" {}
+        _BumpScale ("Bump Scale", Float) = 1
+
+        [NoScaleOffset] _MetallicMap ("Metallic", 2D) = "white" {}
+        [Gamma] _Metallic ("Metallic", Range(0, 1)) = 0
+        _Smoothness ("Smoothness", Range(0, 1)) = 0.5
+
+        [NoScaleOffset] _EmissionMap ("Emission", 2D) = "black" {}
+        _Emission ("Emission", Color) = (0, 0, 0)
+
+        [NoScaleOffset] _OcclusionMap ("Occlusion", 2D) = "white" {}
+        _OcclusionStrength ("Occlusion Strength", Range(0, 1)) = 1
+
+        _DetailTex ("Detail Albedo", 2D) = "gray" {}
+        [NoScaleOffset] _DetailNormalMap ("Detail Normals", 2D) = "bump" {}
+        _DetailBumpScale ("Detail Bump Scale", Float) = 1
+
+        [NoScaleOffset] _DetailMask ("Detail Mask", 2D) = "white" {}
+
+        _AlphaCutoff ("Alpha Cutoff", Range(0, 1)) = 0.5
+        [HideInInspector] _SrcBlend ("_SrcBlend", Float) = 1
+        [HideInInspector] _DstBlend ("_DstBlend", Float) = 0
+        [HideInInspector] _ZWrite ("_ZWrite", Float) = 1
     }
-    SubShader
-    {
-        Tags { "RenderType"="Opaque" }
-        LOD 200
 
-        Cull Off
+    CustomEditor "MultipleLightsShaderGUI"
 
-        CGPROGRAM
-        // Physically based Standard lighting model, and enable shadows on all light types
-        #pragma surface surf Standard fullforwardshadows
+    CGINCLUDE
 
-        // Use shader model 3.0 target, to get nicer looking lighting
-        #pragma target 3.0
-        
-        sampler2D _MainTex;
+    #define BINORMAL_PER_FRAGMENT
 
-        struct Input
-        {
-            float2 uv_MainTex;
-        };
+    ENDCG
 
-        half _Glossiness;
-        half _Metallic;
-        fixed4 _Color;
+    SubShader{
+        Pass {
+            Tags {
+                "LightMode" = "ForwardBase"
+            }
 
-        // Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
-        // See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
-        // #pragma instancing_options assumeuniformscaling
-        UNITY_INSTANCING_BUFFER_START(Props)
-            // put more per-instance properties here
-        UNITY_INSTANCING_BUFFER_END(Props)
+            Blend [_SrcBlend] [_DstBlend]
+            ZWrite [_ZWrite]
 
-        void surf (Input IN, inout SurfaceOutputStandard o)
-        {
-            // Albedo comes from a texture tinted by color
-            fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
-            o.Albedo = c.rgb;
-            // Metallic and smoothness come from slider variables
-            o.Metallic = _Metallic;
-            o.Smoothness = _Glossiness;
-            o.Alpha = c.a;
+            CGPROGRAM
+            #pragma target 4.0
+
+            #pragma multi_compile _ SHADOWS_SCREEN
+            #pragma multi_compile _ VERTEXLIGHT_ON
+            #pragma shader_feature _ _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT
+            #pragma shader_feature _METALLIC_MAP
+            #pragma shader_feature _ _SMOOTHNESS_ALBEDO _SMOOTHNESS_METALLIC
+            #pragma shader_feature _NORMAL_MAP
+            #pragma shader_feature _OCCLUSION_MAP
+            #pragma shader_feature _EMISSION_MAP
+            #pragma shader_feature _DETAIL_MASK
+            #pragma shader_feature _DETAIL_ALBEDO_MAP
+            #pragma shader_feature _DETAIL_NORMAL_MAP
+
+            #pragma vertex MyVertexProgram
+            #pragma fragment MyFragmentProgram
+            #pragma geometry GeometryProgram
+
+            #define FORWARD_BASE_PASS
+            #define MESHES_SELECTION_TEXCOORD1
+
+            #include "Meshes/FlatWireframe.cginc"
+
+            ENDCG
         }
-        ENDCG
+
+        Pass {
+            Tags {
+                "LightMode" = "ForwardAdd"
+            }
+
+            Blend [_SrcBlend] One
+            ZWrite Off
+
+            CGPROGRAM
+            #pragma target 3.0
+            
+            #pragma multi_compile_fwdadd_fullshadows
+            //#pragma multi_compile DIRECTIONAL DIRECTIONAL_COOKIE POINT POINT_COOKIE SPOT
+            #pragma shader_feature _ _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT
+            #pragma shader_feature _METALLIC_MAP
+            #pragma shader_feature _ _SMOOTHNESS_ALBEDO _SMOOTHNESS_METALLIC
+            #pragma shader_feature _NORMAL_MAP
+            #pragma shader_feature _DETAIL_MASK
+            #pragma shader_feature _DETAIL_ALBEDO_MAP
+            #pragma shader_feature _DETAIL_NORMAL_MAP
+
+            #pragma vertex MyVertexProgram
+            #pragma fragment MyFragmentProgram
+
+            #include "Meshes/Lighting.cginc"
+
+            ENDCG
+        }
+
+        Pass {
+            Tags {
+                "LightMode" = "ShadowCaster"
+            }
+
+            CGPROGRAM
+            
+            #pragma target 3.0
+
+            #pragma multi_compile_shadowcaster
+
+            #pragma shader_feature _ _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT
+            #pragma shader_feature _SEMITRANSPARENT_SHADOWS
+            #pragma shader_feature _SMOOTHNESS_ALBEDO
+
+            #pragma vertex ShadowVertexProgram
+            #pragma fragment ShadowFragmentProgram
+
+            #include "Meshes/Shadows.cginc"
+
+            ENDCG
+        }
     }
     FallBack "Diffuse"
 }

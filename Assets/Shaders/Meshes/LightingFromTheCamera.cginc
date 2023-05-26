@@ -51,6 +51,7 @@ float4 MyFragmentProgram(Interpolators i) : SV_TARGET {
     float3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos);
     float3 lightColor = _LightColor0.rgb;
     float3 albedo = tex2D(_MainTex, i.uv).rgb * _Tint.rgb;
+
     float3 specularTint;
     float oneMinusReflectivity;
     // calculate diffuse contribution
@@ -70,8 +71,6 @@ float4 MyFragmentProgram(Interpolators i) : SV_TARGET {
     UnityIndirect indirectLight;
     indirectLight.diffuse = 0;
     indirectLight.specular = 0;
-    //float3 test = normalize(cross(i.normal, i.cameraVec));
-    //return float4(test.r, test.r, test.r ,1);
     // apply the BRDF
     return UNITY_BRDF_PBS(
         albedo, specularTint,

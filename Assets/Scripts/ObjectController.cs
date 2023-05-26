@@ -216,8 +216,8 @@ public class ObjectController : MonoBehaviour
         {
             foreach (var item in AllObjects)
             {
-                item.GetComponent<MeshController>().EditableMesh.SetShading(ShadingType.Flat);
-                item.GetComponent<MeshController>().EditableMesh.WriteAllToMesh();
+                item.GetComponent<MeshController>().EditableMesh.Shading = ShadingType.Flat;
+                item.GetComponent<MeshController>().EditableMesh.RecalculateAllAndWriteToMesh();
             }
         }
 
@@ -229,8 +229,8 @@ public class ObjectController : MonoBehaviour
         {
             foreach (var item in AllObjects)
             {
-                item.GetComponent<MeshController>().EditableMesh.SetShading(ShadingType.Smooth);
-                item.GetComponent<MeshController>().EditableMesh.WriteAllToMesh();
+                item.GetComponent<MeshController>().EditableMesh.Shading = ShadingType.Smooth;
+                item.GetComponent<MeshController>().EditableMesh.RecalculateAllAndWriteToMesh();
             }
         }
     }

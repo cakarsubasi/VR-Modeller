@@ -1,5 +1,4 @@
 using Meshes;
-using System;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -32,8 +31,9 @@ public class ObjectCreator : MonoBehaviour
                 meshController.SetupMeshController(CreateCube);
                 break;
 
-            case "Capsule":
-                throw new NotImplementedException { };
+            case "Quad":
+                meshController.SetupMeshController(CreateQuad);
+                break;
 
             case "Cylinder":
                 meshController.SetupMeshController(CreateCylinder);
@@ -143,10 +143,10 @@ public class ObjectCreator : MonoBehaviour
 
     private static UMesh CreateCylinder()
     {
-        return CreateCylinder(default);
+        return CreateCylinderNoCenterVertex();
     }
 
-    private static UMesh CreateCylinder(int points = 16, float radius = 0.5f, float height = 2f)
+    private static UMesh CreateCylinderNoCenterVertex(int points = 16, float radius = 0.5f, float height = 2f)
     {
         UMesh mesh = UMesh.Create();
 
@@ -218,12 +218,12 @@ public class ObjectCreator : MonoBehaviour
         return mesh;
     }
 
-    public static UMesh CreateQuad()
+    private static UMesh CreateQuad()
     {
         return CreateGrid(1, 1, 1f, 1f);
     }
 
-    public static UMesh CreateGrid(int segmentsX = 1, int segmentsY = 1, float gridSizeX = 1f, float gridSizeY = 1f)
+    private static UMesh CreateGrid(int segmentsX = 1, int segmentsY = 1, float gridSizeX = 1f, float gridSizeY = 1f)
     {
         UMesh mesh = UMesh.Create();
 

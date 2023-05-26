@@ -14,7 +14,7 @@ public class MeshController : MonoBehaviour
     List<Vector3> vertices = new List<Vector3>();
     List<GameObject> vertexObjects = new List<GameObject>();
     bool isSelected;
-    UMesh editableMesh;
+    public UMesh EditableMesh;
     GameObject verticesParent;
     List<GameObject> activeVertices = new List<GameObject>();
     GameObject objectInActiveVertices;
@@ -25,7 +25,7 @@ public class MeshController : MonoBehaviour
     public GameObject VerticesParent { get => verticesParent; set => verticesParent = value; }
     public List<GameObject> ActiveVertices { get => activeVertices; set => activeVertices = value; }
     public bool IsSelected { get => isSelected; set => isSelected = value; }
-    public UMesh EditableMesh { get => editableMesh; set => editableMesh = value; }
+    //public UMesh EditableMesh { get => editableMesh; set => editableMesh = value; }
 
 
     public void SetupMeshController(CreateMeshDelegate createMeshFunction)
@@ -149,6 +149,7 @@ public class MeshController : MonoBehaviour
 
                 vertex.transform.localPosition += (transform.InverseTransformPoint(movedVertex.transform.position) - currentVertexPos);
                 vertex.GetComponent<VertexController>().Vertex.Position = (float3)vertex.transform.localPosition;
+                EditableMesh.RecalculateNormals();
                 EditableMesh.WriteAllToMesh();
 
                 if (GetComponent<MeshCollider>() != null)
@@ -159,7 +160,6 @@ public class MeshController : MonoBehaviour
             currentVertexPos = transform.InverseTransformPoint(movedVertex.transform.position);
             yield return null;
         }
-
 
         StartCoroutine(MoveMultpleVertices());
     }
@@ -219,11 +219,11 @@ public class MeshController : MonoBehaviour
             vertices.Add(vertex.GetComponent<VertexController>().Vertex);
         }
 
-        editableMesh.SelectFacesFromVertices(vertices, faces);
-        editableMesh.SelectEdgesFromVertices(vertices, edges);
+        EditableMesh.SelectFacesFromVertices(vertices, faces);
+        EditableMesh.SelectEdgesFromVertices(vertices, edges);
 
 
-        UMesh mesh = editableMesh.CopySelectionToNewMesh(vertices, edges, faces);
+        UMesh mesh = EditableMesh.CopySelectionToNewMesh(vertices, edges, faces);
 
         objectInActiveVertices.GetComponent<MeshFilter>().mesh = mesh.Mesh;
         objectInActiveVertices.GetComponent<MeshCollider>().sharedMesh = mesh.Mesh;

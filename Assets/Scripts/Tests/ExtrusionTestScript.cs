@@ -644,10 +644,15 @@ public class ExtrusionTestScript
         float3 pos1 = float3(-1f, -1f, 1f);
         float3 pos2 = float3(-1f, 1f, -1f);
         float3 pos3 = float3(-1f, 1f, 1f);
-        verts.Add(mesh.FindByPosition(pos0));
-        verts.Add(mesh.FindByPosition(pos1));
-        verts.Add(mesh.FindByPosition(pos2));
-        verts.Add(mesh.FindByPosition(pos3));
+
+        Vertex ex0 = mesh.FindByPosition(pos0);
+        Vertex ex1 = mesh.FindByPosition(pos1);
+        Vertex ex2 = mesh.FindByPosition(pos2);
+        Vertex ex3 = mesh.FindByPosition(pos3);
+        verts.Add(ex0);
+        verts.Add(ex1);
+        verts.Add(ex2);
+        verts.Add(ex3);
 
         mesh.Extrude(verts);
         mesh.MoveSelectionRelative(verts, float3(-1f, 0f, 0f));
@@ -663,10 +668,29 @@ public class ExtrusionTestScript
         Assert.AreEqual(12, mesh.EdgeCount);
         Assert.AreEqual(5, mesh.FaceCount);
 
-        verts.Add(mesh.FindByPosition(pos0));
-        verts.Add(mesh.FindByPosition(pos1));
-        verts.Add(mesh.FindByPosition(pos2));
-        verts.Add(mesh.FindByPosition(pos3));
+        Vertex ex0new = mesh.FindByPosition(pos0);
+        Vertex ex1new = mesh.FindByPosition(pos1);
+        Vertex ex2new = mesh.FindByPosition(pos2);
+        Vertex ex3new = mesh.FindByPosition(pos3);
+
+        Assert.AreEqual(2, ex0new.FaceCount);
+        Assert.AreEqual(2, ex1new.FaceCount);
+        Assert.AreEqual(2, ex2new.FaceCount);
+        Assert.AreEqual(2, ex3new.FaceCount);
+
+        verts.Add(ex0new);
+        verts.Add(ex1new);
+        verts.Add(ex2new);
+        verts.Add(ex3new);
+
+        Assert.IsFalse(ex0.IsConnected(ex0new));
+        Assert.IsFalse(ex0new.IsConnected(ex0));
+        Assert.IsFalse(ex1.IsConnected(ex1new));
+        Assert.IsFalse(ex1new.IsConnected(ex1));
+        Assert.IsFalse(ex2.IsConnected(ex2new));
+        Assert.IsFalse(ex2new.IsConnected(ex2));
+        Assert.IsFalse(ex3.IsConnected(ex3new));
+        Assert.IsFalse(ex3new.IsConnected(ex3));
 
         mesh.Extrude(verts);
         mesh.MoveSelectionRelative(verts, float3(-1f, 0f, 0f));

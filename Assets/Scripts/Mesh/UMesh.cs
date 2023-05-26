@@ -116,7 +116,7 @@ namespace Meshes
         private void Setup(Mesh.MeshData meshData, int vertexCount, int triangleCount)
         {
             var vertexAttributes = new NativeArray<VertexAttributeDescriptor>(
-    4, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+                5, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
 
             // positions
             vertexAttributes[0] = new VertexAttributeDescriptor(
@@ -132,6 +132,9 @@ namespace Meshes
             vertexAttributes[3] = new VertexAttributeDescriptor(
                 attribute: VertexAttribute.TexCoord0,
                 dimension: 2);
+            vertexAttributes[4] = new VertexAttributeDescriptor(
+                attribute: VertexAttribute.TexCoord1,
+                dimension: 3);
 
             meshData.SetVertexBufferParams(vertexCount, vertexAttributes);
             vertexAttributes.Dispose();

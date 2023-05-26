@@ -22,6 +22,8 @@ public class ExtrusionMergeTestComponent : MonoBehaviour
         vertex2.Position = float3(1f, -1f, -1f);
         // . - .
 
+        //vertex1.Selected = true;
+
         meshInternal.Extrude(edge1);
         edge1.MoveRelative(float3(0f, 2f, 0f));
         // . - .
@@ -40,6 +42,9 @@ public class ExtrusionMergeTestComponent : MonoBehaviour
         edge2.MoveRelative(float3(0f, 2f, 0f));
         meshInternal.MergeByDistance();
 
+        //vert1.Selected = true;
+        //vert2.Selected = true;
+
         vert1 = meshInternal.FindByPosition(float3(-1f, -1f, -1f));
         vert2 = meshInternal.FindByPosition(float3(1f, -1f, -1f));
         edge2 = vert1.GetEdgeTo(vert2);
@@ -48,6 +53,11 @@ public class ExtrusionMergeTestComponent : MonoBehaviour
         meshInternal.OptimizeIndices();
         meshInternal.RecalculateNormals();
         meshInternal.RecalculateTangents();
+
+        vert1.Selected = true;
+        vert2.Selected = true;
+
+        //meshInternal.FindByPosition(float3(-1f, 1f, -1f)).Selected = true;
 
         meshInternal.WriteAllToMesh();
 
