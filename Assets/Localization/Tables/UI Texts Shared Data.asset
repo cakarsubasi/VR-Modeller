@@ -139,6 +139,10 @@ MonoBehaviour:
     m_Key: ChangeColor
     m_Metadata:
       m_Items: []
+  - m_Id: 14508085839921152
+    m_Key: Help Text
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
