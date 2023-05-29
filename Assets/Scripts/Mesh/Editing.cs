@@ -1,7 +1,6 @@
-﻿using System.Collections;
-using Unity.Collections;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -82,7 +81,7 @@ namespace Meshes
         public static float3 GetNormalVector(List<Vertex> vertices)
         {
             float3 norm = default;
-            foreach(Vertex vert in vertices)
+            foreach (Vertex vert in vertices)
             {
                 norm += vert.Normal;
             }
@@ -133,6 +132,11 @@ namespace Meshes
             {
                 vertex.RecalculateTangent();
             }
+
+            foreach (Face face in Faces)
+            {
+                face.RecalculateTangent();
+            }
         }
 
         /// <summary>
@@ -161,11 +165,34 @@ namespace Meshes
             }
         }
 
+        /// <summary>
+        /// Set the shading type of the UMesh, UMesh shading type cannot be "inherited" as there is
+        /// nothing to inherit from. 
+        /// </summary>
+        /// <param name="type"></param>
+        public void SetShading(ShadingType type)
+        {
+            switch (type)
+            {
+                case ShadingType.Inherited:
+                    throw new ArgumentException("UMesh shading type cannot be set to inherited");
+                default:
+                    shading = type;
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Unimplemented
+        /// </summary>
         public void Triangulate()
         {
             throw new NotImplementedException { };
         }
 
+        /// <summary>
+        /// Unimplemented
+        /// </summary>
         public void TrianglesToQuads()
         {
             throw new NotImplementedException { };

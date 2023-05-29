@@ -70,9 +70,9 @@ public class GizmoRotationController : MonoBehaviour
         else
         {
             float distance = Vector3.Distance(transform.position, Camera.main.transform.position);
-            float minValue = 0.35f;
+            float minValue = 0.25f;
             float maxValue = 1000f;
-            float scaleFactor = 0.25f;
+            float scaleFactor = 0.15f;
             transform.localScale = Vector3.one * Mathf.Clamp(distance * scaleFactor, minValue, maxValue);
         }
     }

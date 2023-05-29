@@ -131,7 +131,7 @@ namespace Meshes
         {
             foreach (Edge edge in edges)
             {
-                if (edge.Other(this) == other)
+                if (ReferenceEquals(edge.Other(this), other))
                 {
                     return true;
                 }
@@ -159,7 +159,7 @@ namespace Meshes
         {
             foreach (Face candidateFace in FacesIter)
             {
-                if (candidateFace == face)
+                if (ReferenceEquals(candidateFace, face))
                 {
                     return true;
                 }
@@ -176,7 +176,7 @@ namespace Meshes
         {
             foreach (Edge edge in edges)
             {
-                if (edge.Other(this) == other)
+                if (ReferenceEquals(edge.Other(this), other))
                 {
                     return edge;
                 }
@@ -216,21 +216,39 @@ namespace Meshes
         /// Write the vertex to a vertex buffer without allocations
         /// </summary>
         /// <param name="stream">stream to write into</param>
-        internal void WriteToStream(ref NativeArray<Stream0> stream)
+        internal void WriteToStream(ref NativeArray<Stream0> stream, ShadingType fallbackShading = ShadingType.Smooth)
         {
             Stream0 temp = default;
             temp.position = Position;
             temp.normal = Normal;
             temp.tangent = Tangent;
+            //temp.selected = Selected ? 1.0f : 0.0f;
             foreach (FaceIndex faceIndex in faces)
             {
-                temp.uv0 = faceIndex.uv0;
-                if (faceIndex.face.Shading == ShadingType.Flat)
-                {
-                    temp.normal = faceIndex.face.Normal;
-                } else
+                //temp.uv0 = faceIndex.uv0;
+                faceIndex.face.GetUVandSelection(this, out temp.uv0, out temp.selected);
+                ShadingType faceShading = faceIndex.face.Shading;
+                temp.normal = Normal;
+                if (faceShading == ShadingType.Smooth)
                 {
                     temp.normal = Normal;
+                }
+                else if (faceShading == ShadingType.Flat)
+                {
+                    temp.normal = faceIndex.face.Normal;
+                    temp.tangent = faceIndex.face.Tangent;
+                } 
+                else
+                {
+                    if (fallbackShading == ShadingType.Smooth)
+                    {
+                        temp.normal = Normal;
+                    }
+                    else if (fallbackShading == ShadingType.Flat)
+                    {
+                        temp.normal = faceIndex.face.Normal;
+                        temp.tangent = faceIndex.face.Tangent;
+                    }
                 }
                 stream[faceIndex.index] = temp;
             }
@@ -275,6 +293,18 @@ namespace Meshes
             return beginning + used;
         }
 
+        public int OptimizeIndicesAlt(int beginning)
+        {
+            for (int i = 0; i < faces.Count; ++i)
+            {
+                var prop = faces[i];
+                prop.uv0 = prop.face.GetUVof(this);
+                prop.index = beginning + i;
+                faces[i] = prop;
+            }
+            return beginning + faces.Count;
+        }
+
         /// <summary>
         /// Get the stream index associated with each face. Returns -1 if the face is not found.
         /// </summary>
@@ -284,7 +314,7 @@ namespace Meshes
         {
             foreach (FaceIndex faceIndex in faces)
             {
-                if (faceIndex.face == face)
+                if (ReferenceEquals(faceIndex.face, face))
                 {
                     return faceIndex.index;
                 }
@@ -364,17 +394,23 @@ namespace Meshes
         internal void Delete()
         {
             // clear edges first
-            foreach (Edge edge in edges)
-            {
-                edge.Delete();
-                edge.Other(this).RemoveEdge(edge);
-            }
-            edges.Clear();
 
+            
             foreach (FaceIndex face in faces)
             {
                 face.face.Delete();
             }
+
+
+            foreach (Edge edge in edges)
+            {
+                edge.Delete();
+                edge.Other(this).RemoveDeadFaces();
+                edge.Other(this).RemoveEdge(edge);
+            }
+            edges.Clear();
+            faces.Clear();
+            edges.Clear();
             faces.Clear();
             Alive = false;
         }
@@ -389,11 +425,41 @@ namespace Meshes
             edges.RemoveAll(edge => !edge.Contains(this));
         }
 
+        internal void RemoveDeadFaces()
+        {
+            faces.RemoveAll(faceInd => !faceInd.face.Alive);
+        }
+
+        internal void RemoveDuplicateEdges(bool delete = false)
+        {
+            if (edges.Count < 2)
+            {
+                return;
+            }
+            for (int i = 0; i < edges.Count - 1; i++)
+            {
+                for (int j = i + 1;  j < edges.Count; j++)
+                {
+                    Edge edge = edges[j];
+                    if (edges[i].Equals(edge))
+                    {
+                        edges.RemoveAt(j);
+                        j--;
+                        if (delete)
+                        {
+                            edge.Delete();
+                        }
+                    }
+                        
+                }
+            }
+        }
+
         internal bool RemoveFaceUnchecked(Face face)
         {
             for (int i = 0; i < faces.Count; i++)
             {
-                if (faces[i].face == face)
+                if (ReferenceEquals(faces[i].face, face))
                 {
                     faces.RemoveAt(i);
                     return true;
@@ -410,7 +476,13 @@ namespace Meshes
             }
         }
 
-        internal void CommonFaces(Vertex other, List<Face> common)
+        /// <summary>
+        /// Fill the collection common with faces that exist in both this vertex and other vertex.
+        /// The collection is cleared before it is filled.
+        /// </summary>
+        /// <param name="other">other vertex</param>
+        /// <param name="common">collection to fill</param>
+        internal void CommonFaces(Vertex other, ICollection<Face> common)
         {
             common.Clear();
             foreach (Face face in FacesIter)
@@ -418,6 +490,24 @@ namespace Meshes
                 if (other.IsConnected(face))
                 {
                     common.Add(face);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Fill the collection unique with faces of this vertex that are not in the other vertex.
+        /// The collection is cleared before it is filled.
+        /// </summary>
+        /// <param name="other">other vertex</param>
+        /// <param name="unique">collection to fill</param>
+        internal void UniqueFaces(Vertex other, ICollection<Face> unique)
+        {
+            unique.Clear();
+            foreach (Face face in FacesIter)
+            {
+                if (!other.IsConnected(face))
+                {
+                    unique.Add(face);
                 }
             }
         }
@@ -437,7 +527,7 @@ namespace Meshes
         /// <param name="two"></param>
         internal Edge(Vertex one, Vertex two)
         {
-            if (one == two)
+            if (ReferenceEquals(one, two))
             {
                 throw new ArgumentException("Vertices must be unique");
             }
@@ -453,7 +543,8 @@ namespace Meshes
         /// <returns></returns>
         public bool IsBetween(Vertex vertex1, Vertex vertex2)
         {
-            return ((one == vertex1 && two == vertex2) || (one == vertex2 && two == vertex1));
+            return ((ReferenceEquals(one, vertex1) && ReferenceEquals(two, vertex2)) || 
+                (ReferenceEquals(one, vertex2) && ReferenceEquals(two, vertex1)));
         }
 
         /// <summary>
@@ -463,7 +554,7 @@ namespace Meshes
         /// <returns></returns>
         public bool Contains(Vertex vertex)
         {
-            return ((one == vertex) || (two == vertex));
+            return ReferenceEquals(one, vertex) || ReferenceEquals(two, vertex);
         }
 
         /// <summary>
@@ -473,18 +564,41 @@ namespace Meshes
         /// <returns>The other vertex</returns>
         public Vertex Other(Vertex vertex)
         {
-            if (one == vertex)
+            if (ReferenceEquals(one, vertex))
             {
                 return two;
             }
-            else if (two == vertex)
+            else if (ReferenceEquals(two, vertex))
             {
                 return one;
             }
             else
             {
-                throw new ArgumentException("Given vertex must be in the edge");
+                throw new VertexNotInEdgeException("ExchangeVertex", vertex, this);
             }
+        }
+
+        /// <summary>
+        /// Elementwise comparison. Two edges are equal if they are between the same vertices.
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            Edge? otherEdge = obj as Edge;
+            if (otherEdge == null)
+            {
+                return false;
+            }
+            // this guards against invalid edges that are between the same vertex
+            if (otherEdge.Contains(one))
+            {
+                if (ReferenceEquals(otherEdge.Other(one), two))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>
@@ -494,17 +608,17 @@ namespace Meshes
         /// <param name="replacement"></param>
         public void ExchangeVertex(Vertex current, Vertex replacement)
         {
-            if (one == current)
+            if (ReferenceEquals(one, current))
             {
                 one = replacement;
             }
-            else if (two == current)
+            else if (ReferenceEquals(two, current))
             {
                 two = replacement;
             }
             else
             {
-                throw new ArgumentException("current must be a part of the edge");
+                throw new VertexNotInEdgeException("ExchangeVertex", current, this);
             }
         }
 
@@ -568,10 +682,6 @@ namespace Meshes
         /// </summary>
         public void Delete()
         {
-            foreach (Face face in GetEdgeLoopsIter())
-            {
-                face.Delete();
-            }
             Alive = false;
         }
 
@@ -739,6 +849,7 @@ namespace Meshes
         private void FinalizeSetup()
         {
             RecalculateNormalFast();
+            RecalculateTangent();
             RecalculatePosition();
         }
 
@@ -769,6 +880,15 @@ namespace Meshes
                 var vec2 = vertices[2].Position - vertices[0].Position;
                 Normal = normalize(cross(vec1, vec2));
             }
+        }
+
+        /// <summary>
+        /// Recalculate the tangents based on the normal in the laziest possible way.
+        /// The normal should be calculated before this is called.
+        /// </summary>
+        public void RecalculateTangent()
+        {
+            Tangent = float4(-Normal.y, Normal.x, Normal.z, 0f);
         }
 
         /// <summary>
@@ -835,12 +955,12 @@ namespace Meshes
             int vert1Index = GetVertexIndex(vert1);
             if (vert1Index == -1)
             {
-                throw new ArgumentException("vert1 not in the face");
+                throw new VertexNotInFaceException("IsOrderedClockwise()", vert1, this);
             }
             int vert2Index = GetVertexIndex(vert2);
             if (vert2Index == -1)
             {
-                throw new ArgumentException("vert2 not in the face");
+                throw new VertexNotInFaceException("IsOrderedClockwise()", vert2, this);
             }
 
             if (vert2Index == vert1Index + 1)
@@ -878,7 +998,7 @@ namespace Meshes
         /// Flip the face by reversing the order of vertices
         /// </summary>
         /// <param name="flipNormal">Whether to also flip the normal immediately</param>
-        public void FlipFace(bool flipNormal)
+        public void FlipFace(bool flipNormal = true)
         {
             vertices.Reverse();
             if (flipNormal)
@@ -896,7 +1016,7 @@ namespace Meshes
         {
             foreach (var vert in vertices)
             {
-                if (vert.vertex == vertex)
+                if (ReferenceEquals(vert.vertex, vertex))
                 {
                     return vert.uv0;
                 }
@@ -904,14 +1024,35 @@ namespace Meshes
             return float2(0f, 0f);
         }
 
-        public List<Face> GetAdjacentFaces()
+        public void GetUVandSelection(in Vertex vertex, out float2 uv0, out float3 selection)
         {
-            throw new NotImplementedException { };
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                if (ReferenceEquals(vertex, vertices[i].vertex))
+                {
+                    uv0 = vertices[i].uv0;
+                    int prev = (i - 1) < 0 ? vertices.Count - 1 : i -1;
+                    int next = (i + 1) % vertices.Count;
+                    
+                    selection = float3(
+                        vertices[prev].vertex.Selected ? 1f : 0f,
+                        vertex.Selected ? 1f : 0f,
+                        vertices[next].vertex.Selected ? 1f : 0f
+                        );
+                    return;
+                }
+            }
+            uv0 = float2(0f, 0f);
+            selection = float3(0f,0f,0f);
         }
 
-        public void GetAdjacentFaces(List<Face> faces)
+        internal void RemoveVertexUnchecked(Vertex vertex)
         {
-            throw new NotImplementedException { };
+            int index = GetVertexIndex(vertex);
+            if (index != -1)
+            {
+                vertices.RemoveAt(index);
+            }
         }
 
         /// <summary>
@@ -959,7 +1100,7 @@ namespace Meshes
         {
             for (int i = 0; i < vertices.Count; i++)
             {
-                if (vertices[i].vertex == vertex)
+                if (ReferenceEquals(vertices[i].vertex, vertex))
                 {
                     return i;
                 }
@@ -969,26 +1110,29 @@ namespace Meshes
 
         /// <summary>
         /// Replace the current vertex with the replacement vertex at the same position.
-        /// Check if current vertex exists in the face but do not check if 
-        /// Do not check if these form a valid simple path.
+        /// Check if current vertex exists in the face but do not check if these form a valid simple path.
+        /// <br>Also update the vertices if updateVertices is set</br>
         /// </summary>
         /// <param name="current"></param>
         /// <param name="replacement"></param>
-        internal void ExchangeVertexUnchecked(Vertex current, Vertex replacement)
+        internal void ExchangeVertexUnchecked(Vertex current, Vertex replacement, bool updateVertices = true)
         {
             int index = GetVertexIndex(current);
             if (index == -1)
             {
-                throw new ArgumentException("vertex is not inside the face");
+                throw new VertexNotInFaceException("ExchangeVertexUnchecked()", current, this);
             }
             vertices[index] = new VertexCoordinate
             {
                 vertex = replacement,
                 uv0 = vertices[index].uv0
             };
-
-            current.RemoveFaceUnchecked(this);
-            replacement.AddFaceChecked(this);
+            // if we are iterating over the faces in one vertex, updating them will throw
+            if (updateVertices)
+            {
+                current.RemoveFaceUnchecked(this);
+                replacement.AddFaceChecked(this);
+            }
         }
     }
 }

@@ -205,6 +205,27 @@ namespace Meshes
             return edge;
         }
 
+        /// <summary>
+        /// Create a Face from the given collection
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <returns></returns>
+        public Face CreateFace(ICollection<Vertex> vertices)
+        {
+            var verts = new List<Vertex>(vertices);
+            return CreateFace(verts);
+        }
+
+        /// <summary>
+        /// Create a Face from the given list, the list may be modified
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <returns></returns>
+        public Face CreateFace(List<Vertex> vertices)
+        {
+            return CreateNGonShortestDistance(ref vertices);
+        }
+
 
         internal void CreateFaceLoop(ICollection<Vertex> verticesIn, List<Edge> edgesOut)
         {
@@ -290,12 +311,110 @@ namespace Meshes
         /// <param name="verts">four vertices</param>
         /// <param name="uv0s">four uv values</param>
         /// <returns>Reference to the face</returns>
-        public Face CreateQuad(QuadVerts verts, QuadUVs uv0s = default)
+        public Face CreateQuadOld(QuadVerts verts, QuadUVs uv0s = default)
         {
             QuadEdges faceLoop = CreateFaceLoop(verts);
             var face = new Face(verts, faceLoop, uv0s);
             Faces.Add(face);
+            FixFaceIfPossible(face);
             return face;
+        }
+
+        internal Face? CreateQuadFromEdges(QuadVerts verts)
+        {
+            Vertex zero = verts.f0;
+            Vertex one;
+            Vertex two;
+            Vertex three;
+            if (zero.IsConnected(verts.f1))
+            {
+                one = verts.f1;
+                if (one.IsConnected(verts.f2))
+                {
+                    two = verts.f2;
+                    three = verts.f3;
+                } else
+                {
+                    two = verts.f3;
+                    three = verts.f2;
+                }
+            } else if (zero.IsConnected(verts.f2))
+            {
+                one = verts.f2;
+                if (one.IsConnected(verts.f1))
+                {
+                    two = verts.f1;
+                    three = verts.f3;
+                }
+                else
+                {
+                    two = verts.f3;
+                    three = verts.f1;
+                }
+            } else
+            {
+                return null;
+            }
+            return CreateQuadOld(new QuadVerts(zero, one, two, three));
+        }
+
+        public Face CreateQuad(QuadVerts verts, QuadUVs uv0s = default)
+        {
+            float3 vec1 = verts.f1.Position - verts.f0.Position; // 0 and 1
+            float3 vec2 = verts.f2.Position - verts.f0.Position; // 0 and 2
+            float3 vec3 = verts.f3.Position - verts.f0.Position; // 0 and 3
+            
+            float3 norm1 = cross(vec1, vec2);
+            float3 norm2 = cross(vec2, vec3);
+            float3 norm3 = cross(vec3, vec1);
+            Face face;
+
+            float angle1 = Vector3.Angle(norm1, norm2);
+            float angle2 = Vector3.Angle(norm2, norm3);
+            float angle3 = Vector3.Angle(norm3, norm1);
+
+            if (angle1 > -90 && angle1 < 90)
+            {
+                face = CreateQuadOld(verts, uv0s);
+            } else if (angle2 > -90 && angle2 < 90)
+            {
+                face = CreateQuadOld(new QuadVerts(verts.f0, verts.f2, verts.f3, verts.f1), uv0s);
+
+            } else if (angle3 > -90 && angle3 < 90)
+            {
+                face = CreateQuadOld(new QuadVerts(verts.f0, verts.f3, verts.f1, verts.f2), uv0s);
+
+            } else
+            {
+                throw new UMeshException(
+                    $"Cannot create quad: \n" +
+                    $"Angles: {angle1}, {angle2}, {angle3}\n" +
+                    $"Norms: {norm1}, {norm2}, {norm3}\n" +
+                    $"Vecs: { vec1 }, { vec2}, { vec3}");
+            }
+
+            return face;
+        }
+
+        /// <summary>
+        /// This flips a face to face the correct direction based on adjacent faces
+        /// </summary>
+        /// <param name="face"></param>
+        private void FixFaceIfPossible(Face face)
+        {
+            foreach (Edge edge in face.edges)
+            {
+                foreach (Face otherFace in edge.GetEdgeLoopsIter())
+                {
+                    if (otherFace != face)
+                    {
+                        if (face.IsOrderedClockwise(edge.one, edge.two) == otherFace.IsOrderedClockwise(edge.one, edge.two)) {
+                            face.FlipFace(true);
+                        }
+                        return;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -395,6 +514,62 @@ namespace Meshes
             Faces.Add(face);
             return face;
         }
+
+        internal Face CreateNGonShortestDistance(ref List<Vertex> vertices)
+        {
+            List<Vertex> tempList = new();
+
+            Vertex ptr = vertices[^1];
+            vertices.RemoveAt(vertices.Count-1);
+            tempList.Add(ptr);
+
+            while (vertices.Count > 0)
+            {
+                // first, we will check edges to other vertices
+                int idx = -1;
+                foreach (Edge edge in ptr.edges)
+                {
+                    Vertex other = edge.Other(ptr);
+                    idx = vertices.IndexOf(other);
+                    if (idx != -1)
+                    {
+                        tempList.Add(other);
+                        vertices.RemoveAt(idx);
+                        ptr = other; break;
+                    }
+                }
+                // if we find an edge, we will look for more edges in the next vertex
+                if (idx != -1)
+                {
+                    continue;
+                }
+                // if we don't find an edge, we will look for the closest edge on the list
+                idx = -1;
+                float min = INFINITY;
+                for (int i = 0; i < vertices.Count; i++)
+                {
+                    float dist = distance(ptr.Position, vertices[i].Position);
+                    if (dist < min)
+                    {
+                        min = dist;
+                        idx = i;
+                    }
+                }
+                // guard just in case
+                if (idx != -1)
+                {
+                    ptr = vertices[idx];
+                    tempList.Add(ptr);
+                    vertices.RemoveAt(idx);
+                }
+
+            }
+            // swap lists 
+            vertices = tempList;
+            Face face = CreateNGon(vertices);
+            FixFaceIfPossible(face);
+            return face;
+        }
              
         /// <summary>
         /// Add an outside Vertex to the EditableMesh. You probably do not need
@@ -463,11 +638,6 @@ namespace Meshes
                 AddVertexUnchecked(vertex);
             }
             return vertices;
-        }
-
-        public Vertex MergeVertex(Vertex vert1, Vertex vert2)
-        {
-            throw new NotImplementedException { };
         }
     }
 }

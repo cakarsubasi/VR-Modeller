@@ -1,48 +1,47 @@
 #if !defined(LIGHTING_INCLUDED)
 #define LIGHTING_INCLUDED
-#include "AutoLight.cginc"
-#include "UnityPBSLighting.cginc"
 
-float4 _Tint;
-float _Metallic;
-sampler2D _MainTex;
-float4 _MainTex_ST;
-float _Smoothness;
+#include "LightingInput.cginc"
 
-struct VertexData {
-    float4 position: POSITION;
-    float3 normal : NORMAL;
-    float2 uv: TEXCOORD0;
-};
+#if !defined(ALBEDO_FUNCTION)
+    #define ALBEDO_FUNCTION GetAlbedo
+#endif
 
-struct Interpolators {
-    float4 position: SV_POSITION;
-    float2 uv: TEXCOORD0;
-    float3 normal : TEXCOORD1;
-    float3 worldPos : TEXCOORD2;
-
-    #if defined(VERTEXLIGHT_ON)
-        float3 vertexLightColor : TEXCOORD3;
-    #endif
-};
-
+/// Handle direct lighting
 UnityLight CreateLight (Interpolators i) {
     UnityLight light;
     float3 lightVec = _WorldSpaceLightPos0.xyz - i.worldPos;
-    //float attenuation = 1 / (1 + dot(lightVec, lightVec));
     #if defined(POINT) || defined(SPOT)
         light.dir = normalize(lightVec);
     #else
         light.dir = _WorldSpaceLightPos0.xyz;
     #endif
 
-    UNITY_LIGHT_ATTENUATION(attenuation, 0, i.worldPos);
+    UNITY_LIGHT_ATTENUATION(attenuation, i, i.worldPos);
+    // attenuation *= GetOcclusion(i);
     light.color = _LightColor0.rgb * attenuation;
     light.ndotl = DotClamped(i.normal, light.dir);
     return light;
 }
 
-UnityIndirect CreateIndirectLight(Interpolators i) {
+/// Perform box projection for certain reflection probes
+float3 BoxProjection(
+    float3 direction, float3 position,
+    float4 cubemapPosition, float3 boxMin, float3 boxMax
+) {
+    #if UNITY_SPECCUBE_BOX_PROJECTION
+    UNITY_BRANCH
+    if (cubemapPosition.w > 0) {
+        float3 factors = ((direction > 0 ? boxMax : boxMin) - position) / direction;
+        float scalar = min(min(factors.x, factors.y), factors.z);
+        direction = direction * scalar + (position - cubemapPosition);
+    }
+    #endif
+    return direction;
+}
+
+/// Handle indirect lighting
+UnityIndirect CreateIndirectLight(Interpolators i, float3 viewDir) {
     UnityIndirect indirectLight;
     indirectLight.diffuse = 0;
     indirectLight.specular = 0;
@@ -53,10 +52,56 @@ UnityIndirect CreateIndirectLight(Interpolators i) {
 
     #if defined(FORWARD_BASE_PASS)
         indirectLight.diffuse += max(0, ShadeSH9(float4(i.normal, 1)));
+        float3 reflectionDir = reflect(-viewDir, i.normal);
+        Unity_GlossyEnvironmentData envData;
+        envData.roughness = 1 - GetSmoothness(i);
+        // calculate the first reflection probe
+        envData.reflUVW = BoxProjection(
+            reflectionDir, i.worldPos,
+            unity_SpecCube0_ProbePosition,
+            unity_SpecCube0_BoxMin, unity_SpecCube0_BoxMax
+        );
+        float3 probe0 = Unity_GlossyEnvironment(
+            UNITY_PASS_TEXCUBE(unity_SpecCube0), unity_SpecCube0_HDR, envData
+        );
+        float interpolator = unity_SpecCube0_BoxMin.w;
+
+        // calculate the second reflection probe
+        #if UNITY_SPECCUBE_BLENDING
+        UNITY_BRANCH
+        if (interpolator < 0.99999) {
+
+            envData.reflUVW = BoxProjection(
+                reflectionDir, i.worldPos,
+                unity_SpecCube1_ProbePosition,
+                unity_SpecCube1_BoxMin, unity_SpecCube1_BoxMax
+            );
+            float3 probe1 = Unity_GlossyEnvironment(
+                UNITY_PASS_TEXCUBE_SAMPLER(unity_SpecCube1,unity_SpecCube0),
+                unity_SpecCube1_HDR, envData
+            );
+            // interpolate between probes
+            indirectLight.specular = lerp(probe1, probe0, unity_SpecCube0_BoxMin.w);
+        } else {
+            indirectLight.specular = probe0;
+        }
+        #else
+        indirectLight.specular = probe0;
+        #endif
+
+        // apply occlusion
+        float occlusion = GetOcclusion(i);
+        indirectLight.diffuse *= occlusion;
+        indirectLight.specular *= occlusion;
     #endif
     return indirectLight;
 }
 
+
+/// Compute vertex lights
+/// Vertex lights are up to four lights on forward shading
+/// that is calculated per vertex in addition to per pixel
+/// lighting.
 void ComputeVertexLightColor(inout Interpolators i) {
     #if defined(VERTEXLIGHT_ON)
     	i.vertexLightColor = Shade4PointLights(
@@ -68,41 +113,98 @@ void ComputeVertexLightColor(inout Interpolators i) {
     #endif
 }
 
+/// Calculate the binormal from the normal and tangent for correct lighting
+float3 CreateBinormal (float3 normal, float3 tangent, float binormalSign) {
+    return cross(normal, tangent.xyz) * 
+        (binormalSign * unity_WorldTransformParams.w);
+}
+
+void InitializeFragmentNormal(inout Interpolators i) {
+    float3 tangentSpaceNormal = GetTangentSpaceNormal(i);
+
+    #if defined(BINORMAL_PER_FRAGMENT)
+        float3 binormal = CreateBinormal(i.normal, i.tangent.xyz, i.tangent.w);
+    #else
+        float3 binormal = i.binormal;
+    #endif
+
+    i.normal = normalize(
+        tangentSpaceNormal.x * i.tangent + 
+        tangentSpaceNormal.y * binormal + 
+        tangentSpaceNormal.z * i.normal
+    );
+}
+
 Interpolators MyVertexProgram(VertexData v) {
     Interpolators i;
-    // transform UVs
-    i.uv = TRANSFORM_TEX(v.uv, _MainTex);
     // local space to world space
-    i.position = UnityObjectToClipPos(v.position);
+    i.pos = UnityObjectToClipPos(v.vertex);
     // world position from transformation matrix
-    i.worldPos = mul(unity_ObjectToWorld, v.position);
+    i.worldPos = mul(unity_ObjectToWorld, v.vertex);
     // object space normals to world space normals
     i.normal = UnityObjectToWorldNormal(v.normal);
-    ComputeVertexLightColor(i);
+    // tangent space to world space
+    #if defined(BINORMAL_PER_FRAGMENT)
+        i.tangent = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
+    #else
+        i.tangent = UnityObjectToWorldDir(v.tangent.xyz);
+        i.binormal = CreateBinormal(i.normal, i.tangent, v.tangent.w);
+    #endif
+    // transform UVs
+    i.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
+    i.uv.zw = TRANSFORM_TEX(v.uv, _DetailTex);
+
+    #if defined(MESHES_SELECTION_TEXCOORD1)
+        i.selected = v.selected;
+    #endif
+
+    // screen space shadow coordinates
+    TRANSFER_SHADOW(i);
+
+    // Vertex lights (up to 4)
+    #if defined(VERTEXLIGHT_ON)
+        i.vertexLightColor = float3(0, 0, 0);
+        ComputeVertexLightColor(i);
+    #endif
     return i;
 }
 
 float4 MyFragmentProgram(Interpolators i) : SV_TARGET {
-    // prep
-    i.normal = normalize(i.normal);
+    // Cutout transparency
+    float alpha = GetAlpha(i);
+    #if defined(_RENDERING_CUTOUT)
+        clip(alpha - _AlphaCutoff);
+    #endif
+
+    // Initialize normals
+    InitializeFragmentNormal(i);
     float3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos);
-    float3 albedo = tex2D(_MainTex, i.uv).rgb * _Tint.rgb;
+
     float3 specularTint;
     float oneMinusReflectivity;
     // calculate diffuse contribution
-    albedo = DiffuseAndSpecularFromMetallic(albedo, _Metallic, specularTint, oneMinusReflectivity);
-    // setup direct lights
-    UnityLight light = CreateLight(i);
-    // setup indirect lights
-    UnityIndirect indirectLight = CreateIndirectLight(i);
+    float3 albedo = DiffuseAndSpecularFromMetallic(
+        ALBEDO_FUNCTION(i), GetMetallic(i), specularTint, oneMinusReflectivity);
+    // premultiply alpha
+    #if defined(_RENDERING_TRANSPARENT)
+        albedo *= alpha;
+        alpha = 1 - oneMinusReflectivity + alpha * oneMinusReflectivity;
+    #endif
 
     // apply the BRDF
-    return UNITY_BRDF_PBS(
+    float4 target = UNITY_BRDF_PBS(
         albedo, specularTint,
-        oneMinusReflectivity, _Smoothness,
+        oneMinusReflectivity, GetSmoothness(i),
         i.normal, viewDir,
-        light, indirectLight
+        CreateLight(i), CreateIndirectLight(i, viewDir)
         );
+
+    // apply emission
+    target.rgb += GetEmission(i);
+    #if defined(_RENDERING_FADE) || defined(_RENDERING_TRANSPARENT)
+        target.a = alpha;
+    #endif
+    return target;
 }
 
 #endif

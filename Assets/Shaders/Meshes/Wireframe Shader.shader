@@ -1,4 +1,6 @@
-Shader "Example/Multiple Lights Shader"
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+Shader "Example/Wireframe Shader"
 {
 
     Properties{
@@ -46,9 +48,10 @@ Shader "Example/Multiple Lights Shader"
 
             Blend [_SrcBlend] [_DstBlend]
             ZWrite [_ZWrite]
+            Cull Off
 
             CGPROGRAM
-            #pragma target 3.0
+            #pragma target 4.0
 
             #pragma multi_compile _ SHADOWS_SCREEN
             #pragma multi_compile _ VERTEXLIGHT_ON
@@ -64,10 +67,11 @@ Shader "Example/Multiple Lights Shader"
 
             #pragma vertex MyVertexProgram
             #pragma fragment MyFragmentProgram
+            #pragma geometry GeometryProgram
 
             #define FORWARD_BASE_PASS
 
-            #include "Lighting.cginc"
+            #include "FlatWireframe.cginc"
 
             ENDCG
         }
@@ -124,5 +128,4 @@ Shader "Example/Multiple Lights Shader"
             ENDCG
         }
     }
-
 }

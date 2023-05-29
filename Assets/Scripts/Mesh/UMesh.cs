@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 #nullable enable
 
-using static Unity.Mathematics.math;
-
 namespace Meshes
 {
     public partial struct UMesh
@@ -19,6 +17,8 @@ namespace Meshes
 
         public Mesh Mesh { get => mesh; set => SetupMesh(value); }
         public string Name;
+        public ShadingType Shading { get => shading; set => SetShading(value); }
+        private ShadingType shading;
 
         public List<Vertex> Vertices;
         public List<Edge> Edges;
@@ -62,6 +62,7 @@ namespace Meshes
         {
             UMesh uMesh = default;
             uMesh.Name = name;
+            uMesh.shading = ShadingType.Flat;
             uMesh.Setup(mesh);
             return uMesh;
         }
@@ -115,7 +116,7 @@ namespace Meshes
         private void Setup(Mesh.MeshData meshData, int vertexCount, int triangleCount)
         {
             var vertexAttributes = new NativeArray<VertexAttributeDescriptor>(
-    4, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+                5, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
 
             // positions
             vertexAttributes[0] = new VertexAttributeDescriptor(
@@ -131,6 +132,9 @@ namespace Meshes
             vertexAttributes[3] = new VertexAttributeDescriptor(
                 attribute: VertexAttribute.TexCoord0,
                 dimension: 2);
+            vertexAttributes[4] = new VertexAttributeDescriptor(
+                attribute: VertexAttribute.TexCoord1,
+                dimension: 3);
 
             meshData.SetVertexBufferParams(vertexCount, vertexAttributes);
             vertexAttributes.Dispose();
@@ -408,7 +412,7 @@ namespace Meshes
             int i = 0;
             foreach (Vertex vertex in Vertices)
             {
-                i = vertex.OptimizeIndices(i);
+                i = vertex.OptimizeIndicesAlt(i);
             }
             internalVertexCount = i;
 
@@ -426,7 +430,7 @@ namespace Meshes
         public void WriteAllToMesh()
         {
             int previousVertexCount = internalVertexCount;
-            int previousIndexCount = internalIndexCount;
+            int previousTriangleCount = internalTriangleCount;
             // figure out the indices
             OptimizeIndices();
             // resize the vertex and index buffers if needed
@@ -438,7 +442,7 @@ namespace Meshes
             NativeArray<Stream0> vertexStream = new NativeArray<Stream0>(internalVertexCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             foreach (Vertex vertex in Vertices)
             {
-                vertex.WriteToStream(ref vertexStream);
+                vertex.WriteToStream(ref vertexStream, Shading);
             }
             mesh.SetVertexBufferData<Stream0>(vertexStream, 0, 0, internalVertexCount,
                 flags: MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds);
@@ -453,7 +457,7 @@ namespace Meshes
                 flags: MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds);
 
             // If any deletions have occurred, zero out the remainder
-            DeletePadding(internalVertexCount, previousVertexCount, internalIndexCount, previousIndexCount);
+            DeletePadding(internalVertexCount, previousVertexCount, internalTriangleCount, previousTriangleCount);
         }
 
         public void UnsafeWriteVertexToMesh(Vertex vertex)

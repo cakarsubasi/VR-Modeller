@@ -21,6 +21,7 @@ namespace Meshes
         public float3 normal; // 12 bytes
         public float4 tangent; // 16 bytes
         public float2 uv0; // 8 bytes
+        public float3 selected; // 12 bytes
 
         public static readonly Stream0 degenerate = new Stream0
         {
@@ -50,6 +51,7 @@ namespace Meshes
         public float4 Tangent;
 
         public bool Alive { get; internal set; } = true;
+        public bool Selected { get; set; } = false;
         public int Index { get; internal set; } = -1;
 
         internal struct FaceIndex
@@ -144,6 +146,8 @@ namespace Meshes
         public bool Alive { get; internal set; } = true;
         public float3 Position { get; internal set; }
         public float3 Normal { get; internal set; }
+
+        public float4 Tangent { get; internal set; }
 
         public int VertexCount => vertices.Count;
         public int EdgeCount => edges.Count;

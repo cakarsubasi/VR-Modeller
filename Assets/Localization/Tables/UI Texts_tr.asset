@@ -96,6 +96,10 @@ MonoBehaviour:
     m_Localized: "K\xF6\u015Feleri\nSil"
     m_Metadata:
       m_Items: []
+  - m_Id: 10833497564033024
+    m_Localized: "K\xF6\u015Feleri\nBirle\u015Ftir"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
