@@ -1,53 +1,28 @@
-﻿using UnityEditor;
-using UnityEngine;
-using Unity.Mathematics;
+using System.Collections;
 using System.Collections.Generic;
-
-using NUnit.Framework;
+using UnityEngine;
 
 using Meshes;
 using MeshesIO;
-using static Unity.Mathematics.math;
 
-public class WavefrontImportTestScript
+public class WavefrontImportTestComponent : MonoBehaviour
 {
 
-
-    [Test]
-    public void RegexTest()
+    private void OnEnable()
     {
-        var commentMaybe = WFGrammar.WFComment.Match("# www.blender.org");
-        Assert.AreEqual("www.blender.org", commentMaybe.comment);
+        SceneDescription description = WavefrontIO.Parse(TestString);
 
-        commentMaybe = WFGrammar.WFComment.Match("o Cube_Cube.001");
-        Assert.IsNull(commentMaybe);
+        for (int i = 0; i < description.objects.Count; i++)
+        {
+            UMesh mesh = description.objects[i];
+            var transform = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            transform.GetComponent<MeshFilter>().mesh = mesh.Mesh;
+            mesh.RecalculateAllAndWriteToMesh();
+        }
+
     }
 
-    [Test]
-    public void VertexRegexTest()
-    {
-        var vertexMaybe = WFGrammar.WFVertex.Match("v -1.000000 -2.000000 3.000000");
-        Assert.AreEqual(-1f, vertexMaybe.x);
-        Assert.AreEqual(-2f, vertexMaybe.y);
-        Assert.AreEqual(3f, vertexMaybe.z);
-
-        vertexMaybe = WFGrammar.WFVertex.Match("vt 0.375000 0.000000");
-        Assert.IsNull(vertexMaybe);
-    }
-
-    [Test]
-    public void FaceRegexTest()
-    {
-        var FaceMaybe = WFGrammar.WFFace.Match("f 1/11/21 2/12/22 3/13/23 4/14/24");
-    }
-
-    [Test]
-    public void IntegrationTest()
-    {
-        SceneDescription desc = WavefrontIO.Parse(TestString);
-    }
-
-public static string TestString = @"
+    public static string TestString = @"
 # Blender v3.0.1 OBJ File: ''
 # www.blender.org
 mtllib test_export4.mtl
