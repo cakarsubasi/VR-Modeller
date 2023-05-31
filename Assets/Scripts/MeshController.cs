@@ -50,6 +50,27 @@ public class MeshController : MonoBehaviour
         StartCoroutine(MoveMultpleVertices());
     }
 
+    public void SetupMeshController(UMesh mesh)
+    {
+        openOrCloseAction.action.performed += ClearActivedVerticesOpenOrCloseVertices;
+        ObjectController.Instance.AllObjects.Add(gameObject);
+
+
+        EditableMesh = mesh;
+        GetComponent<MeshFilter>().mesh = EditableMesh.Mesh;
+        EditableMesh.WriteAllToMesh();
+
+        Vertices = EditableMesh.VertexLocations.ToList();
+        verticesParent = new GameObject("VerticesParent");
+        verticesParent.transform.parent = this.transform;
+        verticesParent.transform.localPosition = Vector3.zero;
+        verticesParent.transform.localScale = Vector3.one;
+        verticesParent.transform.localRotation = Quaternion.identity;
+
+        StartCoroutine(InitVertexObjects(Vertices, 0, false));
+        StartCoroutine(MoveMultpleVertices());
+    }
+
     IEnumerator InitVertexObjects(List<Vector3> vertices, int startIndex, bool showVertices)
     {
         verticesParent.SetActive(showVertices);

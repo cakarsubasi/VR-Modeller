@@ -1,6 +1,7 @@
+#if UNITY_EDITOR
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEditor;
 
 public class MultipleLightsShaderGUI : ShaderGUI
 {
@@ -117,10 +118,12 @@ public class MultipleLightsShaderGUI : ShaderGUI
         {
             shouldShowAlphaCutoff = true;
             mode = RenderingMode.Cutout;
-        } else if (IsKeywordEnabled("_RENDERING_FADE"))
+        }
+        else if (IsKeywordEnabled("_RENDERING_FADE"))
         {
             mode = RenderingMode.Fade;
-        } else if (IsKeywordEnabled("_RENDERING_TRANSPARENT"))
+        }
+        else if (IsKeywordEnabled("_RENDERING_TRANSPARENT"))
         {
             mode = RenderingMode.Transparent;
         }
@@ -181,7 +184,8 @@ public class MultipleLightsShaderGUI : ShaderGUI
         if (IsKeywordEnabled("_SMOOTHNESS_ALBEDO"))
         {
             source = SmoothnessSource.Albedo;
-        } else if (IsKeywordEnabled("_SMOOTHNESS_METALLIC"))
+        }
+        else if (IsKeywordEnabled("_SMOOTHNESS_METALLIC"))
         {
             source = SmoothnessSource.Metallic;
         }
@@ -190,7 +194,7 @@ public class MultipleLightsShaderGUI : ShaderGUI
         editor.ShaderProperty(slider, MakeLabel(slider));
         EditorGUI.indentLevel += 1;
         EditorGUI.BeginChangeCheck();
-        source = (SmoothnessSource) EditorGUILayout.EnumPopup(MakeLabel("Source"), source);
+        source = (SmoothnessSource)EditorGUILayout.EnumPopup(MakeLabel("Source"), source);
         if (EditorGUI.EndChangeCheck())
         {
             RecordAction("Smoothness Source");
@@ -234,12 +238,13 @@ public class MultipleLightsShaderGUI : ShaderGUI
     private void DrawGUIDetailMask()
     {
         MaterialProperty mask = FindProperty("_DetailMask");
-		EditorGUI.BeginChangeCheck();
-		editor.TexturePropertySingleLine(
+        EditorGUI.BeginChangeCheck();
+        editor.TexturePropertySingleLine(
             MakeLabel(mask, "Detail Mask (A)"), mask
-		);
-		if (EditorGUI.EndChangeCheck()) {
-			SetKeyword("_DETAIL_MASK", mask.textureValue);
+        );
+        if (EditorGUI.EndChangeCheck())
+        {
+            SetKeyword("_DETAIL_MASK", mask.textureValue);
         }
     }
 
@@ -305,7 +310,7 @@ public class MultipleLightsShaderGUI : ShaderGUI
         return staticLabel;
     }
 
-    void SetKeyword (string keyword, bool state)
+    void SetKeyword(string keyword, bool state)
     {
         if (state)
         {
@@ -313,7 +318,8 @@ public class MultipleLightsShaderGUI : ShaderGUI
             {
                 m.EnableKeyword(keyword);
             }
-        } else
+        }
+        else
         {
             foreach (Material m in editor.targets)
             {
@@ -332,3 +338,4 @@ public class MultipleLightsShaderGUI : ShaderGUI
         editor.RegisterPropertyChangeUndo(label);
     }
 }
+#endif

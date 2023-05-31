@@ -916,6 +916,20 @@ namespace Meshes
             }
         }
 
+        public IEnumerable<FaceVertexInfo> GetVertexInfo(ShadingType fallback = ShadingType.Flat)
+        {
+            float3 normal = Normal;
+            foreach (VertexCoordinate coor in vertices)
+            {
+                    yield return new FaceVertexInfo
+                    {
+                        Index = coor.vertex.Index,
+                        uv0 = coor.uv0,
+                        normal = (Shading == ShadingType.Smooth || fallback == ShadingType.Smooth) ? coor.vertex.Normal : normal,
+                };
+            }
+        }
+
         /// <summary>
         /// Get the number of triangles required to show this face
         /// </summary>
