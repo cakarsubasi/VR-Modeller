@@ -182,7 +182,8 @@ MonoBehaviour:
       kullanarak s\xFCr\xFCkleyebilirsin. E\u011Fer \u201Cyaz\u01311\u201Di \u201Cyaz\u01312\u201Dnin
       \xFCzerine koyarsan, \u201Cyaz\u01312\u201Dye kar\u015F\u0131l\u0131k gelen
       obje \u201Cyaz\u01311\u201Din ebeveyn objesi olur. Ebeveyn objeleri hareket
-      ettirirsen \xE7ocuk objeler onlarla hareket eder. \r"
+      ettirirsen \xE7ocuk objeler onlarla hareket eder. Geri almak i\xE7in bu aksiyonu
+      tekrar yap."
     m_Metadata:
       m_Items: []
   references:

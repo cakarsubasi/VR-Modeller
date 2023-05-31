@@ -185,7 +185,7 @@ MonoBehaviour:
       the object list. You can drag the texts with back triggers on the controllers.
       If you put \"text1\" onto \"text2\", the object corresponding to \"text2\"
       becomes the parent object of \"text1\". When you move parent objects, child
-      objects also move with them. "
+      objects also move with them. Redo this action to revoke it."
     m_Metadata:
       m_Items: []
   references:
