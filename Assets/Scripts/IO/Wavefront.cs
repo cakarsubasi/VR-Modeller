@@ -4,6 +4,7 @@ using System;
 using System.Text.RegularExpressions;
 using Meshes;
 using UnityEngine;
+using System.Text;
 
 using Unity.Mathematics;
 
@@ -15,6 +16,7 @@ namespace MeshesIO
     public class SceneDescription
     {
         public List<UMesh> objects = new();
+        public List<Vector3> worldCoordinates = new();
     }
 
     public abstract class WFGrammar
@@ -45,12 +47,22 @@ namespace MeshesIO
                 }
                 return null;
             }
+
+            public override string ToString()
+            {
+                return $"# {comment}";
+            }
         }
 
 
         public sealed class WFMTLLib : WFGrammar
         {
             string file;
+
+            private WFMTLLib(string file)
+            {
+                this.file = file;
+            }
 
             public static Regex rx = new Regex(@"mtllib (.+)", RegexOptions.Compiled);
         }
@@ -72,6 +84,19 @@ namespace MeshesIO
                 uvs = new();
                 normals = new();
                 faces = new();
+            }
+
+            public WFObject(string name, 
+                List<WFVertex> positions,
+                List<WFTextureCoordinate> uvs,
+                List<WFVertexNormal> normals,
+                List<WFFace> faces)
+            {
+                this.name = name;
+                this.positions = positions;
+                this.uvs = uvs;
+                this.normals = normals;
+                this.faces = faces;
             }
 
             public static Regex rx = new Regex(@"o (?<name>.+)", RegexOptions.Compiled);
@@ -111,12 +136,41 @@ namespace MeshesIO
                         int idx = index.vertex - positionBeginning - 1;
                         verts.Add(mesh.Vertices[idx]);
                     }
-                    mesh.CreateFace(verts);
+                    mesh.CreateNGon(verts);
                     // todo apply normals and texture coordinates
                 }
 
                 return mesh;
             }
+
+            public override string ToString()
+            {
+                StringBuilder str = new($"o {name}\n");
+
+                foreach (var pos in positions)
+                {
+                    str.AppendLine(pos.ToString());
+                }
+
+                foreach (var vt in uvs)
+                {
+                    str.AppendLine(vt.ToString());
+                }
+
+                foreach (var vn in normals)
+                {
+                    str.AppendLine(vn.ToString());
+                }
+
+                foreach (var f in faces)
+                {
+                    str.AppendLine(f.ToString());
+                }
+
+                return str.ToString();
+            }
+
+
         }
 
         public sealed class WFVertex : WFGrammar
@@ -126,18 +180,17 @@ namespace MeshesIO
             public readonly float z;
             public readonly float? w;
 
-            private WFVertex(float x, float y, float z)
+            public WFVertex(float3 position) : this(position.x, position.y, position.z) { }
+            
+            public WFVertex(float x, float y, float z)
             {
                 this.x = x;
                 this.y = y;
                 this.z = z;
             }
 
-            private WFVertex(float x, float y, float z, float w)
+            public WFVertex(float x, float y, float z, float w) : this(x, y, z)
             {
-                this.x = x;
-                this.y = y;
-                this.z = z;
                 this.w = w;
             }
 
@@ -165,6 +218,12 @@ namespace MeshesIO
                 }
                 
                 return null;
+            }
+
+            public override string ToString()
+            {
+                return $"v {x:F6} {y:F6} {z:F6} {w:F6}";
+
             }
         }
 
@@ -209,6 +268,11 @@ namespace MeshesIO
                 }
 
                 return null;
+            }
+
+            public override string ToString()
+            {
+                return $"v {x} {y} {w}";
             }
         }
 
@@ -259,6 +323,11 @@ namespace MeshesIO
 
                 return null;
             }
+
+            public override string ToString()
+            {
+                 return $"v {x} {y} {z} {w}";
+            }
         }
 
         public sealed class WFFace : WFGrammar
@@ -272,12 +341,12 @@ namespace MeshesIO
 
             public readonly List<FaceIndex> indices;
 
-            private WFFace()
+            public WFFace()
             {
                 indices = new();
             }
 
-            private WFFace(List<FaceIndex> indices)
+            public WFFace(List<FaceIndex> indices)
             {
                 this.indices = indices;
             }
@@ -327,6 +396,28 @@ namespace MeshesIO
                 }
 
                 return new WFFace(indices);
+            }
+
+            public override string ToString()
+            {
+                string ret = "f";
+                foreach (FaceIndex idx in indices)
+                {
+                    ret = $"{ret} {idx.vertex}";
+                    if (idx.coordinate != null && idx.normal != null)
+                    {
+                        ret = $"{ret}/{idx.coordinate}/{idx.normal}";
+                    }
+                    else if (idx.coordinate != null)
+                    {
+                        ret = $"{ret}/{idx.coordinate}";
+                    }
+                    else if (idx.normal != null)
+                    {
+                        ret = $"{ret}//{idx.normal}";
+                    }
+                }
+                return ret;
             }
         }
     }
@@ -410,55 +501,74 @@ namespace MeshesIO
             return scene;
         }
 
-        public static string Encode(ref SceneDescription objects)
+        public static string Unparse(SceneDescription scene)
         {
-            String str = "";
-            foreach (var obj in objects.objects)
+            int vCount = 1;
+            int vtCount = 1;
+            int vnCount = 1;
+
+            List<WFGrammar.WFObject> objects = new();
+
+            for (int i = 0; i < scene.objects.Count; ++i)
             {
-                str += EncodeOneObject(obj);
+                UMesh mesh = scene.objects[i];
+                WFGrammar.WFObject wfObject = EncodeOneObject(mesh, ref vCount, ref vtCount, ref vnCount);
+                objects.Add(wfObject);
             }
-            return str;
+
+            StringBuilder text = new();
+            foreach (var obj in objects)
+            {
+                text.AppendLine(obj.ToString());
+            }
+
+            return text.ToString();
         }
 
-        public static string EncodeOneObject(UMesh umesh)
+        public static WFGrammar.WFObject EncodeOneObject(UMesh umesh, ref int vCount, ref int vtCount, ref int vnCount)
         {
             List<WFGrammar.WFVertex> vertices = new();
+            List<WFGrammar.WFTextureCoordinate> vts = new();
+            List<WFGrammar.WFVertexNormal> vns = new();
+            List<WFGrammar.WFFace> faces = new();
+
+            // texture coordinates
+            Dictionary<float2, int?> coordinateDict = new();
+            // vertex normals
+            Dictionary<float3, int?> normalDict = new();
+
             // vertex positions
             foreach (Vertex vertex in umesh.Vertices)
             {
-                //vertices.Add(WFGrammar.WFVertex.Create(vertex));
-            }
-            // texture coordinates
-            Dictionary<float2, int> coordinateDict = new();
-            // vertex normals
-            Dictionary<float3, int> normalDict = new();
-
-            int vtIndex = 0;
-            int vnIndex = 0;
-            foreach (Face face in umesh.Faces)
-            {
-
-                if (face.Shading == ShadingType.Flat)
-                // one averaged value
-                {
-
-                } else
-                // all vertices separate
-                {
-
-                }
+                vertex.Index = vCount;
+                vCount++;
+                vertices.Add(new WFGrammar.WFVertex(vertex.Position));
             }
 
             // actually do the faces
+            foreach (Face face in umesh.Faces)
+            {
+                WFGrammar.WFFace wfFace = new();
+                
+                foreach (var vertInfo in face.GetVertexInfo(umesh.Shading))
+                {
+                    wfFace.indices.Add(new WFGrammar.WFFace.FaceIndex
+                    {
+                        vertex = vertInfo.Index,
+                        coordinate = coordinateDict.GetValueOrDefault(vertInfo.uv0, null),
+                        normal = normalDict.GetValueOrDefault(vertInfo.normal, null)
+                    });
+                }
 
+                faces.Add(wfFace);
+            }
 
-            throw new NotImplementedException { };
-        }
+            WFGrammar.WFObject wfObject = new(umesh.Name, vertices, vts, vns, faces);
 
-        public static void Decode()
-        {
+            vtCount += vts.Count;
+            vnCount += vns.Count;
 
-
+            return wfObject;
         }
 
     }

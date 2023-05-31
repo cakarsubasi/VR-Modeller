@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 
 using Meshes;
+using Meshes.Test;
 using MeshesIO;
 using static Unity.Mathematics.math;
 
@@ -45,6 +46,15 @@ public class WavefrontImportTestScript
     public void IntegrationTest()
     {
         SceneDescription desc = WavefrontIO.Parse(TestString);
+    }
+
+    [Test]
+    public void ExportTest()
+    {
+        UMesh cube = Creators.Cube;
+        SceneDescription desc = new SceneDescription();
+        desc.objects.Add(cube);
+        Debug.Log(WavefrontIO.Unparse(desc));
     }
 
 public static string TestString = @"
