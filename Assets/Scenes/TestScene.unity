@@ -823,6 +823,16 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1322255240}
+    - target: {fileID: 82104151303084413, guid: 3df92861a1fabf9459958b4990a79f9a,
+        type: 3}
+      propertyPath: m_text
+      value: C:\Users\mmusa\Desktop\AllObjects1.obj
+      objectReference: {fileID: 0}
+    - target: {fileID: 82104151303084413, guid: 3df92861a1fabf9459958b4990a79f9a,
+        type: 3}
+      propertyPath: m_fontSize
+      value: 2.55
+      objectReference: {fileID: 0}
     - target: {fileID: 3528217940192655566, guid: 3df92861a1fabf9459958b4990a79f9a,
         type: 3}
       propertyPath: m_AnchorMax.y
@@ -843,6 +853,17 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5350948481365307146, guid: 3df92861a1fabf9459958b4990a79f9a,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1872159939}
+    - target: {fileID: 6848379129149523080, guid: 3df92861a1fabf9459958b4990a79f9a,
+        type: 3}
+      propertyPath: GizmoSelect
+      value: 
+      objectReference: {fileID: 5262893691843572231, guid: fc96176748a54e849aa379b905920d78,
+        type: 3}
     - target: {fileID: 7489574551222041369, guid: 3df92861a1fabf9459958b4990a79f9a,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target

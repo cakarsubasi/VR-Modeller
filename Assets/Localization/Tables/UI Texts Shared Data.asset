@@ -143,6 +143,10 @@ MonoBehaviour:
     m_Key: ExportSelectedObject
     m_Metadata:
       m_Items: []
+  - m_Id: 15580281154744320
+    m_Key: ExportAll
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

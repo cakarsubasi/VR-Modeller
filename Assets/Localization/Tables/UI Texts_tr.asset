@@ -152,6 +152,10 @@ MonoBehaviour:
     m_Localized: "Se\xE7ilen\nObjeyi\n\xC7\u0131kar"
     m_Metadata:
       m_Items: []
+  - m_Id: 15580281154744320
+    m_Localized: "B\xFCt\xFCn\nObjeleri\n\xC7\u0131kar"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

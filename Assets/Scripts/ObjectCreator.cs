@@ -6,7 +6,7 @@ using static Unity.Mathematics.math;
 
 public class ObjectCreator : MonoBehaviour
 {
-    public GameObject GizmoPosition, GizmoRotation, GizmoScale;
+    public GameObject GizmoPosition, GizmoRotation, GizmoScale, GizmoSelect;
 
     public void OnClickCreateGameObject(GameObject gameobject)
     {
@@ -58,6 +58,9 @@ public class ObjectCreator : MonoBehaviour
         GameObject sca = Instantiate(GizmoScale, parent.transform);
         sca.name = sca.name.Replace("(Clone)", "");
 
+        GameObject select = Instantiate(GizmoSelect, parent.transform);
+        select.name = select.name.Replace("(Clone)", "");
+
         ObjectController.Instance.OnSelect();
         ObjectController.Instance.OnMove();
         ObjectController.Instance.OnRotate();
@@ -103,6 +106,9 @@ public class ObjectCreator : MonoBehaviour
 
         GameObject sca = Instantiate(GizmoScale, parent.transform);
         sca.name = sca.name.Replace("(Clone)", "");
+
+        GameObject select = Instantiate(GizmoSelect, parent.transform);
+        select.name = select.name.Replace("(Clone)", "");
 
         ObjectController.Instance.OnSelect();
         ObjectController.Instance.OnMove();

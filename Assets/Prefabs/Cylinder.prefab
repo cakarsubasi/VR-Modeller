@@ -62,7 +62,7 @@ Transform:
   m_GameObject: {fileID: 5760285086351593202}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 2764153702459274735}
@@ -133,6 +133,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   vertexHighlight: {fileID: 9164154604655469877, guid: d42f6a5a62be2c54586a60f7e15782b7,
     type: 3}
+  activeVerticesObject: {fileID: 0}
   openOrCloseAction:
     m_UseReference: 1
     m_Action:
@@ -146,7 +147,6 @@ MonoBehaviour:
       m_Flags: 0
     m_Reference: {fileID: 109764013769571655, guid: c348712bda248c246b8c49b3db54643f,
       type: 3}
-  copiedMesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!64 &-5580338114043449429
 MeshCollider:
   m_ObjectHideFlags: 0

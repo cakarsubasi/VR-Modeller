@@ -108,6 +108,29 @@ namespace Meshes
             }
         }
 
+        public float3 GetCenter()
+        {
+            float3 center = 0f;
+            foreach (Vertex vertex in Vertices)
+            {
+                center += vertex.Position;
+            }
+            center /= (float)Vertices.Count;
+            return center;
+        }
+
+        /// <summary>
+        /// Move the vertices to the origin point
+        /// </summary>
+        public void ObjectToGeometry()
+        {
+            float3 center = GetCenter();
+            foreach (Vertex vertex in Vertices)
+            {
+                vertex.Position -= center;
+            }
+        }
+
         public void SetFace()
         {
             throw new NotImplementedException { };

@@ -29,6 +29,18 @@ public class MeshController : MonoBehaviour
     //public UMesh EditableMesh { get => editableMesh; set => editableMesh = value; }
 
 
+    private void Update()
+    {
+        if (ObjectController.Instance.SelectedGameobject == gameObject && !ObjectController.Instance.Moving && !ObjectController.Instance.Rotating && !ObjectController.Instance.Scaling)
+        {
+            transform.parent.FindChildWithTag("GizmoSelect").gameObject.SetActive(true);
+        }
+        else
+        {
+            transform.parent.FindChildWithTag("GizmoSelect").gameObject.SetActive(false);
+        }
+    }
+
     public void SetupMeshController(CreateMeshDelegate createMeshFunction)
     {
         openOrCloseAction.action.performed += ClearActivedVerticesOpenOrCloseVertices;
@@ -48,9 +60,11 @@ public class MeshController : MonoBehaviour
 
         StartCoroutine(InitVertexObjects(Vertices, 0, false));
         StartCoroutine(MoveMultpleVertices());
+
+        GetComponent<MeshCollider>().sharedMesh = EditableMesh.Mesh;
     }
 
-    public void SetupMeshController(UMesh mesh)
+    public void SetupMeshController(UMesh mesh) // for importing
     {
         openOrCloseAction.action.performed += ClearActivedVerticesOpenOrCloseVertices;
         ObjectController.Instance.AllObjects.Add(gameObject);
@@ -58,6 +72,7 @@ public class MeshController : MonoBehaviour
 
         EditableMesh = mesh;
         GetComponent<MeshFilter>().mesh = EditableMesh.Mesh;
+        EditableMesh.ObjectToGeometry();
         EditableMesh.WriteAllToMesh();
 
         Vertices = EditableMesh.VertexLocations.ToList();
@@ -69,6 +84,7 @@ public class MeshController : MonoBehaviour
 
         StartCoroutine(InitVertexObjects(Vertices, 0, false));
         StartCoroutine(MoveMultpleVertices());
+        GetComponent<MeshCollider>().sharedMesh = EditableMesh.Mesh;
     }
 
     IEnumerator InitVertexObjects(List<Vector3> vertices, int startIndex, bool showVertices)
@@ -118,14 +134,12 @@ public class MeshController : MonoBehaviour
         {
             IsSelected = false;
             ObjectController.Instance.SelectedGameobject = null;
-            GetComponent<MeshRenderer>().material.color = normalColor;
         }
         else
         {
             ObjectController.Instance.ClearSelectedObject();
             IsSelected = true;
             ObjectController.Instance.SelectedGameobject = gameObject;
-            //GetComponent<MeshRenderer>().material.color = Color.cyan;
         }
     }
 
