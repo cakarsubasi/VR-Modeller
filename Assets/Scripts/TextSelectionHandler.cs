@@ -3,15 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public class TextSelectionHandler : MonoBehaviour
 {
     GameObject ray;
     Vector3 initialPos;
     Color cur_color;
+    GameObject handOptions;
     public void Start()
     {
-        ray = GameObject.Find("RightHand Ray");
+        GameObject menuback = GameObject.Find("Radial Menu Back");
+        GameObject settings = menuback.transform.Find("Settings Canvas").gameObject;
+        handOptions = settings.transform.Find("Radio Options").gameObject;
+        setHand();
         initialPos = transform.localPosition;
         cur_color = Color.white;
     }
@@ -37,6 +43,7 @@ public class TextSelectionHandler : MonoBehaviour
 
     public void SelectObject()
     {
+        setHand();
         GameObject obj = gameObject.GetComponent<AssociatedObject>().GetAssociatedObject();
         
         GameObject mesh = obj.transform.FindChildWithTag("MeshObject").gameObject;
@@ -78,23 +85,33 @@ public class TextSelectionHandler : MonoBehaviour
             {
                 if (CheckBound(child))
                 {
-                    gameObject.GetComponent<AssociatedObject>().GetAssociatedObject().transform.SetParent(child.GetComponent<AssociatedObject>().GetAssociatedObject().transform);
-                    TextMeshProUGUI tm = child.GetComponent<TextMeshProUGUI>();
-                    if(tm.color == Color.cyan || tm.color == Color.white)
+                    GameObject asso_obj = gameObject.GetComponent<AssociatedObject>().GetAssociatedObject();
+                    if (asso_obj.transform.parent == child.GetComponent<AssociatedObject>().GetAssociatedObject().transform)
                     {
-                        Color new_color = new Color(
-                            Random.Range(0f, 1f),
-                            Random.Range(0f, 1f),
-                            Random.Range(0f, 1f)
-                        );
-                        tm.color = new_color;
-                        gameObject.GetComponent<TextMeshProUGUI>().color = new_color;
-                        cur_color = new_color;
-                        child.GetComponent<TextSelectionHandler>().cur_color = new_color;
+                        asso_obj.transform.SetParent(null);
+                        gameObject.GetComponent<TextMeshProUGUI>().color = Color.white;
+                        cur_color = Color.white;
                     }
                     else
                     {
-                        gameObject.GetComponent<TextMeshProUGUI>().color = child.GetComponent<TextSelectionHandler>().cur_color;
+                        asso_obj.transform.SetParent(child.GetComponent<AssociatedObject>().GetAssociatedObject().transform);
+                        TextMeshProUGUI tm = child.GetComponent<TextMeshProUGUI>();
+                        if (tm.color == Color.white)
+                        {
+                            Color new_color = new Color(
+                                Random.Range(0f, 1f),
+                                Random.Range(0f, 1f),
+                                Random.Range(0f, 1f)
+                            );
+                            tm.color = new_color;
+                            gameObject.GetComponent<TextMeshProUGUI>().color = new_color;
+                            cur_color = new_color;
+                            child.GetComponent<TextSelectionHandler>().cur_color = new_color;
+                        }
+                        else
+                        {
+                            gameObject.GetComponent<TextMeshProUGUI>().color = child.GetComponent<TextSelectionHandler>().cur_color;
+                        }
                     }
                 }
             }
@@ -113,6 +130,20 @@ public class TextSelectionHandler : MonoBehaviour
         else
         {
             return false;
+        }
+    }
+
+    public void setHand()
+    {
+        Toggle toggle = handOptions.GetComponent<HandAccessibility>().GetSelectedToggle();
+
+        if(toggle.tag == "LeftHand")
+        {
+            ray = GameObject.Find("RightHand Ray");
+        }
+        else
+        {
+            ray = GameObject.Find("LeftHand Ray");
         }
     }
 

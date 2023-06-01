@@ -147,6 +147,10 @@ MonoBehaviour:
     m_Key: ExportAll
     m_Metadata:
       m_Items: []
+  - m_Id: 15621693267161088
+    m_Key: HelpText
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
