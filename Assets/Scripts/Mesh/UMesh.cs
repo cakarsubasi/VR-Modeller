@@ -109,6 +109,8 @@ namespace Meshes
             Mesh.MeshDataArray meshDataArray = Mesh.AllocateWritableMeshData(1);
             Mesh.MeshData meshData = meshDataArray[0];
             Setup(meshData, initialMaxVerts, initialMaxTriangles);
+
+            mesh.bounds = new Bounds(new Vector3(0f, 0f, 0f), new Vector3(1000f, 1000f, 1000f));
             Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, mesh);
             
         }

@@ -100,6 +100,48 @@ namespace Meshes
             throw new NotImplementedException { };
         }
 
+        public void TransformVertices(Matrix4x4 transform)
+        {
+            foreach (Vertex vertex in Vertices)
+            {
+                vertex.Transform(transform);
+            }
+        }
+
+        /// <summary>
+        /// Return the center point of the vertices in local space
+        /// </summary>
+        /// <returns></returns>
+        public float3 GetCenter()
+        {
+            float3 center = 0f;
+            foreach (Vertex vertex in Vertices)
+            {
+                center += vertex.Position;
+            }
+            center /= (float)Vertices.Count;
+            return center;
+        }
+        
+        [Obsolete("Oops, wrong name, call GeometryToOrigin() instead")]
+
+        public void ObjectToGeometry()
+        {
+            GeometryToOrigin();
+        }
+
+        /// <summary>
+        /// Move the vertices to the origin point
+        /// </summary>
+        public void GeometryToOrigin()
+        {
+            float3 center = GetCenter();
+            foreach (Vertex vertex in Vertices)
+            {
+                vertex.Position -= center;
+            }
+        }
+
         public void SetFace()
         {
             throw new NotImplementedException { };
