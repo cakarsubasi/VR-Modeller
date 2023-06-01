@@ -32,11 +32,11 @@ namespace Meshes
         };
     }
 
-    public class IMeshProperties
+    public struct FaceVertexInfo
     {
-        public bool Alive;
-        public bool Active;
         public int Index;
+        public float2 uv0;
+        public float3 normal;
     }
 
     /// <summary>
@@ -52,7 +52,7 @@ namespace Meshes
 
         public bool Alive { get; internal set; } = true;
         public bool Selected { get; set; } = false;
-        public int Index { get; internal set; } = -1;
+        public int Index { get; set; } = -1;
 
         internal struct FaceIndex
         {

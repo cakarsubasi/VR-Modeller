@@ -99,6 +99,18 @@ namespace Meshes
         }
 
         /// <summary>
+        /// Create Vertex at the given x, y, z coordinates
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        /// <returns>reference to the vertex</returns>
+        public Vertex CreateVertex(float x, float y, float z)
+        {
+            return CreateVertex(float3(x, y, z));
+        }
+
+        /// <summary>
         /// Create Vertex to the given position with the given normal and tangent
         /// </summary>
         /// <param name="position">position to add to</param>

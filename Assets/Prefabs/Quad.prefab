@@ -47,7 +47,7 @@ GameObject:
   - component: {fileID: 3368316891401620976}
   - component: {fileID: 6440627655830714573}
   m_Layer: 0
-  m_Name: Capsule
+  m_Name: Quad
   m_TagString: MeshObject
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

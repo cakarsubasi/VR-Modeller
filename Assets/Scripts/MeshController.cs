@@ -14,10 +14,11 @@ public class MeshController : MonoBehaviour
     List<Vector3> vertices = new List<Vector3>();
     List<GameObject> vertexObjects = new List<GameObject>();
     bool isSelected;
-    UMesh editableMesh;
+    public UMesh EditableMesh;
     GameObject verticesParent;
     List<GameObject> activeVertices = new List<GameObject>();
     GameObject objectInActiveVertices;
+    Color normalColor = Color.white;
 
     public delegate UMesh CreateMeshDelegate();
 
@@ -25,7 +26,7 @@ public class MeshController : MonoBehaviour
     public GameObject VerticesParent { get => verticesParent; set => verticesParent = value; }
     public List<GameObject> ActiveVertices { get => activeVertices; set => activeVertices = value; }
     public bool IsSelected { get => isSelected; set => isSelected = value; }
-    public UMesh EditableMesh { get => editableMesh; set => editableMesh = value; }
+    //public UMesh EditableMesh { get => editableMesh; set => editableMesh = value; }
 
 
     public void SetupMeshController(CreateMeshDelegate createMeshFunction)
@@ -35,6 +36,27 @@ public class MeshController : MonoBehaviour
 
 
         EditableMesh = createMeshFunction();
+        GetComponent<MeshFilter>().mesh = EditableMesh.Mesh;
+        EditableMesh.WriteAllToMesh();
+
+        Vertices = EditableMesh.VertexLocations.ToList();
+        verticesParent = new GameObject("VerticesParent");
+        verticesParent.transform.parent = this.transform;
+        verticesParent.transform.localPosition = Vector3.zero;
+        verticesParent.transform.localScale = Vector3.one;
+        verticesParent.transform.localRotation = Quaternion.identity;
+
+        StartCoroutine(InitVertexObjects(Vertices, 0, false));
+        StartCoroutine(MoveMultpleVertices());
+    }
+
+    public void SetupMeshController(UMesh mesh)
+    {
+        openOrCloseAction.action.performed += ClearActivedVerticesOpenOrCloseVertices;
+        ObjectController.Instance.AllObjects.Add(gameObject);
+
+
+        EditableMesh = mesh;
         GetComponent<MeshFilter>().mesh = EditableMesh.Mesh;
         EditableMesh.WriteAllToMesh();
 
@@ -96,14 +118,14 @@ public class MeshController : MonoBehaviour
         {
             IsSelected = false;
             ObjectController.Instance.SelectedGameobject = null;
-            GetComponent<MeshRenderer>().material.color = Color.white;
+            GetComponent<MeshRenderer>().material.color = normalColor;
         }
         else
         {
             ObjectController.Instance.ClearSelectedObject();
             IsSelected = true;
             ObjectController.Instance.SelectedGameobject = gameObject;
-            GetComponent<MeshRenderer>().material.color = Color.cyan;
+            //GetComponent<MeshRenderer>().material.color = Color.cyan;
         }
     }
 
@@ -149,6 +171,7 @@ public class MeshController : MonoBehaviour
 
                 vertex.transform.localPosition += (transform.InverseTransformPoint(movedVertex.transform.position) - currentVertexPos);
                 vertex.GetComponent<VertexController>().Vertex.Position = (float3)vertex.transform.localPosition;
+                EditableMesh.RecalculateNormals();
                 EditableMesh.WriteAllToMesh();
 
                 if (GetComponent<MeshCollider>() != null)
@@ -159,7 +182,6 @@ public class MeshController : MonoBehaviour
             currentVertexPos = transform.InverseTransformPoint(movedVertex.transform.position);
             yield return null;
         }
-
 
         StartCoroutine(MoveMultpleVertices());
     }
@@ -219,17 +241,23 @@ public class MeshController : MonoBehaviour
             vertices.Add(vertex.GetComponent<VertexController>().Vertex);
         }
 
-        editableMesh.SelectFacesFromVertices(vertices, faces);
-        editableMesh.SelectEdgesFromVertices(vertices, edges);
+        EditableMesh.SelectFacesFromVertices(vertices, faces);
+        EditableMesh.SelectEdgesFromVertices(vertices, edges);
 
 
-        UMesh mesh = editableMesh.CopySelectionToNewMesh(vertices, edges, faces);
+        UMesh mesh = EditableMesh.CopySelectionToNewMesh(vertices, edges, faces);
 
         objectInActiveVertices.GetComponent<MeshFilter>().mesh = mesh.Mesh;
         objectInActiveVertices.GetComponent<MeshCollider>().sharedMesh = mesh.Mesh;
         mesh.WriteAllToMesh();
 
         objectInActiveVertices.transform.localScale *= 0.5f;
+    }
+
+    public void SetColor(Color color)
+    {
+        normalColor = color;
+        GetComponent<MeshRenderer>().material.color = normalColor;
     }
 
     private void OnDestroy()

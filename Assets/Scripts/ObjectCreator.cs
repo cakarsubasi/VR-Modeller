@@ -1,5 +1,4 @@
 using Meshes;
-using System;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -11,13 +10,15 @@ public class ObjectCreator : MonoBehaviour
 
     public void OnClickCreateGameObject(GameObject gameobject)
     {
-        GameObject parent = new GameObject(gameobject.name);
+        string name = gameobject.name + " " + (ObjectController.Instance.meshNum + 1);
+        GameObject parent = new GameObject(name);
+        ObjectController.Instance.meshNum++;
 
         Vector3 screenCenter = Camera.main.ViewportToScreenPoint(Vector3.zero);
         Vector3 worldCenter = Camera.main.ScreenToWorldPoint(screenCenter);
         worldCenter += Camera.main.transform.forward * 4.0f;
 
-        parent.transform.position = worldCenter;
+        parent.transform.position = new Vector3(worldCenter.x, Camera.main.transform.position.y, worldCenter.z);
         parent.transform.localScale = gameobject.transform.localScale;
 
         GameObject go = Instantiate(gameobject, parent.transform);
@@ -32,8 +33,9 @@ public class ObjectCreator : MonoBehaviour
                 meshController.SetupMeshController(CreateCube);
                 break;
 
-            case "Capsule":
-                throw new NotImplementedException { };
+            case "Quad":
+                meshController.SetupMeshController(CreateQuad);
+                break;
 
             case "Cylinder":
                 meshController.SetupMeshController(CreateCylinder);
@@ -143,10 +145,10 @@ public class ObjectCreator : MonoBehaviour
 
     private static UMesh CreateCylinder()
     {
-        return CreateCylinder(default);
+        return CreateCylinderNoCenterVertex();
     }
 
-    private static UMesh CreateCylinder(int points = 16, float radius = 0.5f, float height = 2f)
+    private static UMesh CreateCylinderNoCenterVertex(int points = 16, float radius = 0.5f, float height = 2f)
     {
         UMesh mesh = UMesh.Create();
 
@@ -218,12 +220,12 @@ public class ObjectCreator : MonoBehaviour
         return mesh;
     }
 
-    public static UMesh CreateQuad()
+    private static UMesh CreateQuad()
     {
         return CreateGrid(1, 1, 1f, 1f);
     }
 
-    public static UMesh CreateGrid(int segmentsX = 1, int segmentsY = 1, float gridSizeX = 1f, float gridSizeY = 1f)
+    private static UMesh CreateGrid(int segmentsX = 1, int segmentsY = 1, float gridSizeX = 1f, float gridSizeY = 1f)
     {
         UMesh mesh = UMesh.Create();
 
