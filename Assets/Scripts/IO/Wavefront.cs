@@ -51,7 +51,7 @@ namespace MeshesIO
 
             public override string ToString()
             {
-                return $"# {comment}";
+                return FormattableString.Invariant($"# {comment}");
             }
         }
 
@@ -147,7 +147,7 @@ namespace MeshesIO
 
             public override string ToString()
             {
-                StringBuilder str = new($"o {name}\n");
+                StringBuilder str = new(FormattableString.Invariant($"o {name}\n"));
 
                 foreach (var pos in positions)
                 {
@@ -206,17 +206,17 @@ namespace MeshesIO
                 if (coords.Captures.Count == 3)
                 {
                     return new WFVertex(
-                        float.Parse(coords.Captures[0].Value),
-                        float.Parse(coords.Captures[1].Value),
-                        float.Parse(coords.Captures[2].Value));
+                        float.Parse(coords.Captures[0].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[1].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[2].Value, System.Globalization.NumberFormatInfo.InvariantInfo));
                 }
                 else if (coords.Captures.Count == 4)
                 {
                     return new WFVertex(
-                        float.Parse(coords.Captures[0].Value),
-                        float.Parse(coords.Captures[1].Value),
-                        float.Parse(coords.Captures[2].Value),
-                        float.Parse(coords.Captures[3].Value));
+                        float.Parse(coords.Captures[0].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[1].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[2].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[3].Value, System.Globalization.NumberFormatInfo.InvariantInfo));
                 }
                 
                 return null;
@@ -224,7 +224,7 @@ namespace MeshesIO
 
             public override string ToString()
             {
-                return $"v {x:F6} {y:F6} {z:F6} {w:F6}";
+                return FormattableString.Invariant($"v {x:F6} {y:F6} {z:F6} {w:F6}");
 
             }
         }
@@ -258,15 +258,15 @@ namespace MeshesIO
                 if (coords.Captures.Count == 2)
                 {
                     return new WFTextureCoordinate(
-                        float.Parse(coords.Captures[0].Value),
-                        float.Parse(coords.Captures[1].Value));
+                        float.Parse(coords.Captures[0].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[1].Value, System.Globalization.NumberFormatInfo.InvariantInfo));
                 }
                 else if (coords.Captures.Count == 3)
                 {
                     return new WFTextureCoordinate(
-                        float.Parse(coords.Captures[0].Value),
-                        float.Parse(coords.Captures[1].Value),
-                        float.Parse(coords.Captures[2].Value));
+                        float.Parse(coords.Captures[0].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[1].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[2].Value, System.Globalization.NumberFormatInfo.InvariantInfo));
                 }
 
                 return null;
@@ -274,7 +274,8 @@ namespace MeshesIO
 
             public override string ToString()
             {
-                return $"v {x} {y} {w}";
+
+                return FormattableString.Invariant($"v {x} {y} {w}");
             }
         }
 
@@ -310,17 +311,17 @@ namespace MeshesIO
                 if (coords.Captures.Count == 3)
                 {
                     return new WFVertexNormal(
-                        float.Parse(coords.Captures[0].Value),
-                        float.Parse(coords.Captures[1].Value),
-                        float.Parse(coords.Captures[2].Value));
+                        float.Parse(coords.Captures[0].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[1].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[2].Value, System.Globalization.NumberFormatInfo.InvariantInfo));
                 }
                 else if (coords.Captures.Count == 4)
                 {
                     return new WFVertexNormal(
-                        float.Parse(coords.Captures[0].Value),
-                        float.Parse(coords.Captures[1].Value),
-                        float.Parse(coords.Captures[2].Value),
-                        float.Parse(coords.Captures[3].Value));
+                        float.Parse(coords.Captures[0].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[1].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[2].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[3].Value, System.Globalization.NumberFormatInfo.InvariantInfo));
                 }
 
                 return null;
@@ -328,7 +329,7 @@ namespace MeshesIO
 
             public override string ToString()
             {
-                 return $"v {x} {y} {z} {w}";
+                 return FormattableString.Invariant($"v {x} {y} {z} {w}");
             }
         }
 
@@ -353,7 +354,6 @@ namespace MeshesIO
                 this.indices = indices;
             }
 
-            //public static Regex rx = new Regex(@"f ((?<v>\d*)/(?<vt>\d*)/(?<vn>\d*) ?)+", RegexOptions.Compiled);
             public static Regex rx = new Regex(@"f ((?<v>\d+)(/(?<vt>\d*))?(/(?<vn>\d*))? ?)+", RegexOptions.Compiled);
 
             public static WFFace? Match(String line)
@@ -374,18 +374,18 @@ namespace MeshesIO
                 for (int i = 0; i < positions.Captures.Count; ++i)
                 {
                     Capture position = positions.Captures[i];
-                    int pos = int.Parse(position.Value);
+                    int pos = int.Parse(position.Value, System.Globalization.NumberFormatInfo.InvariantInfo);
                     // texture coordinate if exists
                     int? vt = null;
                     if (i < coordinates.Captures.Count)
                     {
-                        vt = int.Parse(coordinates.Captures[i].Value);
+                        vt = int.Parse(coordinates.Captures[i].Value, System.Globalization.NumberFormatInfo.InvariantInfo);
                     }
                     // vertex normal if exists
                     int? vn = null;
                     if (i < normals.Captures.Count)
                     {
-                        vn = int.Parse(normals.Captures[i].Value);
+                        vn = int.Parse(normals.Captures[i].Value, System.Globalization.NumberFormatInfo.InvariantInfo);
                     }
 
                     FaceIndex index = new FaceIndex
@@ -405,18 +405,18 @@ namespace MeshesIO
                 string ret = "f";
                 foreach (FaceIndex idx in indices)
                 {
-                    ret = $"{ret} {idx.vertex}";
+                    ret = FormattableString.Invariant($"{ret} {idx.vertex}");
                     if (idx.coordinate != null && idx.normal != null)
                     {
-                        ret = $"{ret}/{idx.coordinate}/{idx.normal}";
+                        ret = FormattableString.Invariant($"{ret}/{idx.coordinate}/{idx.normal}");
                     }
                     else if (idx.coordinate != null)
                     {
-                        ret = $"{ret}/{idx.coordinate}";
+                        ret = FormattableString.Invariant($"{ret}/{idx.coordinate}");
                     }
                     else if (idx.normal != null)
                     {
-                        ret = $"{ret}//{idx.normal}";
+                        ret = FormattableString.Invariant($"{ret}//{idx.normal}");
                     }
                 }
                 return ret;
