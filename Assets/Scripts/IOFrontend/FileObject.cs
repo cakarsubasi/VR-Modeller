@@ -13,7 +13,7 @@ public class FileObject : MonoBehaviour
     public void OnClickCreate()
     {
         string str = File.ReadAllText(fileText.text);
-
+        Debug.Log(str);
         scene = WavefrontIO.Parse(str);
 
         int count = 1;
@@ -21,6 +21,9 @@ public class FileObject : MonoBehaviour
 
         foreach (var item in scene.objects)
         {
+
+
+            Debug.Log(item);
             string name = Path.GetFileNameWithoutExtension(fileText.text + count) + " " + (ObjectController.Instance.meshNum + 1);
             GameObject parent = new GameObject(name);
             ObjectController.Instance.meshNum++;

@@ -1,12 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
-using System;
-using System.Text.RegularExpressions;
 using Meshes;
-using UnityEngine;
+using System;
+using System.Collections.Generic;
 using System.Text;
-
+using System.Text.RegularExpressions;
 using Unity.Mathematics;
+using UnityEngine;
 
 #nullable enable
 
@@ -16,7 +14,8 @@ namespace MeshesIO
     public class SceneDescription
     {
         public List<UMesh> objects = new();
-        public List<Vector3> worldCoordinates = new();
+        public List<Matrix4x4> worldTransforms = new();
+        public List<Matrix4x4> transforms = new();
     }
 
     public abstract class WFGrammar
@@ -50,7 +49,7 @@ namespace MeshesIO
 
             public override string ToString()
             {
-                return $"# {comment}";
+                return FormattableString.Invariant($"# {comment}");
             }
         }
 
@@ -86,7 +85,7 @@ namespace MeshesIO
                 faces = new();
             }
 
-            public WFObject(string name, 
+            public WFObject(string name,
                 List<WFVertex> positions,
                 List<WFTextureCoordinate> uvs,
                 List<WFVertexNormal> normals,
@@ -133,8 +132,9 @@ namespace MeshesIO
                     verts.Clear();
                     foreach (var index in face.indices)
                     {
-                        int idx = index.vertex - positionBeginning - 1;
-                        verts.Add(mesh.Vertices[idx]);
+                        int positionIndex = index.vertex - positionBeginning - 1;
+                        verts.Add(mesh.Vertices[positionIndex]);
+                        //int textureCoordinateIndex = 
                     }
                     mesh.CreateNGon(verts);
                     // todo apply normals and texture coordinates
@@ -145,7 +145,7 @@ namespace MeshesIO
 
             public override string ToString()
             {
-                StringBuilder str = new($"o {name}\n");
+                StringBuilder str = new(FormattableString.Invariant($"o {name}\n"));
 
                 foreach (var pos in positions)
                 {
@@ -181,7 +181,7 @@ namespace MeshesIO
             public readonly float? w;
 
             public WFVertex(float3 position) : this(position.x, position.y, position.z) { }
-            
+
             public WFVertex(float x, float y, float z)
             {
                 this.x = x;
@@ -204,17 +204,17 @@ namespace MeshesIO
                 if (coords.Captures.Count == 3)
                 {
                     return new WFVertex(
-                        float.Parse(coords.Captures[0].Value),
-                        float.Parse(coords.Captures[1].Value),
-                        float.Parse(coords.Captures[2].Value));
+                        float.Parse(coords.Captures[0].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[1].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[2].Value, System.Globalization.NumberFormatInfo.InvariantInfo));
                 }
                 else if (coords.Captures.Count == 4)
                 {
                     return new WFVertex(
-                        float.Parse(coords.Captures[0].Value),
-                        float.Parse(coords.Captures[1].Value),
-                        float.Parse(coords.Captures[2].Value),
-                        float.Parse(coords.Captures[3].Value));
+                        float.Parse(coords.Captures[0].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[1].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[2].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[3].Value, System.Globalization.NumberFormatInfo.InvariantInfo));
                 }
                 
                 return null;
@@ -222,7 +222,7 @@ namespace MeshesIO
 
             public override string ToString()
             {
-                return $"v {x:F6} {y:F6} {z:F6} {w:F6}";
+                return FormattableString.Invariant($"v {x:F6} {y:F6} {z:F6} {w:F6}");
 
             }
         }
@@ -256,15 +256,15 @@ namespace MeshesIO
                 if (coords.Captures.Count == 2)
                 {
                     return new WFTextureCoordinate(
-                        float.Parse(coords.Captures[0].Value),
-                        float.Parse(coords.Captures[1].Value));
+                        float.Parse(coords.Captures[0].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[1].Value, System.Globalization.NumberFormatInfo.InvariantInfo));
                 }
                 else if (coords.Captures.Count == 3)
                 {
                     return new WFTextureCoordinate(
-                        float.Parse(coords.Captures[0].Value),
-                        float.Parse(coords.Captures[1].Value),
-                        float.Parse(coords.Captures[2].Value));
+                        float.Parse(coords.Captures[0].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[1].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[2].Value, System.Globalization.NumberFormatInfo.InvariantInfo));
                 }
 
                 return null;
@@ -272,7 +272,8 @@ namespace MeshesIO
 
             public override string ToString()
             {
-                return $"v {x} {y} {w}";
+
+                return FormattableString.Invariant($"v {x} {y} {w}");
             }
         }
 
@@ -308,17 +309,17 @@ namespace MeshesIO
                 if (coords.Captures.Count == 3)
                 {
                     return new WFVertexNormal(
-                        float.Parse(coords.Captures[0].Value),
-                        float.Parse(coords.Captures[1].Value),
-                        float.Parse(coords.Captures[2].Value));
+                        float.Parse(coords.Captures[0].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[1].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[2].Value, System.Globalization.NumberFormatInfo.InvariantInfo));
                 }
                 else if (coords.Captures.Count == 4)
                 {
                     return new WFVertexNormal(
-                        float.Parse(coords.Captures[0].Value),
-                        float.Parse(coords.Captures[1].Value),
-                        float.Parse(coords.Captures[2].Value),
-                        float.Parse(coords.Captures[3].Value));
+                        float.Parse(coords.Captures[0].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[1].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[2].Value, System.Globalization.NumberFormatInfo.InvariantInfo),
+                        float.Parse(coords.Captures[3].Value, System.Globalization.NumberFormatInfo.InvariantInfo));
                 }
 
                 return null;
@@ -326,7 +327,7 @@ namespace MeshesIO
 
             public override string ToString()
             {
-                 return $"v {x} {y} {z} {w}";
+                 return FormattableString.Invariant($"v {x} {y} {z} {w}");
             }
         }
 
@@ -351,7 +352,6 @@ namespace MeshesIO
                 this.indices = indices;
             }
 
-            //public static Regex rx = new Regex(@"f ((?<v>\d*)/(?<vt>\d*)/(?<vn>\d*) ?)+", RegexOptions.Compiled);
             public static Regex rx = new Regex(@"f ((?<v>\d+)(/(?<vt>\d*))?(/(?<vn>\d*))? ?)+", RegexOptions.Compiled);
 
             public static WFFace? Match(String line)
@@ -372,18 +372,18 @@ namespace MeshesIO
                 for (int i = 0; i < positions.Captures.Count; ++i)
                 {
                     Capture position = positions.Captures[i];
-                    int pos = int.Parse(position.Value);
+                    int pos = int.Parse(position.Value, System.Globalization.NumberFormatInfo.InvariantInfo);
                     // texture coordinate if exists
                     int? vt = null;
                     if (i < coordinates.Captures.Count)
                     {
-                        vt = int.Parse(coordinates.Captures[i].Value);
+                        vt = int.Parse(coordinates.Captures[i].Value, System.Globalization.NumberFormatInfo.InvariantInfo);
                     }
                     // vertex normal if exists
                     int? vn = null;
                     if (i < normals.Captures.Count)
                     {
-                        vn = int.Parse(normals.Captures[i].Value);
+                        vn = int.Parse(normals.Captures[i].Value, System.Globalization.NumberFormatInfo.InvariantInfo);
                     }
 
                     FaceIndex index = new FaceIndex
@@ -403,18 +403,18 @@ namespace MeshesIO
                 string ret = "f";
                 foreach (FaceIndex idx in indices)
                 {
-                    ret = $"{ret} {idx.vertex}";
+                    ret = FormattableString.Invariant($"{ret} {idx.vertex}");
                     if (idx.coordinate != null && idx.normal != null)
                     {
-                        ret = $"{ret}/{idx.coordinate}/{idx.normal}";
+                        ret = FormattableString.Invariant($"{ret}/{idx.coordinate}/{idx.normal}");
                     }
                     else if (idx.coordinate != null)
                     {
-                        ret = $"{ret}/{idx.coordinate}";
+                        ret = FormattableString.Invariant($"{ret}/{idx.coordinate}");
                     }
                     else if (idx.normal != null)
                     {
-                        ret = $"{ret}//{idx.normal}";
+                        ret = FormattableString.Invariant($"{ret}//{idx.normal}");
                     }
                 }
                 return ret;
@@ -424,6 +424,12 @@ namespace MeshesIO
 
     public class WavefrontIO
     {
+
+        /// <summary>
+        /// Convert an obj string into a scene description
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
         public static SceneDescription Parse(string str)
         {
             string[] lines = str.Split(new[] { "\n", "\r", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
@@ -501,6 +507,11 @@ namespace MeshesIO
             return scene;
         }
 
+        /// <summary>
+        /// Convert a scene description into a 
+        /// </summary>
+        /// <param name="scene"></param>
+        /// <returns></returns>
         public static string Unparse(SceneDescription scene)
         {
             int vCount = 1;
@@ -512,6 +523,12 @@ namespace MeshesIO
             for (int i = 0; i < scene.objects.Count; ++i)
             {
                 UMesh mesh = scene.objects[i];
+                if (scene.worldTransforms.Count == scene.objects.Count)
+                {
+                    mesh = mesh.DeepCopy();
+                    mesh.TransformVertices(scene.worldTransforms[i]);
+                }
+
                 WFGrammar.WFObject wfObject = EncodeOneObject(mesh, ref vCount, ref vtCount, ref vnCount);
                 objects.Add(wfObject);
             }
@@ -525,7 +542,8 @@ namespace MeshesIO
             return text.ToString();
         }
 
-        public static WFGrammar.WFObject EncodeOneObject(UMesh umesh, ref int vCount, ref int vtCount, ref int vnCount)
+
+        internal static WFGrammar.WFObject EncodeOneObject(UMesh umesh, ref int vCount, ref int vtCount, ref int vnCount)
         {
             List<WFGrammar.WFVertex> vertices = new();
             List<WFGrammar.WFTextureCoordinate> vts = new();
@@ -549,7 +567,7 @@ namespace MeshesIO
             foreach (Face face in umesh.Faces)
             {
                 WFGrammar.WFFace wfFace = new();
-                
+
                 foreach (var vertInfo in face.GetVertexInfo(umesh.Shading))
                 {
                     wfFace.indices.Add(new WFGrammar.WFFace.FaceIndex

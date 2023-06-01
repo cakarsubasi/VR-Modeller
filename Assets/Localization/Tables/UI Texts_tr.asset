@@ -148,6 +148,10 @@ MonoBehaviour:
     m_Localized: "Rengi\nDe\u011Fi\u015Ftir"
     m_Metadata:
       m_Items: []
+  - m_Id: 15561591780716544
+    m_Localized: "Se\xE7ilen\nObjeyi\n\xC7\u0131kar"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

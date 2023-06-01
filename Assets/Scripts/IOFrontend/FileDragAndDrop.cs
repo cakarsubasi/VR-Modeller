@@ -38,14 +38,26 @@ public class FileDragAndDrop : MonoBehaviour
     public void OnClickExport()
     {
         GameObject go = ObjectController.Instance.SelectedGameobject;
+        if (go == null) return;
+
         SceneDescription scene = new SceneDescription();
         scene.objects.Add(go.GetComponent<MeshController>().EditableMesh);
-        scene.worldCoordinates.Add(go.transform.position);
+        scene.worldTransforms.Add(go.transform.localToWorldMatrix);
 
         string str = WavefrontIO.Unparse(scene);
 
-        string path = Path.Combine(Application.dataPath, go.name + ".obj");
-        File.AppendAllText(Application.dataPath, str);
+        string folderPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
+        string path = Path.Combine(folderPath, go.name + ".obj");
+
+        int i = 1;
+        while (File.Exists(path))
+        {
+            path = Path.Combine(folderPath, go.name + i + ".obj");
+            i++;
+        }
+
+        File.WriteAllText(path, str);
     }
+
 
 }
