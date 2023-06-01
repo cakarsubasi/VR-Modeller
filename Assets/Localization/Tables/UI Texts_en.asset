@@ -61,13 +61,13 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 24287043649536
-    m_Localized: Deep Copy
+    m_Localized: "Copy \nObject"
     m_Metadata:
       m_Items: []
   - m_Id: 24671552274432
     m_Localized: 'Create
 
-      Capsule'
+      Quad'
     m_Metadata:
       m_Items: []
   - m_Id: 24794936115200
@@ -104,10 +104,105 @@ MonoBehaviour:
       Vertices'
     m_Metadata:
       m_Items: []
-  - m_Id: 10833497564033024
-    m_Localized: 'Merge
+  - m_Id: 10178422426566656
+    m_Localized: 'Object
 
-      Vertices'
+      List'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13388919332319232
+    m_Localized: Smooth
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13388996117442560
+    m_Localized: Flat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13389042665828352
+    m_Localized: 'Shading:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13389219904532480
+    m_Localized: Flip All
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13389433121976320
+    m_Localized: Flip Face
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13389579910033408
+    m_Localized: "Merge \nVertices"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13439105098231808
+    m_Localized: 'Create
+
+      Face'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13457349506936832
+    m_Localized: Save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13457380238602240
+    m_Localized: Cancel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13457597805539328
+    m_Localized: 'Selected Color:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13458200640270336
+    m_Localized: 'Change
+
+      Color'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 15561591780716544
+    m_Localized: 'Export
+
+      Selected
+
+      Object'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 15580281154744320
+    m_Localized: 'Export
+
+      All
+
+      Objects'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 15621693267161088
+    m_Localized: "Hello User! Welcome to the 3D modelling program. This is the help
+      canvas to provide you help with the controllers and the menu.\n\nYou can open
+      the menu with X button on the left controller. Open / close this canvas whenever
+      you want by pressing the help button. You can perform pressing / selecting
+      actions by using the triggers behind the controllers. Push the joystick on
+      right controller forward to teleport. You can also turn around using the joystick.\n\nFrom
+      the settings menu, you can change the language between English and Turkish.
+      If you are lefthanded, you can switch the UI menu to your right hand from the
+      settings menu.\n\nUse the Create button to open the create menu, and select
+      the object you want to create.\n\nUse the tools tab to do modelling on the
+      objects. You can select the tools from the tools wheel. Use the select tool
+      to select objects and vertices. Move, scale, rotate tools have special gizmos
+      when you select them. Interact with these gizmos to perform these actions in
+      the specific direction with side triggers on the controllers.\n\nYou can open
+      / close the vertices of objects by pressing A button on the right controller.
+      To grab and move the vertices, use the side triggers on the controllers. Activate
+      the extrude toggle (or press B on right controller) to extrude faces and meshes
+      after selecting vertices. You can delete or merge selected vertices by using
+      the corresponding buttons. Use the flip all button to flip all the faces, and
+      flip face button to flip a selected face. You can create a face between the
+      selected vertices using the create face button.\n\nYou can change the shading
+      between smooth and flat. Use the change color button to open color scrolls.
+      You can change the red-green-blue values of the color by using these scrolls.
+      \n\nSee the created objects on the object list. You can drag the texts with
+      back triggers on the controllers. If you put \"text1\" onto \"text2\", the
+      object corresponding to \"text2\" becomes the parent object of \"text1\". When
+      you move parent objects, child objects also move with them.  Redo this action
+      to revoke it.\n\n"
     m_Metadata:
       m_Items: []
   references:

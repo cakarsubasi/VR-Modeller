@@ -11,7 +11,7 @@ public class HandAccessibility : MonoBehaviour
     public Transform LeftHandController;
     public ToggleGroup toggleGroup;
 
-    Toggle GetSelectedToggle()
+    public Toggle GetSelectedToggle()
     {
         Toggle[] toggles = toggleGroup.GetComponentsInChildren<Toggle>();
         foreach (var t in toggles)

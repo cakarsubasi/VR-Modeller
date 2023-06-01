@@ -322,6 +322,15 @@ namespace Meshes
             return -1;
         }
 
+        public void Transform(Matrix4x4 transform)
+        {
+            float4 pos = transform * new Vector4(Position.x, Position.y, Position.z, 1);
+            Position = pos.xyz;
+            float4 norm = transform * new Vector4(Normal.x, Normal.y, Normal.z, 0);
+            Normal = norm.xyz;
+            Tangent = transform * Tangent;
+        }
+
         /// <summary>
         /// Recalculate the normal based on adjacent faces.
         /// The face normals have to be calculated first, else 
@@ -913,6 +922,20 @@ namespace Meshes
             foreach (var vertexIndex in vertices)
             {
                 yield return vertexIndex.vertex;
+            }
+        }
+
+        public IEnumerable<FaceVertexInfo> GetVertexInfo(ShadingType fallback = ShadingType.Flat)
+        {
+            float3 normal = Normal;
+            foreach (VertexCoordinate coor in vertices)
+            {
+                    yield return new FaceVertexInfo
+                    {
+                        Index = coor.vertex.Index,
+                        uv0 = coor.uv0,
+                        normal = (Shading == ShadingType.Smooth || fallback == ShadingType.Smooth) ? coor.vertex.Normal : normal,
+                };
             }
         }
 

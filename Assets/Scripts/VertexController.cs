@@ -30,9 +30,6 @@ public class VertexController : MonoBehaviour
     {
         if (IsSelected)
         {
-            //meshController.Vertices[VertexIndex] = targetMesh.transform.InverseTransformPoint(transform.position);
-            //meshController.Mesh.vertices = meshController.Vertices.ToArray();
-
             Vertex.Position = (float3)targetMesh.transform.InverseTransformPoint(transform.position);
             meshController.EditableMesh.WriteAllToMesh();
 
@@ -43,13 +40,7 @@ public class VertexController : MonoBehaviour
         }
         else
         {
-            //float distance = Vector3.Distance(transform.position, Camera.main.transform.position);
-            //float minValue = 0.1f;
-            //float maxValue = 0.25f;
-            //float scaleFactor = 0.05f;
-            //transform.localScale = Vector3.one * Mathf.Clamp(distance * scaleFactor, minValue, maxValue);
-
-            transform.localScale = Vector3.Scale(Vector3.one / 10, new Vector3(1f / gameObject.transform.parent.parent.localScale.x, 1f / gameObject.transform.parent.parent.localScale.y, 1f / gameObject.transform.parent.parent.localScale.z));
+            transform.localScale = Vector3.Scale(Vector3.one / 15, new Vector3(1f / gameObject.transform.parent.parent.localScale.x, 1f / gameObject.transform.parent.parent.localScale.y, 1f / gameObject.transform.parent.parent.localScale.z));
         }
     }
 
@@ -69,7 +60,6 @@ public class VertexController : MonoBehaviour
             GetComponent<MeshRenderer>().material = normalMaterial;
             meshController.ActiveVertices.Remove(gameObject);
         }
-        //meshController.CreateObjectInActiatedVertices();
 
         ObjectController.Instance.UpdateButtonInteractability();
     }
