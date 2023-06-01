@@ -17,6 +17,7 @@ namespace MeshesIO
     {
         public List<UMesh> objects = new();
         public List<Vector3> worldCoordinates = new();
+        public List<Matrix4x4> transforms = new();
     }
 
     public abstract class WFGrammar
@@ -133,8 +134,9 @@ namespace MeshesIO
                     verts.Clear();
                     foreach (var index in face.indices)
                     {
-                        int idx = index.vertex - positionBeginning - 1;
-                        verts.Add(mesh.Vertices[idx]);
+                        int positionIndex = index.vertex - positionBeginning - 1;
+                        verts.Add(mesh.Vertices[positionIndex]);
+                        //int textureCoordinateIndex = 
                     }
                     mesh.CreateNGon(verts);
                     // todo apply normals and texture coordinates
@@ -424,6 +426,12 @@ namespace MeshesIO
 
     public class WavefrontIO
     {
+
+        /// <summary>
+        /// Convert an obj string into a scene description
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
         public static SceneDescription Parse(string str)
         {
             string[] lines = str.Split(new[] { "\n", "\r", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
@@ -501,6 +509,11 @@ namespace MeshesIO
             return scene;
         }
 
+        /// <summary>
+        /// Convert a scene description into a 
+        /// </summary>
+        /// <param name="scene"></param>
+        /// <returns></returns>
         public static string Unparse(SceneDescription scene)
         {
             int vCount = 1;
@@ -525,7 +538,8 @@ namespace MeshesIO
             return text.ToString();
         }
 
-        public static WFGrammar.WFObject EncodeOneObject(UMesh umesh, ref int vCount, ref int vtCount, ref int vnCount)
+
+        internal static WFGrammar.WFObject EncodeOneObject(UMesh umesh, ref int vCount, ref int vtCount, ref int vnCount)
         {
             List<WFGrammar.WFVertex> vertices = new();
             List<WFGrammar.WFTextureCoordinate> vts = new();
