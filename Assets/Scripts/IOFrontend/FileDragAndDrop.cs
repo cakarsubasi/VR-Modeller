@@ -1,5 +1,7 @@
 using B83.Win32;
+using MeshesIO;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 
@@ -31,6 +33,19 @@ public class FileDragAndDrop : MonoBehaviour
             GameObject go = Instantiate(fileObject, container.transform);
             go.GetComponent<FileObject>().fileText.text = file;
         }
+    }
+
+    public void OnClickExport()
+    {
+        GameObject go = ObjectController.Instance.SelectedGameobject;
+        SceneDescription scene = new SceneDescription();
+        scene.objects.Add(go.GetComponent<MeshController>().EditableMesh);
+        scene.worldCoordinates.Add(go.transform.position);
+
+        string str = WavefrontIO.Unparse(scene);
+
+        string path = Path.Combine(Application.dataPath, go.name + ".obj");
+        File.AppendAllText(Application.dataPath, str);
     }
 
 }

@@ -17,7 +17,7 @@ public class FileObject : MonoBehaviour
         scene = WavefrontIO.Parse(str);
 
         int count = 1;
-        float offsetX = 5f;
+        float offsetX = 0f;
 
         foreach (var item in scene.objects)
         {
@@ -61,7 +61,7 @@ public class FileObject : MonoBehaviour
             ObjectController.Instance.OnScale();
 
             count++;
-            offsetX += offsetX;
+            offsetX += 5f;
         }
     }
 
