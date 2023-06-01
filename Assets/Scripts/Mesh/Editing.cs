@@ -100,6 +100,14 @@ namespace Meshes
             throw new NotImplementedException { };
         }
 
+        public void TransformVertices(Matrix4x4 transform)
+        {
+            foreach (Vertex vertex in Vertices)
+            {
+                vertex.Transform(transform);
+            }
+        }
+
         public void SetFace()
         {
             throw new NotImplementedException { };

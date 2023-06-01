@@ -16,8 +16,7 @@ namespace MeshesIO
     public class SceneDescription
     {
         public List<UMesh> objects = new();
-        public List<Vector3> worldCoordinates = new();
-        public List<Matrix4x4> transforms = new();
+        public List<Matrix4x4> worldTransforms = new();
     }
 
     public abstract class WFGrammar
@@ -525,6 +524,12 @@ namespace MeshesIO
             for (int i = 0; i < scene.objects.Count; ++i)
             {
                 UMesh mesh = scene.objects[i];
+                if (scene.worldTransforms.Count == scene.objects.Count)
+                {
+                    mesh = mesh.DeepCopy();
+                    mesh.TransformVertices(scene.worldTransforms[i]);
+                }
+
                 WFGrammar.WFObject wfObject = EncodeOneObject(mesh, ref vCount, ref vtCount, ref vnCount);
                 objects.Add(wfObject);
             }
