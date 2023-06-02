@@ -6,14 +6,13 @@ using UnityEngine;
 public class FileObject : MonoBehaviour
 {
     public TextMeshProUGUI fileText;
-    public GameObject GizmoPosition, GizmoRotation, GizmoScale, gameobject;
+    public GameObject GizmoPosition, GizmoRotation, GizmoScale, GizmoSelect, gameobject;
 
     SceneDescription scene;
 
     public void OnClickCreate()
     {
         string str = File.ReadAllText(fileText.text);
-
         scene = WavefrontIO.Parse(str);
 
         int count = 1;
@@ -32,6 +31,7 @@ public class FileObject : MonoBehaviour
             parent.transform.position = new Vector3(worldCenter.x + offsetX, Camera.main.transform.position.y, worldCenter.z);
             parent.transform.localScale = gameobject.transform.localScale;
 
+
             GameObject go = Instantiate(gameobject, parent.transform);
             go.transform.localScale = Vector3.one;
             go.name = go.name.Replace("(Clone)", "");
@@ -41,12 +41,19 @@ public class FileObject : MonoBehaviour
 
             GameObject pos = Instantiate(GizmoPosition, parent.transform);
             pos.name = pos.name.Replace("(Clone)", "");
+            pos.transform.localScale /= 2;
 
             GameObject rot = Instantiate(GizmoRotation, parent.transform);
             rot.name = rot.name.Replace("(Clone)", "");
+            rot.transform.localScale /= 2;
 
             GameObject sca = Instantiate(GizmoScale, parent.transform);
             sca.name = sca.name.Replace("(Clone)", "");
+            sca.transform.localScale /= 2;
+
+            GameObject select = Instantiate(GizmoSelect, parent.transform);
+            select.name = select.name.Replace("(Clone)", "");
+            select.transform.localScale /= 2;
 
             ObjectController.Instance.OnSelect();
             ObjectController.Instance.OnMove();
@@ -61,7 +68,7 @@ public class FileObject : MonoBehaviour
             ObjectController.Instance.OnScale();
 
             count++;
-            offsetX += 5f;
+            offsetX += 2f;
         }
     }
 

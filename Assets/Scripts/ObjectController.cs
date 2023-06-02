@@ -106,7 +106,6 @@ public class ObjectController : MonoBehaviour
         selectedGameobject.transform.parent.FindChildWithTag("GizmoScale").gameObject.SetActive(false);
 
         selectedGameobject.GetComponent<MeshController>().IsSelected = false;
-        //selectedGameobject.GetComponent<MeshRenderer>().material.color = Color.white;
         selectedGameobject.GetComponent<MeshController>().VerticesParent.SetActive(false);
         selectedGameobject = null;
     }
@@ -152,7 +151,7 @@ public class ObjectController : MonoBehaviour
 
         selectedGameobject.GetComponent<MeshController>().EditableMesh.DeleteGeometry(vertices);
         selectedGameobject.GetComponent<MeshController>().EditableMesh.WriteAllToMesh();
-
+        selectedGameobject.GetComponent<MeshCollider>().sharedMesh = selectedGameobject.GetComponent<MeshController>().EditableMesh.Mesh;
         foreach (var vertex in selectedGameobject.GetComponent<MeshController>().ActiveVertices)
         {
             Destroy(vertex);
@@ -179,6 +178,7 @@ public class ObjectController : MonoBehaviour
 
         selectedGameobject.GetComponent<MeshController>().EditableMesh.MergeVertices(vertices);
         selectedGameobject.GetComponent<MeshController>().EditableMesh.WriteAllToMesh();
+        selectedGameobject.GetComponent<MeshCollider>().sharedMesh = selectedGameobject.GetComponent<MeshController>().EditableMesh.Mesh;
 
         for (int i = selectedGameobject.GetComponent<MeshController>().ActiveVertices.Count - 1; i >= 1; i--)
         {
@@ -249,5 +249,6 @@ public class ObjectController : MonoBehaviour
 
         selectedGameobject.GetComponent<MeshController>().EditableMesh.CreateFace(vertices);
         selectedGameobject.GetComponent<MeshController>().EditableMesh.WriteAllToMesh();
+        selectedGameobject.GetComponent<MeshCollider>().sharedMesh = selectedGameobject.GetComponent<MeshController>().EditableMesh.Mesh;
     }
 }

@@ -139,6 +139,18 @@ MonoBehaviour:
     m_Key: ChangeColor
     m_Metadata:
       m_Items: []
+  - m_Id: 15561591780716544
+    m_Key: ExportSelectedObject
+    m_Metadata:
+      m_Items: []
+  - m_Id: 15580281154744320
+    m_Key: ExportAll
+    m_Metadata:
+      m_Items: []
+  - m_Id: 15621693267161088
+    m_Key: HelpText
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

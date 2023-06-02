@@ -1,12 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
-using System;
-using System.Text.RegularExpressions;
 using Meshes;
-using UnityEngine;
+using System;
+using System.Collections.Generic;
 using System.Text;
-
+using System.Text.RegularExpressions;
 using Unity.Mathematics;
+using UnityEngine;
 
 #nullable enable
 
@@ -17,6 +15,7 @@ namespace MeshesIO
     {
         public List<UMesh> objects = new();
         public List<Matrix4x4> worldTransforms = new();
+        public List<Matrix4x4> transforms = new();
     }
 
     public abstract class WFGrammar
@@ -86,7 +85,7 @@ namespace MeshesIO
                 faces = new();
             }
 
-            public WFObject(string name, 
+            public WFObject(string name,
                 List<WFVertex> positions,
                 List<WFTextureCoordinate> uvs,
                 List<WFVertexNormal> normals,
@@ -182,7 +181,7 @@ namespace MeshesIO
             public readonly float? w;
 
             public WFVertex(float3 position) : this(position.x, position.y, position.z) { }
-            
+
             public WFVertex(float x, float y, float z)
             {
                 this.x = x;
@@ -568,7 +567,7 @@ namespace MeshesIO
             foreach (Face face in umesh.Faces)
             {
                 WFGrammar.WFFace wfFace = new();
-                
+
                 foreach (var vertInfo in face.GetVertexInfo(umesh.Shading))
                 {
                     wfFace.indices.Add(new WFGrammar.WFFace.FaceIndex

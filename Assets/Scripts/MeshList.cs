@@ -31,9 +31,9 @@ public class MeshList : MonoBehaviour
         GameObject asso_obj = GameObject.Find(asso_obj_name);
         tmObject.GetComponent<AssociatedObject>().SetAssociatedObject(asso_obj);
 
-        if (asso_obj.transform.FindChildWithTag("MeshObject").gameObject.GetComponent<MeshController>().IsSelected)
+        /*if (asso_obj.transform.FindChildWithTag("MeshObject").gameObject.GetComponent<MeshController>().IsSelected)
         {
             tm.color = Color.cyan;
-        }
+        }*/
     }
 }
