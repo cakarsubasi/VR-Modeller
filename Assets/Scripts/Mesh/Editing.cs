@@ -108,6 +108,10 @@ namespace Meshes
             }
         }
 
+        /// <summary>
+        /// Return the center point of the vertices in local space
+        /// </summary>
+        /// <returns></returns>
         public float3 GetCenter()
         {
             float3 center = 0f;
@@ -118,11 +122,18 @@ namespace Meshes
             center /= (float)Vertices.Count;
             return center;
         }
+        
+        [Obsolete("Oops, wrong name, call GeometryToOrigin() instead")]
+
+        public void ObjectToGeometry()
+        {
+            GeometryToOrigin();
+        }
 
         /// <summary>
         /// Move the vertices to the origin point
         /// </summary>
-        public void ObjectToGeometry()
+        public void GeometryToOrigin()
         {
             float3 center = GetCenter();
             foreach (Vertex vertex in Vertices)
